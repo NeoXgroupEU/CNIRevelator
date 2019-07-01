@@ -104,4 +104,4 @@ except IOError:
     pass
 
 print("exit")
-#sys.exit(0)
+sys.exit(0)
