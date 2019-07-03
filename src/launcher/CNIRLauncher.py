@@ -23,12 +23,30 @@
 ********************************************************************************
 """
 
-import logger
+import sys
+import os
 
-## Launching the launcher
+import logger   # logger.py
+import ihm      # ihm.py
 
-# Creating a log file
-logfile = logger.NewLoggingSystem()
-
-# Hello world
-logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
+## Main function 
+def main():
+    # Creating a log file and removing the old
+    logfile = logger.NewLoggingSystem()
+    
+    # Hello world
+    logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
+    
+    launcherWindow = ihm.LauncherWindow()
+    launcherWindow.mainloop()
+    
+    
+    
+    
+    
+    
+    
+    
+## Bootstrap    
+main()
+sys.exit(0)

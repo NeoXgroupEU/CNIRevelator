@@ -26,4 +26,5 @@ import os
 
 CNIRTesserHash = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 #CNIRFolder = os.getenv('APPDATA') + '/CNIRevelator/'
-CNIRFolder = '.'
+CNIRFolder = "."
+CNIRLColor = "#003380"
