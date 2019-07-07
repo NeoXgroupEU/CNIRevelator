@@ -29,6 +29,7 @@ from tkinter import filedialog
 from tkinter import ttk
 
 import globs # globs.py
+from globs import logfile
 
 class LoginDialog(Toplevel):
 
@@ -59,7 +60,7 @@ class LoginDialog(Toplevel):
         y = hs / 2 - h / 2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
-    def connecti(self):
+    def logingin(self):
         global key
         global login
         login = self.entry_login.get().strip()
@@ -73,24 +74,25 @@ class LauncherWindow(Tk):
         Tk.__init__(self)
         self.configure(bg=globs.CNIRLColor)
         self.resizable(width=False, height=False)
+        self.queue = []
         
         # Setting up the geometry
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        wheight = ws /4
-        wwidth  = hs /4
+        wheight = hs /4
+        wwidth  = ws /4
         #self.update()
 
         # Creating objects
-        self.mainCanvas = Canvas(self, width=wwidth, height=wheight, bg=globs.CNIRLColor, highlightthickness=0)
+        self.mainCanvas = Canvas(self, width=wwidth, height=wheight*9/10, bg=globs.CNIRLColor, highlightthickness=0)
         self.pBarZone = Canvas(self, width=wwidth, height=wheight/10, bg=globs.CNIRLColor)
         
         self.progressBar = ttk.Progressbar(self.pBarZone, orient=HORIZONTAL, length=wwidth-10, mode='determinate')
-        self.update()
+        #self.update()
         
-        self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=("TEST"), font='Calibri 30 bold', fill='white')
-        self.msg = self.mainCanvas.create_text((wwidth / 2), (wheight / 1.15), text=' ', font='Calibri 9', fill='white')
-        self.update()
+        self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Calibri 30 bold', fill='white')
+        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='Starting...', font='Calibri 9', fill='white')
+        #self.update()
         
         # Centering
         x = ws / 2 - wwidth  / 2
@@ -102,11 +104,11 @@ class LauncherWindow(Tk):
         
         #self.after(2000, updating)
         
-        # if getattr(sys, 'frozen', False):
-        #     self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        # else:
-        #     self.iconbitmap('id-card.ico')
-        # logger.info('Success !')
+        if getattr(sys, 'frozen', False):
+           self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+        logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
         
         

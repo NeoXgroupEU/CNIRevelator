@@ -22,3 +22,29 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
+from globs import logfile
+from win32com.client import Dispatch
+
+import globs    # globs.py
+ 
+def createShortcut(path, target='', wDir='', icon=''):    
+    ext = path[-3:]
+    if ext == 'url':
+        shortcut = file(path, 'w')
+        shortcut.write('[InternetShortcut]\n')
+        shortcut.write('URL=%s' % target)
+        shortcut.close()
+    else:
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut(path)
+        shortcut.Targetpath = target
+        shortcut.WorkingDirectory = wDir
+        if icon == '':
+            pass
+        else:
+            shortcut.IconLocation = icon
+        shortcut.save()
+        
+def umain():
+    for i in range(0,155555555555555):
+        print(i)
