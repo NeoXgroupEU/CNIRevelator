@@ -34,7 +34,7 @@ class NewLoggingSystem:
 
         # Deleting the error log
         try:
-            os.remove(globs.CNIRFolder + '\\error.log') # The deletion does not working
+            os.remove(globs.CNIRFolder + '\\error.log')
         except Exception as e:
             #print(str(e) + " : " + str(globs.CNIRFolder + '\\error.log'))
             pass

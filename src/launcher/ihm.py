@@ -34,6 +34,8 @@ import globs                # globs.py
 class LoginDialog(Toplevel):
 
     def __init__(self, parent):
+        self.key = ''
+        self.login = ''
         super().__init__(parent)
         self.title('Connexion')
         Label(self, text='IPN : ').pack()
@@ -55,16 +57,13 @@ class LoginDialog(Toplevel):
             self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
         else:
             self.iconbitmap('id-card.ico')
-        upwin.update()
         x = ws / 2 - w / 2
         y = hs / 2 - h / 2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
-    def logingin(self):
-        global key
-        global login
-        login = self.entry_login.get().strip()
-        key = self.entry_pass.get().strip()
+    def connecti(self):
+        self.login = self.entry_login.get().strip()
+        self.key = self.entry_pass.get().strip()
         self.destroy()
         
 class LauncherWindow(Tk):

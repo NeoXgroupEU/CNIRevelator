@@ -80,20 +80,10 @@ def main(logger):
 logger.info('launcher : ' + CST_NAME + ' ' + CST_VER)
 logger.info('launcher : *****Hello World*****')
 logger.info('launcher : *****Launching SoftUpdate()*****')
-try:
-    Answer = SoftUpdate(logger)
-except Exception as e:
-    logger.info('launcher : *****FATAL ERROR*****' + str(e))
-    os.abort()
 
-logger.info('launcher : *****Ending SoftUpdate()*****')
-try:
-    if Answer == True:
-        logger.info('launcher : *****Launching main()*****')
-        State = main(logger)
-except Exception as e:
-    logger.info('launcher : *****FATAL ERROR*****' + str(e))
-    os.abort()
+logger.info('launcher : *****Launching main()*****')
+State = main(logger)
+
 
 logger.info('launcher : *****Ending main()*****')
 logger.info('launcher : *****Goodbye!*****')

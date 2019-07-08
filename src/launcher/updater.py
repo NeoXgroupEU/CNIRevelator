@@ -28,9 +28,10 @@ import traceback
 import sys
 import time
 
-import logger   # logger.py
-import globs    # globs.py
-import ihm      # ihm.py
+import logger       # logger.py
+import globs        # globs.py
+import ihm          # ihm.py
+import downloader   # downloader.py
 
 def createShortcut(path, target='', wDir='', icon=''):
     ext = path[-3:]
@@ -59,7 +60,17 @@ def batch():
 
     for i in range(0,10000):
         if i % 1000 : launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Starting... ' + str(i)))
-    return
+        
+    credentials = downloader.newcredentials()
+    
+    if not credentials.valid:
+        return False
+    
+    
+    for i in range(10000,20000):
+        if i % 1000 : launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Starting... ' + str(i)))
+        
+    return True
 
 ## Main Function
 def umain():
@@ -69,7 +80,8 @@ def umain():
         launcherWindow = ihm.launcherWindowCur
 
         try:
-            batch()
+            # EXECUTING THE UPDATE BATCH
+            success = batch() 
         except Exception as e:
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('ERROR : ' + str(e)))
@@ -77,7 +89,12 @@ def umain():
             launcherWindow.destroy()
             return 1
 
-        launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Software is up-to-date !')
+        if success:
+            logfile.printdbg("Software is up-to-date !")
+            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Software is up-to-date !')
+        else:
+            logfile.printerr("An error occured. No effective update !")
+            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='An error occured. No effective update !')
         time.sleep(2)
         launcherWindow.destroy()
         return 0
@@ -87,5 +104,6 @@ def umain():
         launcherWindow.destroy()
         sys.exit(2)
         return 2
-
+    
+    return
 
