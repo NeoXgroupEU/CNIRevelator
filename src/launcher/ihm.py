@@ -28,8 +28,8 @@ from tkinter.messagebox import *
 from tkinter import filedialog
 from tkinter import ttk
 
-import globs # globs.py
-from globs import logfile
+import logger               # logger.py
+import globs                # globs.py
 
 class LoginDialog(Toplevel):
 
@@ -90,9 +90,11 @@ class LauncherWindow(Tk):
         self.progressBar = ttk.Progressbar(self.pBarZone, orient=HORIZONTAL, length=wwidth-10, mode='determinate')
         #self.update()
         
-        self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Calibri 30 bold', fill='white')
-        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='Starting...', font='Calibri 9', fill='white')
+        self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Helvetica 30', fill='white')
+        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='', font='Helvetica 9', fill='white')
         #self.update()
+        
+        self.wm_title(globs.CNIRName)
         
         # Centering
         x = ws / 2 - wwidth  / 2
@@ -108,22 +110,10 @@ class LauncherWindow(Tk):
            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
         else:
             self.iconbitmap('id-card.ico')
+        logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+## Global Handler
+launcherWindowCur = LauncherWindow()
         
