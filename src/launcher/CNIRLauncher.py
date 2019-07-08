@@ -32,33 +32,38 @@ import traceback
 import updater  # updater.py
 import ihm      # ihm.py
 import globs    # globs.py
-from globs import logfile
+import logger   # logger.py
 
-## Main function 
+## Global Handlers
+logfile = logger.logCur
+launcherWindow = ihm.launcherWindowCur
+
+## Main function
 def main():
-    
+
     # Starting the main update thread
     mainThread.start()
-    
+
     # Hello world
     logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
-    logfile.printdbg('Files in directory : ' + str(os.listdir(globs.CNIRFolder)))
-    
+    #logfile.printdbg('Files in directory : ' + str(os.listdir(globs.CNIRFolder)))
+
     # Hello user
-    launcherWindow = ihm.LauncherWindow()
-    
     launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Chalut!')
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Starting...')
     launcherWindow.progressBar.start()
-    
+
     launcherWindow.mainloop()
 
-## Bootstrap    
+    logfile.printdbg('*** CNIRLauncher LOGFILE. Goodbye World ! ***')
+    return
+
+## Bootstrap
 try:
-     mainThread = threading.Thread(target=updater.umain, daemon=True)
-     main()
-except Exception: 
+    mainThread = threading.Thread(target=updater.umain, daemon=False)
+    main()
+except Exception:
     logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
     sys.exit(1)
-    
+
 sys.exit(0)
