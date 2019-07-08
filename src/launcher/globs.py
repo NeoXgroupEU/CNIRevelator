@@ -23,12 +23,8 @@
 ********************************************************************************
 """
 import os
-import logger   # logger.py
 
 CNIRTesserHash = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 CNIRFolder = os.getcwd()
 CNIRLColor = "#006699"
-CNIRName = "CNIRevelator Launcher 3.x"
-
-# Creating a log file and removing the old
-logfile = logger.NewLoggingSystem()
+CNIRName = "CNIRevelator Launcher 3"
