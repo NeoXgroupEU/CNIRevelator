@@ -22,3 +22,12 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
+
+import hashlib
+from pypac import PACSession
+from requests.auth import HTTPProxyAuth
+
+class newdownload():
+    def __init__(url):
+        self.url = url
+
