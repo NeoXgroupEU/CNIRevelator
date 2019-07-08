@@ -22,12 +22,17 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
-from globs import logfile
-from win32com.client import Dispatch
 
+from win32com.client import Dispatch
+import traceback
+import sys
+import time
+
+import logger   # logger.py
 import globs    # globs.py
- 
-def createShortcut(path, target='', wDir='', icon=''):    
+import ihm      # ihm.py
+
+def createShortcut(path, target='', wDir='', icon=''):
     ext = path[-3:]
     if ext == 'url':
         shortcut = file(path, 'w')
@@ -44,7 +49,43 @@ def createShortcut(path, target='', wDir='', icon=''):
         else:
             shortcut.IconLocation = icon
         shortcut.save()
-        
+
+## Main Batch Function
+def batch():
+
+    # Global Handlers
+    logfile = logger.logCur
+    launcherWindow = ihm.launcherWindowCur
+
+    for i in range(0,10000):
+        if i % 1000 : launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Starting... ' + str(i)))
+    return
+
+## Main Function
 def umain():
-    for i in range(0,155555555555555):
-        print(i)
+    try:
+        # Global Handlers
+        logfile = logger.logCur
+        launcherWindow = ihm.launcherWindowCur
+
+        try:
+            batch()
+        except Exception as e:
+            logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
+            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('ERROR : ' + str(e)))
+            time.sleep(3)
+            launcherWindow.destroy()
+            return 1
+
+        launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Software is up-to-date !')
+        time.sleep(2)
+        launcherWindow.destroy()
+        return 0
+
+    except:
+        logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
+        launcherWindow.destroy()
+        sys.exit(2)
+        return 2
+
+
