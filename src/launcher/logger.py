@@ -22,40 +22,43 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
-## The logging class
 
 import logging
 import globs
 import os
 
+## The logging class
 class NewLoggingSystem:
-    
+
     def __init__(self):
-        
+
         # Deleting the error log
         try:
             os.remove(globs.CNIRFolder + '\\error.log') # The deletion does not working
         except Exception as e:
             #print(str(e) + " : " + str(globs.CNIRFolder + '\\error.log'))
             pass
-        
+
         # Create new logging handle
         logger = logging.getLogger()
         logger.setLevel(logging.INFO) # To make sure we can have a debug channel
-        
-        # Create channels 
-        formatter = logging.Formatter('[ %(module)s/%(funcName)s ] %(asctime)s :: %(levelname)s :: %(message)s')
+
+        # Create channels
+        formatter = logging.Formatter("\n[ %(module)s/%(funcName)s ] %(asctime)s :: %(levelname)s :: %(message)s")
         error_handler = logging.FileHandler((globs.CNIRFolder + '\\error.log'), mode='w', encoding='utf-8', delay=True)
         info_handler = logging.FileHandler((globs.CNIRFolder + '\\launcher.log'), mode='w', encoding='utf-8')
-        
+
         error_handler.setLevel(logging.ERROR)
         error_handler.setFormatter(formatter)
         logger.addHandler(error_handler)
-        
+
         info_handler.setLevel(logging.DEBUG)
         info_handler.setFormatter(formatter)
         logger.addHandler(info_handler)
-        
+
         self.logger = logger
         self.printerr = logger.error
         self.printdbg = logger.info
+
+## Global Handler
+logCur = NewLoggingSystem()
