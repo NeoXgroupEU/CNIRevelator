@@ -31,6 +31,7 @@ import time
 import os
 import shutil
 import zipfile
+import hashlib
 
 import logger       # logger.py
 import globs        # globs.py
@@ -128,8 +129,23 @@ def batch():
     logfile.printdbg('Preparing download for the new version')
 
     getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
+    
+    # BUF_SIZE is totally arbitrary, change for your app!
+    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+    
+    sha1 = hashlib.sha1()
+    
+    with open(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+    
+    logfile.printdbg("SHA1: {0}".format(sha1.hexdigest()))
 
     # And now unzip and launch
+    logfile.printdbg("Unzipping the package")
     zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
     zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
     zip_ref.close()
