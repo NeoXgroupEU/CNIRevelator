@@ -96,7 +96,7 @@ def batch():
         os.mkdir(globs.CNIRFolder + '\\downloads')
     except:
         pass
-    getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRFolder + '\\versions.lst').download()
+    getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRVerStock).download()
 
     logfile.printdbg('Parsing the software versions')
     with open(globs.CNIRFolder + '\\versions.lst') as versionsFile:
