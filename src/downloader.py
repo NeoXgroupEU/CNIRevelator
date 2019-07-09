@@ -146,6 +146,10 @@ class newcredentials:
                 self.password = invite.key
                 
                 AESObj = AESCipher(globs.CNIRCryptoKey)
+                try:
+                    os.mkdir(globs.CNIRFolder + '\\config')
+                except:
+                    pass
                 with open(globs.CNIRConfig, 'wb+') as (configFile):
                     logfile.printdbg('Saving credentials in encrypted config file')
                     configFile.write(AESObj.encrypt(self.login + '||' + self.password))

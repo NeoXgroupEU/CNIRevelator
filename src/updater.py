@@ -27,6 +27,7 @@ from win32com.client import Dispatch
 import traceback
 import sys
 import time
+import os
 
 import logger       # logger.py
 import globs        # globs.py
@@ -82,11 +83,19 @@ def batch():
         except FileNotFoundError:
             logfile.printdbg('Recreate urlconf.ig')
             # Recreating the url file
+            try:
+                os.mkdir(globs.CNIRFolder + '\\config')
+            except:
+                pass
             with open(globs.CNIRUrlConfig, 'w') as (configFile):
                 configFile.write("https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST\n0\n0") #XXX
 
     # Getting the list of versions of the software
     logfile.printdbg('Retrieving the software versions')
+    try:
+        os.mkdir(globs.CNIRFolder + '\\downloads')
+    except:
+        pass
     getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRFolder + '\\versions.lst').download()
 
     logfile.printdbg('Parsing the software versions')

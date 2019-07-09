@@ -35,6 +35,7 @@ class NewLoggingSystem:
 
         # Deleting the error log
         try:
+            os.mkdir(globs.CNIRFolder + '\\logs')
             os.remove(globs.CNIRErrLog)
         except Exception as e:
             pass
