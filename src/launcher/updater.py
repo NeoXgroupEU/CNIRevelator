@@ -58,18 +58,63 @@ def batch():
     logfile = logger.logCur
     launcherWindow = ihm.launcherWindowCur
 
-    for i in range(0,10000):
-        if i % 1000 : launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Starting... ' + str(i)))
-        
     credentials = downloader.newcredentials()
-    
+
     if not credentials.valid:
         return False
-    
-    
-    for i in range(10000,20000):
-        if i % 1000 : launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Starting... ' + str(i)))
-        
+
+    # First retrieving the urls !
+    while True:
+        try:
+            # Open the config file
+            logfile.printdbg('Reading urlconf.ig')
+            with open(globs.CNIRFolder + '\\urlconf.ig', 'r') as (configFile):
+                try:
+                    # Reading it
+                    reading = configFile.read()
+                    # Parsing it
+                    urlparsed = reading.split("\n")
+                    break
+
+                except Exception as e:
+                    raise IOError(str(e))
+
+        except FileNotFoundError:
+            logfile.printdbg('Recreate urlconf.ig')
+            # Recreating the url file
+            with open(globs.CNIRFolder + '\\urlconf.ig', 'w') as (configFile):
+                configFile.write("https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST\n0\n0") #XXX
+
+    # Getting the list of versions of the software
+    logfile.printdbg('Retrieving the software versions')
+    getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRFolder + '\\versions.lst').download()
+
+    logfile.printdbg('Parsing the software versions')
+    with open(globs.CNIRFolder + '\\versions.lst') as versionsFile:
+        versionsTab = versionsFile.read().split("\n")[1].split("||")
+        logfile.printdbg('Versions retrieved : {}'.format(versionsTab))
+    # Choose the newer
+    finalver = globs.version.copy()
+    for entry in versionsTab:
+        verstr, url, checksum = entry.split("|")
+        # Calculating sum considering we can have 99 sub versions
+        ver = verstr.split(".")
+        ver = [int(i) for i in ver]
+        finalsum = finalver[2] + finalver[1]*100 + finalver[0]*100*100
+        sum = ver[2] + ver[1]*100 + ver[0]*100*100
+        # Make a statement
+        if sum > finalsum:
+            finalver = ver.copy()
+            finalurl = url
+
+    if finalver == globs.version:
+        logfile.printdbg('The software is already the newer version')
+        return True
+
+    logfile.printdbg('Preparing download for the new version')
+
+    getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
+
     return True
 
 ## Main Function
@@ -81,7 +126,7 @@ def umain():
 
         try:
             # EXECUTING THE UPDATE BATCH
-            success = batch() 
+            success = batch()
         except Exception as e:
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('ERROR : ' + str(e)))
@@ -104,6 +149,6 @@ def umain():
         launcherWindow.destroy()
         sys.exit(2)
         return 2
-    
+
     return
 
