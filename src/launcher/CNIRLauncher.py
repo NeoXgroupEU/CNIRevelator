@@ -41,9 +41,6 @@ launcherWindow = ihm.launcherWindowCur
 ## Main function
 def main():
 
-    # Starting the main update thread
-    mainThread.start()
-
     # Hello world
     logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
     #logfile.printdbg('Files in directory : ' + str(os.listdir(globs.CNIRFolder)))
@@ -52,6 +49,9 @@ def main():
     launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Starting...')
     launcherWindow.progressBar.start()
+
+    # Starting the main update thread
+    mainThread.start()
 
     launcherWindow.mainloop()
 
