@@ -99,7 +99,7 @@ def batch():
     getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRVerStock).download()
 
     logfile.printdbg('Parsing the software versions')
-    with open(globs.CNIRFolder + '\\versions.lst') as versionsFile:
+    with open(globs.CNIRVerStock) as versionsFile:
         versionsTab = versionsFile.read().split("\n")[1].split("||")
         logfile.printdbg('Versions retrieved : {}'.format(versionsTab))
     # Choose the newer
@@ -123,6 +123,8 @@ def batch():
     logfile.printdbg('Preparing download for the new version')
 
     getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
+
+    # And now unzip and launch
 
     return True
 
