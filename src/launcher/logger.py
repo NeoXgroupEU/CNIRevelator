@@ -24,8 +24,9 @@
 """
 
 import logging
-import globs
 import os
+
+import globs    # globs.py
 
 ## The logging class
 class NewLoggingSystem:
