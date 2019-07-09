@@ -48,11 +48,11 @@ class LoginDialog(Toplevel):
         self.entry_pass.pack()
         Button(self, text='Connexion', command=(self.connecti)).pack()
         self.resizable(width=False, height=False)
-        w = 150
-        h = 110
-        self.update()
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
+        w = hs / 10
+        h = ws / 10
+        self.update()
         if getattr(sys, 'frozen', False):
             self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
         else:
@@ -80,19 +80,16 @@ class LauncherWindow(Tk):
         hs = self.winfo_screenheight()
         wheight = hs /4
         wwidth  = ws /4
-        #self.update()
 
         # Creating objects
         self.mainCanvas = Canvas(self, width=wwidth, height=wheight*9/10, bg=globs.CNIRLColor, highlightthickness=0)
         self.pBarZone = Canvas(self, width=wwidth, height=wheight/10, bg=globs.CNIRLColor)
         
         self.progressBar = ttk.Progressbar(self.pBarZone, orient=HORIZONTAL, length=wwidth-10, mode='determinate')
-        #self.update()
-        
+
         self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Helvetica 30', fill='white')
-        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='', font='Helvetica 9', fill='white')
-        #self.update()
-        
+        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='Booting up...', font='Helvetica 9', fill='white')
+
         self.wm_title(globs.CNIRName)
         
         # Centering
@@ -103,7 +100,6 @@ class LauncherWindow(Tk):
         self.pBarZone.grid()
         self.progressBar.grid()
         
-        #self.after(2000, updating)
         
         if getattr(sys, 'frozen', False):
            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
@@ -112,6 +108,8 @@ class LauncherWindow(Tk):
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
+        
+        self.update()
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()
