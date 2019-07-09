@@ -24,8 +24,13 @@
 """
 import os
 
+# CNIRevelator version
+version = [3, 0, 0]
+verstring_full = "{}.{}.{}".format(version[0], version[1], version[2])
+verstring = "{}.{}".format(version[0], version[1])
+
 CNIRTesserHash = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 CNIRFolder = os.getcwd()
 CNIRLColor = "#006699"
-CNIRName = "CNIRevelator Launcher 3"
+CNIRName = "CNIRevelator {}".format(verstring)
 CNIRCryptoKey = '82Xh!efX3#@P~2eG'
