@@ -4,6 +4,7 @@
 *.ig
 *.log
 *.lst
+*.zip
 
 build/*
 dist/*
