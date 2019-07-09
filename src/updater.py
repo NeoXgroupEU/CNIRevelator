@@ -108,6 +108,8 @@ def batch():
     # Choose the newer
     finalver = globs.version.copy()
     for entry in versionsTab:
+        if not entry:
+            break
         verstr, url, checksum = entry.split("|")
         # Calculating sum considering we can have 99 sub versions
         ver = verstr.split(".")
