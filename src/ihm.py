@@ -110,6 +110,61 @@ class LauncherWindow(Tk):
         self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
 
         self.update()
+        
+class AutoScrollbar(ttk.Scrollbar):
+
+    def set(self, lo, hi):
+        if float(lo) <= 0.0:
+            if float(hi) >= 1.0:
+                self.grid_remove()
+            self.grid()
+            ttk.Scrollbar.set(self, lo, hi)
+
+    def pack(self, **kw):
+        raise TclError('Cannot use pack with the widget ' + self.__class__.__name__)
+
+    def place(self, **kw):
+        raise TclError('Cannot use place with the widget ' + self.__class__.__name__)
+        
+class OpenPageDialog(Toplevel):
+
+    def __init__(self, parent, number):
+        super().__init__(parent)
+        self.parent = parent
+        self.title("Choisir la page à afficher de l'image selectionnée")
+        self.resizable(width=False, height=False)
+        self.termtext = Label(self, text='Merci de selectionner un numéro de page dans la liste ci-dessous.')
+        self.termtext.grid(column=0, row=0, sticky='N', padx=5, pady=5)
+        self.combotry = ttk.Combobox(self)
+        self.combotry['values'] = tuple(str(x) for x in range(1, number + 1))
+        self.combotry.grid(column=0, row=1, sticky='N', padx=5, pady=5)
+        self.button = Button(self, text='Valider', command=(self.valid))
+        self.button.grid(column=0, row=2, sticky='S', padx=5, pady=5)
+        self.update()
+        hs = self.winfo_screenheight()
+        w = int(self.winfo_width())
+        h = int(self.winfo_height())
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+
+    def valid(self):
+        self.parent.page = self.combotry.current()
+        self.destroy()
+        
+
+class OpenScanWin(Toplevel):
+
+    def __init__(self, parent, file, type, nframe=1):
+        super().__init__(parent)
+        self.parent = parent
+        app = OpenScan(self, file, type, nframe)
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()

@@ -39,8 +39,7 @@ logfile = logger.logCur
 launcherWindow = ihm.launcherWindowCur
 
 ## Main function
-def main():
-
+def lmain(mainThread):
     # Hello world
     logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
     #logfile.printdbg('Files in directory : ' + str(os.listdir(globs.CNIRFolder)))
@@ -57,13 +56,3 @@ def main():
 
     logfile.printdbg('*** CNIRLauncher LOGFILE. Goodbye World ! ***')
     return
-
-## Bootstrap
-try:
-    mainThread = threading.Thread(target=updater.umain, daemon=False)
-    main()
-except Exception:
-    logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
-    sys.exit(1)
-
-sys.exit(0)
