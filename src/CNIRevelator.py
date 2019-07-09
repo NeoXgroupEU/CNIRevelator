@@ -39,7 +39,7 @@ logfile = logger.logCur
 launcherWindow = ihm.launcherWindowCur
 
 ## MAIN FUNCTION OF CNIREVELATOR
-def main(logger):
+def main():
     
     import CNI_pytesseract as pytesseract
     try:

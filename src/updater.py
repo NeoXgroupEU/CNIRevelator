@@ -24,10 +24,13 @@
 """
 
 from win32com.client import Dispatch
+import subprocess
 import traceback
 import sys
 import time
 import os
+import shutil
+import zipfile
 
 import logger       # logger.py
 import globs        # globs.py
@@ -125,11 +128,28 @@ def batch():
     getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
 
     # And now unzip and launch
+    zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
+    zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
+    zip_ref.close()
+    
+    args = [globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe', globs.CNIRFolder]
+    subprocess.run(args) 
 
     return True
 
 ## Main Function
 def umain():
+    
+    if len(sys.argv) > 1:
+        logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
+        while os.path.exists(str(sys.argv[1])):
+            try:
+                shutil.rmtree(str(sys.argv[1]), ignore_errors=True)
+            except:
+                pass
+                logfile.printdbg("Fail to delete old install !")
+            
+    
     try:
         # Global Handlers
         logfile = logger.logCur
