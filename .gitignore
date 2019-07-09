@@ -3,6 +3,7 @@
 *.spec
 *.ig
 *.log
+*.lst
 
 build/*
 dist/*
