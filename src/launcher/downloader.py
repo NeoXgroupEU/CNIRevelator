@@ -24,12 +24,14 @@
 """
 
 import hashlib
+import base64, hashlib
+import os
 from pypac import PACSession
 from requests.auth import HTTPProxyAuth
-import base64, hashlib
 from Crypto import Random
 from Crypto.Cipher import AES
-import os
+from requests import Session
+from time import time
 
 import logger   # logger.py
 import globs    # globs.py
@@ -71,16 +73,16 @@ class newcredentials:
         self.valid = False
         self.readInTheBooks = False
         self.trying = 0
-        session = PACSession()
         
         while True:
+            session = PACSession(proxy_auth=(HTTPProxyAuth(self.login, self.password)))
             self.trying += 1
             
             try:
                 sessionAnswer = session.get('https://www.google.com')
             except Exception as e:
                 logfile.printerr('Network Error : ' + str(e))
-                sessionAnswer = '<Response [407]>'# XXX TO DEBUG XXX
+                sessionAnswer = ''
                 
             logfile.printdbg("Session Answer : " + str(sessionAnswer))
             
@@ -90,11 +92,12 @@ class newcredentials:
                 self.valid = True
                 return
             
-            if str(sessionAnswer) != '<Response [407]>':
-                logfile.printerr('Network Error!')
+            if str(sessionAnswer) != '<Response [407]>' and self.trying > 2: 
+            # because sometimes the proxy does not return an error (especially if we do not provide either credentials)
+                logfile.printerr('Network Error, or need a proxy !')
                 return
             
-            if self.trying > 3:
+            if self.trying > 4:
                 logfile.printerr('Invalid credentials : access denied, a maximum of 3 trials have been raised !')
                 return
             
@@ -150,9 +153,55 @@ class newcredentials:
             
         return
 
-class newdownload():
+class newdownload:
     def __init__(self, credentials, urlFile, destinationFile):
         self.urlFile = urlFile
         self.destinationFile = destinationFile
+        self.session = credentials.sessionHandler
         
+        logfile = logger.logCur
+        launcherWindow = ihm.launcherWindowCur
+        
+        logfile.printdbg('Requesting download of {}'.format(self.urlFile))
+        
+        self.handler = self.session.get(self.urlFile, stream=True, headers={'Connection' : 'close', "Cache-Control": "no-cache", "Pragma": "no-cache"})
+        self.handler.raise_for_status()
+        
+        self.filesize = int(self.handler.headers['Content-length'])
+        self.chunksize = int(self.filesize / 7)
+        self.count = 0
+    
+    def download(self):
+        logfile = logger.logCur
+        launcherWindow = ihm.launcherWindowCur
+        url = self.urlFile
+        filename = self.destinationFile
+        
+        reducedFilename = filename.split("\\")[-1]
+        
+        launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Downloading  {}'.format(reducedFilename)))
+        launcherWindow.progressBar.stop()
+        launcherWindow.progressBar.configure(mode='determinate', value=0, maximum=100)
+
+        try:
+            os.remove(filename)
+        except:
+            pass
+
+        with open(filename, 'wb') as fh:
+            for chunk in self.handler.iter_content(chunk_size=self.chunksize):
+                fh.write(chunk)
+                
+                self.count = os.path.getsize(self.destinationFile)
+                Percent = int(self.count / self.filesize * 100)
+                
+                launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)))
+                launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Downloading  {}'.format(reducedFilename) + ' : ' + str((Percent)) + ' %'))
+                
+        launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
+        launcherWindow.progressBar.start()
+        
+        logfile.printdbg('Successful retrieved {}'.format(filename))
+        
+        return filename
         
