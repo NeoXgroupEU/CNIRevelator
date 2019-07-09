@@ -121,6 +121,7 @@ def batch():
         if sum > finalsum:
             finalver = ver.copy()
             finalurl = url
+            finalchecksum = checksum
 
     if finalver == globs.version:
         logfile.printdbg('The software is already the newer version')
@@ -141,14 +142,21 @@ def batch():
             if not data:
                 break
             sha1.update(data)
+            
+    check = sha1.hexdigest()
+    logfile.printdbg("SHA1: {0}".format(check))
     
-    logfile.printdbg("SHA1: {0}".format(sha1.hexdigest()))
+    if not check == finalchecksum:
+        logfile.printerr("Checksum error")
+        return False
 
     # And now unzip and launch
     logfile.printdbg("Unzipping the package")
     zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
     zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
     zip_ref.close()
+    
+    logfile.printdbg(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe')
     
     args = [globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe', globs.CNIRFolder]
     subprocess.run(args) 
