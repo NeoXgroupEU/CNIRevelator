@@ -1,6 +1,8 @@
 *.pyc
 *.log
 *.spec
+*.ig
+*.log
 
 build/*
 dist/*
