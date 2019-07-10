@@ -69,5 +69,8 @@ except Exception:
     logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
     sys.exit(1)
 
+if updater.UPDATE_IS_MADE:
+    sys.exit(0)
+
 main()
 sys.exit(0)

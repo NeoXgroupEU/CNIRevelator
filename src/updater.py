@@ -38,6 +38,8 @@ import globs        # globs.py
 import ihm          # ihm.py
 import downloader   # downloader.py
 
+UPDATE_IS_MADE = False
+
 def createShortcut(path, target='', wDir='', icon=''):
     ext = path[-3:]
     if ext == 'url':
@@ -175,15 +177,19 @@ def batch():
     
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Success !'))
     
+    # Cleanup
+    try:
+        os.remove(globs.CNIRFolder + '\\..\\CNIPackage.zip')
+    except:
+        pass
     # Launch app !
     args = [UPATH + '\\CNIRevelator.exe', globs.CNIRFolder]
     subprocess.Popen(args) 
     
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Launched the new process.'))
     
-    launcherWindow.destroy()
-    sys.exit(0)
-    return
+    UPDATE_IS_MADE = True
+    return True
 
 ## Main Function
 def umain():
