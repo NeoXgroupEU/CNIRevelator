@@ -65,8 +65,6 @@ try:
 except Exception:
     sys.exit(1)
 
-updater.UPDATE_IS_MADE = True
-
 if updater.UPDATE_IS_MADE:
     # Launch app !
     args = updater.UPATH + '\\CNIRevelator.exe ' + globs.CNIRFolder

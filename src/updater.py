@@ -210,9 +210,8 @@ def umain():
         while os.path.exists(str(sys.argv[1])):
             try:
                 shutil.rmtree(str(sys.argv[1]))
-            except:
-                pass
-                logfile.printdbg("Fail to delete old install !")
+            except Exception as e:
+                logfile.printdbg(str(e))
             
     
     try:
