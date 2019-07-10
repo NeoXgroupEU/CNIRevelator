@@ -32,6 +32,7 @@ import shutil
 import zipfile
 import hashlib
 import subprocess
+import psutil
 
 import logger       # logger.py
 import globs        # globs.py
@@ -204,6 +205,7 @@ def umain():
     logfile = logger.logCur
     launcherWindow = ihm.launcherWindowCur
     
+    # Cleaner for the old version if detected
     if len(sys.argv) > 1:
         launcherWindow.printmsg('Deleting old version !')
         logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
@@ -211,8 +213,21 @@ def umain():
             try:
                 shutil.rmtree(str(sys.argv[1]))
             except Exception as e:
-                logfile.printdbg(str(e))
-            
+                logfile.printerr(str(e))
+                logfile.printdbg('Trying stop the process !')
+                launcherWindow.printmsg('Fail :{}'.format(e))
+                try:
+                    for process in psutil.process_iter():
+                        logfile.printdbg(str(process.cmdline()))
+                        # if process.cmdline() == ['CNIRevelator.exe', '']:
+                        #     print('Process found. Terminating it.')
+                        #     process.terminate()
+                        #     break
+                    else:
+                        logfile.printerr('Process not found')
+                except Exception as e:
+                    logfile.printerr(str(e))
+                    launcherWindow.printmsg('Fail :{}'.format(e))
     
     try:
         try:

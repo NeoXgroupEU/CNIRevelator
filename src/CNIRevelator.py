@@ -78,6 +78,6 @@ if updater.UPDATE_IS_MADE:
         break
     sys.exit(0)
 
-main()
+#main()
 
 sys.exit(0)
