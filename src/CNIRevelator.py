@@ -40,7 +40,7 @@ launcherWindow = ihm.launcherWindowCur
 
 ## MAIN FUNCTION OF CNIREVELATOR
 def main():
-    
+
     import CNI_pytesseract as pytesseract
     try:
         os.environ['PATH'] = CST_FOLDER + 'Tesseract-OCR4\\'
@@ -52,7 +52,7 @@ def main():
         text = 'Tesseract version ' + str(tesser_version) + ' Licensed Apache 2004 successfully initiated\n'
         main_w.montext(text)
     main_w.montext('\n\nEntrez la première ligne de MRZ svp \n')
-    
+
     if CST_CHANGELOG.isOn:
         showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : ' + CST_VER + ' ' + CST_TYPE + ' Revision ' + CST_REV + '\n\n' + CST_CHANGELOG.text), parent=main_w)
     logger.info('main() : **** Launching App_main() ****')

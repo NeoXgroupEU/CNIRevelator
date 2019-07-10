@@ -131,7 +131,8 @@ def batch():
 
     getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
     
-    # BUF_SIZE is totally arbitrary, change for your app!
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Verifying download...'))
+    
     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
     
     sha1 = hashlib.sha1()
@@ -151,17 +152,35 @@ def batch():
         return False
 
     # And now unzip and launch
+    logfile.printdbg("Make place")
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Preparing installation...'))
+    try:
+        shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
+        shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
+    except:
+        pass
+        
     logfile.printdbg("Unzipping the package")
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Installing the updates'))
     zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
-    zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
+    zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
     zip_ref.close()
     
-    logfile.printdbg(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe')
+    shutil.copytree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp\\CNIRevelator', globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
+    shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
+    
+    logfile.printdbg('Extracted :' + globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe')
+    
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Success !'))
     
     args = [globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe', globs.CNIRFolder]
     subprocess.run(args) 
-
-    return True
+    
+    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Launched the new process.'))
+    
+    launcherWindow.destroy()
+    sys.exit(0)
+    return
 
 ## Main Function
 def umain():
