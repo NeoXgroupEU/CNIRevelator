@@ -151,30 +151,33 @@ def batch():
         logfile.printerr("Checksum error")
         return False
 
-    # And now unzip and launch
+    # And now unzip
+    UPATH = globs.CNIRFolder + '\\..\\CNIRevelator' + "{}.{}.{}".format(finalver[0], finalver[1], finalver[2])
     logfile.printdbg("Make place")
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Preparing installation...'))
     try:
-        shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
-        shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
+        shutil.rmtree(UPATH + 'temp')
+        shutil.rmtree(UPATH)
     except:
         pass
         
     logfile.printdbg("Unzipping the package")
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Installing the updates'))
     zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
-    zip_ref.extractall(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
+    zip_ref.extractall(UPATH + "temp")
     zip_ref.close()
     
-    shutil.copytree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp\\CNIRevelator', globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full))
-    shutil.rmtree(globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + 'temp')
+    # Move to the right place
+    shutil.copytree(UPATH + 'temp\\CNIRevelator', UPATH)
+    shutil.rmtree(UPATH + 'temp')
     
-    logfile.printdbg('Extracted :' + globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe')
+    logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')
     
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Success !'))
     
-    args = [globs.CNIRFolder + '\\..\\CNIRevelator' + str(globs.verstring_full) + '\\CNIRevelator.exe', globs.CNIRFolder]
-    subprocess.run(args) 
+    # Launch app !
+    args = [UPATH + '\\CNIRevelator.exe', globs.CNIRFolder]
+    subprocess.Popen(args) 
     
     launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Launched the new process.'))
     
