@@ -81,7 +81,7 @@ class newcredentials:
             try:
                 sessionAnswer = session.get('https://www.google.com')
             except Exception as e:
-                logfile.printerr('Network Error : ' + str(e))
+                logfile.printdbg('Network Error : ' + str(e))
                 sessionAnswer = ''
                 
             logfile.printdbg("Session Answer : " + str(sessionAnswer))
@@ -183,9 +183,7 @@ class newdownload:
         
         reducedFilename = filename.split("\\")[-1]
         
-        launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Downloading  {}'.format(reducedFilename)))
-        launcherWindow.progressBar.stop()
-        launcherWindow.progressBar.configure(mode='determinate', value=0, maximum=100)
+        launcherWindow.printmsg('Downloading  {}'.format(reducedFilename))
 
         try:
             os.remove(filename)
@@ -199,8 +197,9 @@ class newdownload:
                 self.count = os.path.getsize(self.destinationFile)
                 Percent = int(self.count / self.filesize * 100)
                 
-                launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)))
-                launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Downloading  {}'.format(reducedFilename) + ' : ' + str((Percent)) + ' %'))
+                launcherWindow.progressBar.stop()
+                launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)), maximum=100)
+                launcherWindow.printmsg('Downloading  {}'.format(reducedFilename) + ' : ' + str((Percent)) + ' %')
                 
         launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
         launcherWindow.progressBar.start()

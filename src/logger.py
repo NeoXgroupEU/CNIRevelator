@@ -61,5 +61,8 @@ class NewLoggingSystem:
         self.printerr = logger.error
         self.printdbg = logger.info
 
+    def close(self):
+        logging.shutdown()
+
 ## Global Handler
 logCur = NewLoggingSystem()

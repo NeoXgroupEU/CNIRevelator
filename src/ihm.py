@@ -110,7 +110,10 @@ class LauncherWindow(Tk):
         self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
 
         self.update()
-        
+
+    def printmsg(self, msg):
+        self.mainCanvas.itemconfigure(self.msg, text=(msg))
+
 class AutoScrollbar(ttk.Scrollbar):
 
     def set(self, lo, hi):
@@ -125,7 +128,7 @@ class AutoScrollbar(ttk.Scrollbar):
 
     def place(self, **kw):
         raise TclError('Cannot use place with the widget ' + self.__class__.__name__)
-        
+
 class OpenPageDialog(Toplevel):
 
     def __init__(self, parent, number):
@@ -157,7 +160,7 @@ class OpenPageDialog(Toplevel):
     def valid(self):
         self.parent.page = self.combotry.current()
         self.destroy()
-        
+
 
 class OpenScanWin(Toplevel):
 

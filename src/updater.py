@@ -24,7 +24,6 @@
 """
 
 from win32com.client import Dispatch
-import subprocess
 import traceback
 import sys
 import time
@@ -32,6 +31,7 @@ import os
 import shutil
 import zipfile
 import hashlib
+import subprocess
 
 import logger       # logger.py
 import globs        # globs.py
@@ -39,6 +39,7 @@ import ihm          # ihm.py
 import downloader   # downloader.py
 
 UPDATE_IS_MADE = False
+UPATH = ' '
 
 def createShortcut(path, target='', wDir='', icon=''):
     ext = path[-3:]
@@ -57,6 +58,9 @@ def createShortcut(path, target='', wDir='', icon=''):
         else:
             shortcut.IconLocation = icon
         shortcut.save()
+
+def spawnProcess(args, cd):
+    subprocess.Popen(args, close_fds=True, cwd=cd, creationflags=subprocess.DETACHED_PROCESS)
 
 ## Main Batch Function
 def batch():
@@ -133,7 +137,7 @@ def batch():
 
     getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
     
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Verifying download...'))
+    launcherWindow.printmsg('Verifying download...')
     
     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
     
@@ -153,18 +157,23 @@ def batch():
         logfile.printerr("Checksum error")
         return False
 
-    # And now unzip
+    # And now prepare install
+    global UPATH
     UPATH = globs.CNIRFolder + '\\..\\CNIRevelator' + "{}.{}.{}".format(finalver[0], finalver[1], finalver[2])
     logfile.printdbg("Make place")
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Preparing installation...'))
+    launcherWindow.printmsg('Preparing installation...')
+    # Cleanup
     try:
         shutil.rmtree(UPATH + 'temp')
+    except Exception as e:
+        logfile.printdbg('Unable to cleanup : ' +str(e))
+    try:
         shutil.rmtree(UPATH)
-    except:
-        pass
-        
+    except Exception as e:
+        logfile.printdbg('Unable to cleanup : ' +str(e))
+    # Unzip    
     logfile.printdbg("Unzipping the package")
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Installing the updates'))
+    launcherWindow.printmsg('Installing the updates')
     zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
     zip_ref.extractall(UPATH + "temp")
     zip_ref.close()
@@ -175,62 +184,62 @@ def batch():
     
     logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')
     
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Success !'))
+    launcherWindow.printmsg('Success !')
     
     # Cleanup
     try:
         os.remove(globs.CNIRFolder + '\\..\\CNIPackage.zip')
     except:
         pass
-    # Launch app !
-    args = [UPATH + '\\CNIRevelator.exe', globs.CNIRFolder]
-    subprocess.Popen(args) 
-    
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('Launched the new process.'))
-    
+    # Time to quit
+    launcherWindow.printmsg('Launched the new process.')
+    global UPDATE_IS_MADE
     UPDATE_IS_MADE = True
     return True
 
 ## Main Function
 def umain():
     
+    # Global Handlers
+    logfile = logger.logCur
+    launcherWindow = ihm.launcherWindowCur
+    
     if len(sys.argv) > 1:
+        launcherWindow.printmsg('Deleting old version !')
         logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
         while os.path.exists(str(sys.argv[1])):
             try:
-                shutil.rmtree(str(sys.argv[1]), ignore_errors=True)
+                shutil.rmtree(str(sys.argv[1]))
             except:
                 pass
                 logfile.printdbg("Fail to delete old install !")
             
     
     try:
-        # Global Handlers
-        logfile = logger.logCur
-        launcherWindow = ihm.launcherWindowCur
-
         try:
             # EXECUTING THE UPDATE BATCH
             success = batch()
         except Exception as e:
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
-            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text=('ERROR : ' + str(e)))
+            launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
             launcherWindow.destroy()
             return 1
 
         if success:
             logfile.printdbg("Software is up-to-date !")
-            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Software is up-to-date !')
+            launcherWindow.printmsg('Software is up-to-date !')
         else:
             logfile.printerr("An error occured. No effective update !")
-            launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='An error occured. No effective update !')
+            launcherWindow.printmsg('An error occured. No effective update !')
         time.sleep(2)
+        launcherWindow = ihm.launcherWindowCur
         launcherWindow.destroy()
         return 0
 
     except:
         logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
+        launcherWindow = ihm.launcherWindowCur
         launcherWindow.destroy()
         sys.exit(2)
         return 2

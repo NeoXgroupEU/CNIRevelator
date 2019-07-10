@@ -33,10 +33,7 @@ import launcher # launcher.py
 import ihm      # ihm.py
 import logger   # logger.py
 import updater  # updater.py
-
-## Global Handlers
-logfile = logger.logCur
-launcherWindow = ihm.launcherWindowCur
+import globs    # globs.py
 
 ## MAIN FUNCTION OF CNIREVELATOR
 def main():
@@ -66,11 +63,23 @@ try:
     launcherThread = threading.Thread(target=updater.umain, daemon=False)
     launcher.lmain(launcherThread)
 except Exception:
-    logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
     sys.exit(1)
 
+updater.UPDATE_IS_MADE = True
+
 if updater.UPDATE_IS_MADE:
+    # Launch app !
+    args = updater.UPATH + '\\CNIRevelator.exe ' + globs.CNIRFolder
+    cd = updater.UPATH
+    for i in range(0,3):
+        try:
+            updater.spawnProcess(args, cd)
+        except:
+            time.sleep(3)
+            continue
+        break
     sys.exit(0)
 
 main()
+
 sys.exit(0)

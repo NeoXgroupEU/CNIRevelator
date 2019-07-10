@@ -33,19 +33,18 @@ import ihm      # ihm.py
 import globs    # globs.py
 import logger   # logger.py
 
-## Global Handlers
-logfile = logger.logCur
-launcherWindow = ihm.launcherWindowCur
-
 ## Main function
 def lmain(mainThread):
+    logfile = logger.logCur
+    launcherWindow = ihm.launcherWindowCur
+
     # Hello world
     logfile.printdbg('*** CNIRLauncher LOGFILE. Hello World ! ***')
     #logfile.printdbg('Files in directory : ' + str(os.listdir(globs.CNIRFolder)))
 
     # Hello user
     launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
-    launcherWindow.mainCanvas.itemconfigure(launcherWindow.msg, text='Starting...')
+    launcherWindow.printmsg('Starting...')
     launcherWindow.progressBar.start()
 
     # Starting the main update thread
@@ -54,4 +53,5 @@ def lmain(mainThread):
     launcherWindow.mainloop()
 
     logfile.printdbg('*** CNIRLauncher LOGFILE. Goodbye World ! ***')
+    logfile.close()
     return
