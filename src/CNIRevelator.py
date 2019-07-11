@@ -38,7 +38,9 @@ import pytesseract  # pytesseract.py
 ## MAIN FUNCTION OF CNIREVELATOR
 def main():
     import logger   # logger.py
-    logfile = logger.logMain
+    logfile = logger.logCur
+
+    logfile.printdbg('*** CNIRevelator LOGFILE. Hello World ! ***')
 
     try:
         os.environ['PATH'] = globs.CNIRFolder + '\\Tesseract-OCR4\\'
@@ -57,6 +59,9 @@ def main():
     logger.info('main() : **** Launching App_main() ****')
     main_w.mainloop()
     logger.info('main() : **** Ending App_main() ****')
+
+    logfile.printdbg('*** CNIRevelator LOGFILE. Goodbye World ! ***')
+    logfile.close()
 
 
 ## BOOTSTRAP OF CNIREVELATOR

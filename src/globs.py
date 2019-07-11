@@ -40,7 +40,6 @@ CNIRNewVersion      = False
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
-CNIRLauncherLog     = CNIRFolder + '\\logs\\launcher.log'
 CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
 CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'

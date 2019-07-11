@@ -53,5 +53,4 @@ def lmain(mainThread):
     launcherWindow.mainloop()
 
     logfile.printdbg('*** CNIRLauncher LOGFILE. Goodbye World ! ***')
-    logfile.close()
     return
