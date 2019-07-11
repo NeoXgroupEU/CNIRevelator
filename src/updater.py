@@ -63,6 +63,13 @@ def createShortcut(path, target='', wDir='', icon=''):
 def spawnProcess(args, cd):
     subprocess.Popen(args, close_fds=True, cwd=cd, creationflags=subprocess.DETACHED_PROCESS)
 
+def exitProcess(arg):
+    # Quit totally without remain in memory
+    for process in psutil.process_iter():
+        if process.pid == os.getpid():
+            process.terminate()
+    sys.exit(arg)
+
 ## Main Batch Function
 def batch():
 

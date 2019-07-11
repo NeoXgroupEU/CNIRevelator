@@ -34,11 +34,14 @@ import launcher     # launcher.py
 import updater      # updater.py
 import globs        # globs.py
 import pytesseract  # pytesseract.py
+import logger   # logger.py
+
+# Global handler
+logfile = logger.logCur
 
 ## MAIN FUNCTION OF CNIREVELATOR
 def main():
-    import logger   # logger.py
-    logfile = logger.logCur
+
 
     logfile.printdbg('*** CNIRevelator LOGFILE. Hello World ! ***')
 
@@ -70,7 +73,7 @@ try:
     launcherThread = threading.Thread(target=updater.umain, daemon=False)
     launcher.lmain(launcherThread)
 except Exception:
-    sys.exit(1)
+    updater.exitProcess(1)
 
 if updater.UPDATE_IS_MADE:
     # Launch app !
@@ -83,15 +86,10 @@ if updater.UPDATE_IS_MADE:
             time.sleep(3)
             continue
         break
-    sys.exit(0)
+    updater.exitProcess(0)
 
 # Here we go !
 try:
     main()
 except Exception:
-    sys.exit(1)
-
-# Quit totally without remain in memory
-for process in psutil.process_iter():
-    if process.pid == os.getpid():
-        process.terminate()
+    updater.exitProcess(1)
