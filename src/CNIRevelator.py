@@ -28,30 +28,32 @@ import os
 import subprocess
 import threading
 import traceback
+import psutil
 
-import launcher # launcher.py
-import ihm      # ihm.py
-import logger   # logger.py
-import updater  # updater.py
-import globs    # globs.py
+import launcher     # launcher.py
+import updater      # updater.py
+import globs        # globs.py
+import pytesseract  # pytesseract.py
 
 ## MAIN FUNCTION OF CNIREVELATOR
 def main():
+    import logger   # logger.py
+    logfile = logger.logMain
 
-    import CNI_pytesseract as pytesseract
     try:
-        os.environ['PATH'] = CST_FOLDER + 'Tesseract-OCR4\\'
-        os.environ['TESSDATA_PREFIX'] = CST_FOLDER + 'Tesseract-OCR4\\tessdata'
+        os.environ['PATH'] = globs.CNIRFolder + '\\Tesseract-OCR4\\'
+        os.environ['TESSDATA_PREFIX'] = globs.CNIRFolder + '\\Tesseract-OCR4\\tessdata'
         tesser_version = pytesseract.get_tesseract_version()
     except Exception as e:
-        logger.error('main() : **** ERROR WITH TESSERACT MODULE ' + str(e) + ' ****')
+        logfile.printerr('ERROR WITH TESSERACT MODULE ' + str(e))
     else:
         text = 'Tesseract version ' + str(tesser_version) + ' Licensed Apache 2004 successfully initiated\n'
         main_w.montext(text)
+
     main_w.montext('\n\nEntrez la première ligne de MRZ svp \n')
 
-    if CST_CHANGELOG.isOn:
-        showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : ' + CST_VER + ' ' + CST_TYPE + ' Revision ' + CST_REV + '\n\n' + CST_CHANGELOG.text), parent=main_w)
+    if globs.CNIRNewVersion:
+        showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' + globs.changelog), parent=main_w)
     logger.info('main() : **** Launching App_main() ****')
     main_w.mainloop()
     logger.info('main() : **** Ending App_main() ****')
@@ -78,6 +80,13 @@ if updater.UPDATE_IS_MADE:
         break
     sys.exit(0)
 
-#main()
+# Here we go !
+try:
+    main()
+except Exception:
+    sys.exit(1)
 
-sys.exit(0)
+# Quit totally without remain in memory
+for process in psutil.process_iter():
+    if process.pid == os.getpid():
+        process.terminate()

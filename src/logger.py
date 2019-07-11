@@ -64,5 +64,33 @@ class NewLoggingSystem:
     def close(self):
         logging.shutdown()
 
+class NewMainLoggingSystem:
+
+    def __init__(self):
+        # Create new logging handle
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO) # To make sure we can have a debug channel
+
+        # Create channels
+        formatter = logging.Formatter("\n[ %(module)s/%(funcName)s ] %(asctime)s :: %(levelname)s :: %(message)s")
+        error_handler = logging.FileHandler((globs.CNIRErrLog), mode='w', encoding='utf-8', delay=True)
+        info_handler = logging.FileHandler((globs.CNIRMainLog), mode='w', encoding='utf-8')
+
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(formatter)
+        logger.addHandler(error_handler)
+
+        info_handler.setLevel(logging.DEBUG)
+        info_handler.setFormatter(formatter)
+        logger.addHandler(info_handler)
+
+        self.logger = logger
+        self.printerr = logger.error
+        self.printdbg = logger.info
+
+    def close(self):
+        logging.shutdown()
+
 ## Global Handler
 logCur = NewLoggingSystem()
+logMain = NewMainLoggingSystem()

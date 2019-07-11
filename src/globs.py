@@ -36,10 +36,12 @@ CNIRFolder          = os.getcwd()
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
 CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
+CNIRNewVersion      = False
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
 CNIRLauncherLog     = CNIRFolder + '\\logs\\launcher.log'
+CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
 CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
 CNIREnv             = os.getenv('APPDATA') + '/CNIRevelator/'

@@ -25,6 +25,10 @@
 
 from PIL import Image, ImageFont, ImageDraw, ImageTk, ImageEnhance, ImageFilter
 import math, warnings, string
+from tkinter import *
+from tkinter.messagebox import *
+from tkinter import filedialog
+from tkinter import ttk
 
 import mrz                      # mrz.py
 from image import CanvasImage   # image.py

@@ -183,11 +183,30 @@ def batch():
     # Move to the right place
     shutil.copytree(UPATH + 'temp\\CNIRevelator', UPATH)
     shutil.rmtree(UPATH + 'temp')
-    
-    logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')
-    
+    logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')    
+
     launcherWindow.printmsg('Success !')
     
+    # Verifying that Tesseract is installed
+    if not os.path.exists(globs.CNIRFolder + '\\Tesseract-OCR4\\'):
+        tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_4.zip")
+        # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
+        logfile.printdbg('Preparing download of Tesseract OCR 4...')
+        getTesseract = downloader.newdownload(credentials, tesseracturl, UPATH + '\\TsrtPackage.zip').download()
+        
+        # Unzip Tesseract   
+        logfile.printdbg("Unzipping the package")
+        launcherWindow.printmsg('Installing the updates')
+        zip_ref = zipfile.ZipFile(UPATH + '\\TsrtPackage.zip', 'r')
+        zip_ref.extractall(UPATH)
+        zip_ref.close()
+        
+        # Cleanup
+        try:
+            os.remove(UPATH + '\\TsrtPackage.zip')
+        except:
+            pass
+        
     # Cleanup
     try:
         os.remove(globs.CNIRFolder + '\\..\\CNIPackage.zip')
@@ -208,6 +227,7 @@ def umain():
     
     # Cleaner for the old version if detected
     if len(sys.argv) > 1:
+        globs.CNIRNewVersion = True
         launcherWindow.printmsg('Deleting old version !')
         logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
         while os.path.exists(str(sys.argv[1])):
