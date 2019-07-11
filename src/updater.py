@@ -140,6 +140,7 @@ def batch():
     
     launcherWindow.printmsg('Verifying download...')
     
+    # CHECKSUM
     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
     
     sha1 = hashlib.sha1()
@@ -218,16 +219,18 @@ def umain():
                 launcherWindow.printmsg('Fail :{}'.format(e))
                 try:
                     for process in psutil.process_iter():
-                        logfile.printdbg(str(process.cmdline()))
-                        # if process.cmdline() == ['CNIRevelator.exe', '']:
-                        #     print('Process found. Terminating it.')
-                        #     process.terminate()
-                        #     break
-                    else:
-                        logfile.printerr('Process not found')
+                        if process.name() == 'CNIRevelator.exe':
+                            logfile.printdbg('Process found. Command line: {}'.format(process.cmdline()))
+                            if process.pid == os.getpid():
+                                logfile.printdbg("Don't touch us ! {} = {}".format(process.pid, os.getpid()))
+                            else:
+                                logfile.printdbg('Terminating process !')
+                                process.terminate()
+                                break
                 except Exception as e:
                     logfile.printerr(str(e))
                     launcherWindow.printmsg('Fail :{}'.format(e))
+        launcherWindow.printmsg('Starting...')
     
     try:
         try:
