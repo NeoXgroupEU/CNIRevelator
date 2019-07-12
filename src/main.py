@@ -32,6 +32,7 @@ from tkinter import ttk
 
 import mrz                      # mrz.py
 from image import CanvasImage   # image.py
+import globs                    # globs.py
 
 class mainWindow(Tk):
 
@@ -125,7 +126,7 @@ class mainWindow(Tk):
         self.termtext = Text((self.termframe), state='disabled', width=60, height=4, wrap='none', font='Terminal 17', fg='#121f38')
         self.termtext.grid(column=0, row=0, sticky='NEW', padx=5)
         vcmd = (self.register(self.entryValidation), '%S', '%P', '%d')
-        self.termentry = Entry((self.termframe), font='Terminal 17', entryValidation='all', entryValidationcommand=vcmd, fg='#121f38', width=44)
+        self.termentry = Entry((self.termframe), font='Terminal 17', validate='all', validatecommand=vcmd, fg='#121f38', width=44)
         self.termentry.grid(column=0, row=0, sticky='SEW', padx=5)
         self.monitor = ttk.Labelframe(self, text='Moniteur')
         self.monlog = Text((self.monitor), state='disabled', width=60, height=10, wrap='word')
@@ -150,7 +151,7 @@ class mainWindow(Tk):
         menu3.add_command(label='A propos', command=(self.infobox))
         menubar.add_cascade(label='Aide', menu=menu3)
         self.config(menu=menubar)
-        self.wm_title(CST_TITLE)
+        self.wm_title(globs.CNIRName)
         if getattr(sys, 'frozen', False):
             self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
         else:
@@ -398,7 +399,7 @@ class mainWindow(Tk):
                     return
                 self.logger.debug('openingScan() : ' + str(self.mrzdetected))
                 try:
-                    os.remove(CST_FOLDER + '\\temp.tif')
+                    os.remove(globs.CNIREnv + '\\temp.tif')
                 except IOError:
                     pass
 
@@ -416,7 +417,7 @@ class mainWindow(Tk):
 
     def infobox(self):
         Tk().withdraw()
-        showinfo('A propos du logiciel', ('Version du logiciel : \n' + CST_NAME + ' ' + CST_VER + ' ' + CST_TYPE + ' Revision ' + CST_REV + "\nLicence GNU/GPL 2018\n\nAuteur : NeoX_ ; devadmin@neoxgroup.eu\n\nTesseract 4.0 est soumis à l'Apache License 2004\n\n N'hésitez pas à faire part de vos commentaires !"), parent=self)
+        showinfo('A propos du logiciel', ('Version du logiciel : \n' + globs.verstring_full + ' ' + "\nLicence GNU/GPL 2018\n\nAuteur : NeoX_ ; devadmin@neoxgroup.eu\n\nTesseract 4.0 est soumis à l'Apache License 2004\n\n N'hésitez pas à faire part de vos commentaires !"), parent=self)
 
     def calculSigma(self, MRZtxt, numtype):
         CST_BACKGROUND = self['background']
@@ -620,7 +621,7 @@ class OpenScan(ttk.Frame):
         if self.pagenum + 1 < self.nframe:
             im = Image.open(self.fileorig)
             im.seek(self.pagenum + 1)
-            newpath = CST_FOLDER + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
+            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
             im.save(newpath)
             im.close()
             self.cadre.destroy()
@@ -630,7 +631,7 @@ class OpenScan(ttk.Frame):
         if self.pagenum - 1 >= 0:
             im = Image.open(self.fileorig)
             im.seek(self.pagenum - 1)
-            newpath = CST_FOLDER + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
+            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
             im.save(newpath)
             im.close()
             self.cadre.destroy()
@@ -662,12 +663,12 @@ class OpenScan(ttk.Frame):
         im = self.imtotreat
         import CNI_pytesseract as pytesseract
         try:
-            os.environ['PATH'] = CST_FOLDER + '\\Tesseract-OCR4\\'
-            os.environ['TESSDATA_PREFIX'] = CST_FOLDER + '\\Tesseract-OCR4\\tessdata'
+            os.environ['PATH'] = globs.CNIREnv + '\\Tesseract-OCR4\\'
+            os.environ['TESSDATA_PREFIX'] = globs.CNIREnv + '\\Tesseract-OCR4\\tessdata'
             self.text = pytesseract.image_to_string(im, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
         except pytesseract.TesseractNotFoundError as e:
             try:
-                os.remove(CST_FOLDER + '\\Tesseract-OCR4\\*.*')
+                os.remove(globs.CNIREnv + '\\Tesseract-OCR4\\*.*')
             except Exception:
                 pass
 

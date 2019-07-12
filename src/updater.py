@@ -43,6 +43,9 @@ UPDATE_IS_MADE = False
 UPATH = ' '
 
 def createShortcut(path, target='', wDir='', icon=''):
+    """
+    Creates a shortcut for a program or an internet link
+    """
     ext = path[-3:]
     if ext == 'url':
         shortcut = file(path, 'w')
@@ -61,26 +64,29 @@ def createShortcut(path, target='', wDir='', icon=''):
         shortcut.save()
 
 def spawnProcess(args, cd):
+    """
+    Creates a new independant process. Used to launch a new version after update
+    """
     subprocess.Popen(args, close_fds=True, cwd=cd, creationflags=subprocess.DETACHED_PROCESS)
 
 def exitProcess(arg):
+    """
+    Forcefully quits a process. Used to help deletion of an old version or to quit properly
+    """
     # Quit totally without remain in memory
     for process in psutil.process_iter():
         if process.pid == os.getpid():
             process.terminate()
     sys.exit(arg)
 
-## Main Batch Function
-def batch():
+def getLatestVersion(credentials):
+    """
+    Returns the latest version of the software
+    """
 
     # Global Handlers
     logfile = logger.logCur
     launcherWindow = ihm.launcherWindowCur
-
-    credentials = downloader.newcredentials()
-
-    if not credentials.valid:
-        return False
 
     # First retrieving the urls !
     while True:
@@ -106,7 +112,7 @@ def batch():
             except:
                 pass
             with open(globs.CNIRUrlConfig, 'w') as (configFile):
-                configFile.write("https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST\n0\n0") #XXX
+                configFile.write("https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST\n0\n0")
 
     # Getting the list of versions of the software
     logfile.printdbg('Retrieving the software versions')
@@ -132,11 +138,49 @@ def batch():
         finalsum = finalver[2] + finalver[1]*100 + finalver[0]*100*100
         sum = ver[2] + ver[1]*100 + ver[0]*100*100
         # Make a statement
-        if sum > finalsum:
+        if sum >= finalsum:
             finalver = ver.copy()
             finalurl = url
             finalchecksum = checksum
+            
+    return (finalver, finalurl, finalchecksum)
 
+def tessInstall(PATH, credentials):
+    # Global Handlers
+    logfile = logger.logCur
+    launcherWindow = ihm.launcherWindowCur
+    
+    # Verifying that Tesseract is installed
+    if not os.path.exists(PATH + '\\Tesseract-OCR4\\'):
+        finalver, finalurl, finalchecksum = getLatestVersion(credentials)
+        tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_4.zip")
+        
+        # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
+        logfile.printdbg('Preparing download of Tesseract OCR 4...')
+        getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\TsrtPackage.zip').download()
+        
+        # Unzip Tesseract   
+        logfile.printdbg("Unzipping the package")
+        launcherWindow.printmsg('Installing the updates')
+        zip_ref = zipfile.ZipFile(PATH + '\\TsrtPackage.zip', 'r')
+        zip_ref.extractall(PATH)
+        zip_ref.close()
+        
+        # Cleanup
+        try:
+            os.remove(UPATH + '\\TsrtPackage.zip')
+        except:
+            pass
+
+## Main Batch Function
+def batch(credentials):
+    # Global Handlers
+    logfile = logger.logCur
+    launcherWindow = ihm.launcherWindowCur
+
+    # Get the latest version of CNIRevelator
+    finalver, finalurl, finalchecksum = getLatestVersion(credentials)
+    
     if finalver == globs.version:
         logfile.printdbg('The software is already the newer version')
         return True
@@ -194,25 +238,8 @@ def batch():
 
     launcherWindow.printmsg('Success !')
     
-    # Verifying that Tesseract is installed
-    if not os.path.exists(globs.CNIRFolder + '\\Tesseract-OCR4\\'):
-        tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_4.zip")
-        # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
-        logfile.printdbg('Preparing download of Tesseract OCR 4...')
-        getTesseract = downloader.newdownload(credentials, tesseracturl, UPATH + '\\TsrtPackage.zip').download()
-        
-        # Unzip Tesseract   
-        logfile.printdbg("Unzipping the package")
-        launcherWindow.printmsg('Installing the updates')
-        zip_ref = zipfile.ZipFile(UPATH + '\\TsrtPackage.zip', 'r')
-        zip_ref.extractall(UPATH)
-        zip_ref.close()
-        
-        # Cleanup
-        try:
-            os.remove(UPATH + '\\TsrtPackage.zip')
-        except:
-            pass
+    # Install Tesseract !
+    tessInstall(UPATH, credentials)
         
     # Cleanup
     try:
@@ -231,6 +258,16 @@ def umain():
     # Global Handlers
     logfile = logger.logCur
     launcherWindow = ihm.launcherWindowCur
+    
+    credentials = downloader.newcredentials()
+    
+    if not credentials.valid:
+        logfile.printerr("Credentials Error. No effective update !")
+        launcherWindow.printmsg('Credentials Error. No effective update !')
+        time.sleep(2)
+        launcherWindow = ihm.launcherWindowCur
+        launcherWindow.destroy()
+        return 0
     
     # Cleaner for the old version if detected
     if len(sys.argv) > 1:
@@ -258,11 +295,13 @@ def umain():
                     logfile.printerr(str(e))
                     launcherWindow.printmsg('Fail :{}'.format(e))
         launcherWindow.printmsg('Starting...')
+    else:
+        tessInstall(globs.CNIRFolder, credentials)
     
     try:
         try:
             # EXECUTING THE UPDATE BATCH
-            success = batch()
+            success = batch(credentials)
         except Exception as e:
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.printmsg('ERROR : ' + str(e))
