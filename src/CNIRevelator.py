@@ -45,7 +45,7 @@ logfile = logger.logCur
 def main():
     logfile.printdbg('*** CNIRevelator LOGFILE. Hello World ! ***')
 
-    mainw = mainWindow(logfile.logger)
+    mainw = mainWindow()
 
     try:
         os.environ['PATH'] = globs.CNIRFolder + '\\Tesseract-OCR4\\'
@@ -60,7 +60,7 @@ def main():
     mainw.logOnTerm('\n\nEntrez la première ligne de MRZ svp \n')
 
     if globs.CNIRNewVersion:
-        showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' + globs.changelog), parent=mainWindow)
+        showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' + globs.changelog), parent=mainw)
     logfile.printdbg('main() : **** Launching App_main() ****')
     mainw.mainloop()
     logfile.printdbg('main() : **** Ending App_main() ****')
@@ -95,4 +95,5 @@ try:
     main()
 except Exception as e:
     traceback.print_exc(file=sys.stdout)
-    updater.exitProcess(1)
+
+updater.exitProcess(0)

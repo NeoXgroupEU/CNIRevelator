@@ -28,6 +28,7 @@ import os
 version             = [3, 0, 0]
 verstring_full      = "{}.{}.{}".format(version[0], version[1], version[2])
 verstring           = "{}.{}".format(version[0], version[1])
+debug = True
 
 changelog           = "Mise-à-jour majeure avec corrections suivantes :\n- Renouvellement de la signature numérique de l'exécutable\n- Amélioration de présentation du log en cas d'erreur\n- Refonte totale du code source et désobfuscation\n- Téléchargements en HTTPS fiables avec somme de contrôle"
 
@@ -36,7 +37,7 @@ CNIRFolder          = os.getcwd()
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
 CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
-CNIRNewVersion      = False
+CNIRNewVersion      = True
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'

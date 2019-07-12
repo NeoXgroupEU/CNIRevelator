@@ -59,7 +59,10 @@ class NewLoggingSystem:
 
         self.logger = logger
         self.printerr = logger.error
-        self.printdbg = logger.info
+
+    def printdbg(self, text):
+        if globs.debug:
+            self.logger.info(text)
 
     def close(self):
         logging.shutdown()
