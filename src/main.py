@@ -31,6 +31,7 @@ from tkinter import filedialog
 from tkinter import ttk
 import threading
 from datetime import datetime
+import re
 
 import logger                   # logger.py
 import mrz                      # mrz.py
@@ -141,11 +142,8 @@ class mainWindow(Tk):
         self.termframe.grid(column=0, row=0, sticky='EW')
         self.termframe.grid_columnconfigure(0, weight=1)
         self.termframe.grid_rowconfigure(0, weight=1)
-        self.termtext = Text((self.termframe), state='disabled', width=60, height=4, wrap='none', font='Terminal 17', fg='#121f38')
+        self.termtext = Text((self.termframe), state='normal', width=60, height=4, wrap='none', font='Terminal 17', fg='#121f38')
         self.termtext.grid(column=0, row=0, sticky='NEW', padx=5)
-        vcmd = (self.register(self.entryValidation), '%S', '%P', '%d')
-        self.termentry = Entry((self.termframe), font='Terminal 17', validate='all', validatecommand=vcmd, fg='#121f38', width=44)
-        self.termentry.grid(column=0, row=0, sticky='SEW', padx=5)
 
         # The monitor that indicates some useful infos
         self.monitor = ttk.Labelframe(self, text='Moniteur')
@@ -198,26 +196,29 @@ class mainWindow(Tk):
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
         # Some bindings
-        self.termentry.bind('<Return>', self.preentryValidation)
-        self.termtext.bind('<Return>', self.preentryValidation)
-        self.termentry.bind('<Escape>', self.onTabPressed)
+        self.termtext.bind('<Key>', self.entryValidation)
         self.update()
-        logfile.printdbg('mainWindow() : Initialization successful')
-
-    def preentryValidation(self, event):
-        """
-        Function that detects the kind of identity document this is
-        """
+        logfile.printdbg('Initialization successful')
 
     def onTabPressed(self, event):
 
         return 'break'
 
-    def entryValidation(self, char, entry_value, typemod):
+    def entryValidation(self, event):
+        """
+        On the fly validation with regex
+        """
+        currentText = self.termtext.get("1.0", "end")
+        currentText = (currentText.upper()[:-1]).replace(" ", "<")
 
-        # XXX : we must recreate a proper on the fly validation with regex !
+        regex = re.compile("([A-Z]|[0-9]|<)*")
+        while not regex.fullmatch(currentText):
+            currentText = currentText[:-1]
 
-        return isValid
+        self.termtext.delete("1.0", "end")
+        self.termtext.insert("1.0", currentText)
+
+        print(currentText)
 
     def logOnTerm(self, text):
         self.monlog['state'] = 'normal'
@@ -226,7 +227,7 @@ class mainWindow(Tk):
         self.monlog.yview(END)
 
     def openingScan(self):
-
+        pass
         # OPEN A SCAN
 
     def newEntry(self):
@@ -261,12 +262,11 @@ class mainWindow(Tk):
         parent=self)
 
     def calculSigma(self, MRZtxt, numtype):
-
+        pass
         # CALCUL DE TOUTES LES SOMMES DE LA CARTE CONFORMEMENT A SON TYPE
 
 
 class OpenScan(ttk.Frame):
-
     def __init__(self, mainframe, fileorig, type, nframe=1, pagenum=0, file=None):
         """ Initialize the main Frame """
         if file == None:

@@ -24,6 +24,9 @@
 ********************************************************************************
 """
 
+import re
+import logger    # logger.py
+
 ## SEX CODES
 sexcode = {'M':'Homme', 'F':'Femme',  'X':'Non spécifié'}
 
@@ -552,192 +555,274 @@ landcode3 = {
 }
 
 ## DOCUMENTS TYPES
+
 P = [
-  "11222333333333333333333333333333333333333333|444444444566677777789AAAAAABCCCCCCCCCCCCCCDE",
+  ["11222333333333333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCCCCCCCCDE"],
   {
-    "1": "2|CODE|P*",
-    "2": "3|PAYS|AAA",
-    "3": "39|NOM|&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
-    "4": "9|NO|*********",
-    "5": "1|CTRL|4",
-    "6": "3|NAT|AAA",
-    "7": "6|BDATE|000000",
-    "8": "1|CTRL|7",
-    "9": "1|SEX|A",
-    "A": "6|EDATE|000000",
-    "B": "1|CTRL|A",
-    "C": "14|FACULT|**************",
-    "D": "1|CTRLF|C",
-    "E": "1|CTRL|4578ABCD"
+    "1":  ["2", "CODE", "P."],
+    "2":  ["3", "PAYS", "[A-Z]+"],
+    "3": ["39", "NOM", "([A-Z]|<)+"],
+    "4":  ["9", "NO", ".+"],
+    "5":  ["1", "CTRL", "[0-9]", "4"],
+    "6":  ["3", "NAT", "[A-Z]+"],
+    "7":  ["6", "BDATE", "[0-9]+"],
+    "8":  ["1", "CTRL", "[0-9]", "7"],
+    "9":  ["1", "SEX", "[A-Z]"],
+    "A":  ["6", "EDATE", "[0-9]+"],
+    "B":  ["1", "CTRL", "[0-9]", "A"],
+    "C": ["14", "FACULT", ".+"],
+    "D":  ["1", "CTRLF", "[0-9]", "C"],
+    "E":  ["1", "CTRL", "[0-9]", "4578ABCD"]
   },
   "Passeport"
 ]
 
 IP = [
-  "112223333333334555555555555555|66666678999999ABBBCCCCCCCCCCCD",
+  ["112223333333334555555555555555", "66666678999999ABBBCCCCCCCCCCCD"],
   {
-    "1": "2|CODE|IP",
-    "2": "3|PAYS|AAA",
-    "3": "9|NO|*********",
-    "4": "1|CTRL|3",
-    "5": "15|FACULT|***************",
-    "6": "6|BDATE|000000",
-    "7": "1|CTRL|6",
-    "8": "1|SEX|A",
-    "9": "6|EDATE|000000",
-    "A": "1|CTRL|9",
-    "B": "3|NAT|AAA",
-    "C": "11|FACULT|***********",
-    "D": "1|CTRL|345679AC"
+    "1": ["2", "CODE", "IP"],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["9", "NO", ".+"],
+    "4": ["1", "CTRL", "[0-9]", "3"],
+    "5": ["15", "FACULT", ".+"],
+    "6": ["6", "BDATE", "[0-9]+"],
+    "7": ["1", "CTRL", "[0-9]", "6"],
+    "8": ["1", "SEX", "[A-Z]"],
+    "9": ["6", "EDATE", "[0-9]+"],
+    "A": ["1", "CTRL", "[0-9]", "9"],
+    "B": ["3", "NAT", "[A-Z]+"],
+    "C": ["11", "FACULT", ".+"],
+    "D": ["1", "CTRL", "[0-9]", "345679AC"]
   },
   "Carte-passeport"
 ]
 
 I_ = [
-  "112223333333334555555555555555|66666678999999ABBBCCCCCCCCCCCD",
+  ["112223333333334555555555555555", "66666678999999ABBBCCCCCCCCCCCD"],
   {
-    "1": "2|CODE|I*",
-    "2": "3|PAYS|AAA",
-    "3": "9|NO|*********",
-    "4": "1|CTRL|3",
-    "5": "15|FACULT|***************",
-    "6": "6|BDATE|000000",
-    "7": "1|CTRL|6",
-    "8": "1|SEX|A",
-    "9": "6|EDATE|000000",
-    "A": "1|CTRL|9",
-    "B": "3|NAT|AAA",
-    "C": "11|FACULT|***********",
-    "D": "1|CTRL|345679AC"
+    "1": ["2", "CODE", "I."],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["9", "NO", ".+"],
+    "4": ["1", "CTRL", "[0-9]", "3"],
+    "5": ["15", "FACULT", ".+"],
+    "6": ["6", "BDATE", "[0-9]+"],
+    "7": ["1", "CTRL", "[0-9]", "6"],
+    "8": ["1", "SEX", "[A-Z]"],
+    "9": ["6", "EDATE", "[0-9]+"],
+    "A": ["1", "CTRL", "[0-9]", "9"],
+    "B": ["3", "NAT", "[A-Z]+"],
+    "C": ["11", "FACULT", ".+"],
+    "D": ["1", "CTRL", "[0-9]", "345679AC"]
   },
   "Titre d'identité/de voyage"
 ]
 
 AC = [
-  "112223333333334EEE555555555555|66666678999999ABBBCCCCCCCCCCCD",
+  ["112223333333334EEE555555555555", "66666678999999ABBBCCCCCCCCCCCD"],
   {
-    "1": "2|CODE|AC",
-    "2": "3|PAYS|AAA",
-    "3": "9|NO|*********",
-    "4": "1|CTRL|3",
-    "5": "15|FACULT|***************",
-    "6": "6|BDATE|000000",
-    "7": "1|CTRL|6",
-    "8": "1|SEX|A",
-    "9": "6|EDATE|000000",
-    "A": "1|CTRL|9",
-    "B": "3|NAT|AAA",
-    "C": "11|FACULT|***********",
-    "D": "1|CTRL|345679AC",
-    "E": "3|INDIC|AA&"
+    "1": ["2", "CODE", "AC"],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["9", "NO", ".+"],
+    "4": ["1", "CTRL", "[0-9]", "3"],
+    "E": ["3", "INDIC", "[A-Z]{1,2}."],
+    "5": ["12", "FACULT", ".+"],
+    "6": ["6", "BDATE", "[0-9]+ "],
+    "7": ["1", "CTRL", "[0-9]", "6"],
+    "8": ["1", "SEX", "[A-Z]"],
+    "9": ["6", "EDATE", "[0-9]+"],
+    "A": ["1", "CTRL", "[0-9]", "9"],
+    "B": ["3", "NAT", "[A-Z]+"],
+    "C": ["11", "FACULT", ".+"],
+    "D": ["1", "CTRL", "[0-9]","345679AC"]
   },
   "Certificat de membre d'équipage"
 ]
 
-VA = [
-  "11222333333333333333333333333333333333333333|444444444566677777789AAAAAABCCCCCCCCCCCCCCDE",
-  {
-    "1": "2|CODE|V*",
-    "2": "3|PAYS|AAA",
-    "3": "39|NOM|&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
-    "4": "9|NO|*********",
-    "5": "1|CTRL|4",
-    "6": "3|NAT|AAA",
-    "7": "6|BDATE|000000",
-    "8": "1|CTRL|7",
-    "9": "1|SEX|A",
-    "A": "6|EDATE|000000",
-    "B": "1|CTRL|A",
-    "C": "14|FACULT|**************"
-  },
-  "Visa de type A"
-]
+## XXXXXXXXXXX
+# VA = [
+#   ["11222333333333333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCCCCCCCCCDE"],
+#   {
+#     "1": ["2", "CODE", "V."],
+#     "2": ["3", "PAYS", "[A-Z]+"],
+#     "3": ["39", "NOM", "[A-Z]+"],
+#     "4": ["9", "NO", ".+"],
+#     "5": ["1", "CTRL", "[0-9]","4"],
+#     "6": ["3", "NAT", "[A-Z]+"],
+#     "7": ["6", "BDATE", "[0-9]+"],
+#     "8": ["1", "CTRL", "[0-9]", "7"],
+#     "9": ["1", "SEX", "[A-Z]"],
+#     "A": ["6", "EDATE", "[0-9]+"],
+#     "B": ["1", "CTRL", "[0-9]", "A"],
+#     "C": ["14", "FACULT", ".+"]
+#   },
+#   "Visa de type A"
+# ]
 
 VB = [
-  "112223333333333333333333333333333333|444444444566677777789AAAAAABCCCCCC",
+  ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCC"],
   {
-    "1": "2|CODE|V*",
-    "2": "3|PAYS|AAA",
-    "3": "31|NOM|&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
-    "4": "9|NO|*********",
-    "5": "1|CTRL|4",
-    "6": "3|NAT|AAA",
-    "7": "6|BDATE|000000",
-    "8": "1|CTRL|7",
-    "9": "1|SEX|A",
-    "A": "6|EDATE|000000",
-    "B": "1|CTRL|A",
-    "C": "8|FACULT|********"
+    "1": ["2", "CODE", "V."],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["31", "NOM", "([A-Z]|<)+"],
+    "4": ["9", "NO", ".+"],
+    "5": ["1", "CTRL", "[0-9]","4"],
+    "6": ["3", "NAT", "[A-Z]+"],
+    "7": ["6", "BDATE", "[0-9]+"],
+    "8": ["1", "CTRL", "[0-9]", "7"],
+    "9": ["1", "SEX", "[A-Z]"],
+    "A": ["6", "EDATE", "[0-9]+"],
+    "B": ["1", "CTRL", "[0-9]", "A"],
+    "C": ["8", "FACULT", ".+"]
   },
   "Visa de type B"
 ]
 
 I__ = [
-  "112223333333333333333333333333333333|444444444566677777789AAAAAABCCCCCCCD",
+  ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCD"],
   {
-    "1": "2|CODE|I*",
-    "2": "3|PAYS|AAA",
-    "3": "31|NOM|&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",
-    "4": "9|NO|*********",
-    "5": "1|CTRL|4",
-    "6": "3|NAT|AAA",
-    "7": "6|BDATE|000000",
-    "8": "1|CTRL|7",
-    "9": "1|SEX|A",
-    "A": "6|EDATE|000000",
-    "B": "1|CTRL|A",
-    "C": "7|FACULT|*******",
-    "D": "1|CTRL|4578ABC"
+    "1": ["2", "CODE", "I."],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["31", "NOM", "([A-Z]|<)+"],
+    "4": ["9", "NO", ".+"],
+    "5": ["1", "CTRL", "[0-9]", "4"],
+    "6": ["3", "NAT", "[A-Z]+"],
+    "7": ["6", "BDATE", "[0-9]+"],
+    "8": ["1", "CTRL", "[0-9]", "7"],
+    "9": ["1", "SEX", "[A-Z]"],
+    "A": ["6", "EDATE", "[0-9]+"],
+    "B": ["1", "CTRL", "[0-9]", "A"],
+    "C": ["7", "FACULT", ".+"],
+    "D": ["1", "CTRL", "[0-9]", "4578ABC"]
   },
   "Pièce d'identité/de voyage"
 ]
 
-ID = [
-  "112223333333333333333333333333444444|555566677777899999999999999AAAAAABCD",
+IDFR = [
+  ["112223333333333333333333333333444444", "555566677777899999999999999AAAAAABCD"],
   {
-    "1": "2|CODE|ID",
-    "2": "3|PAYS|AAA",
-    "3": "25|NOM|&&&&&&&&&&&&&&&&&&&&&&&&&",
-    "4": "6|NOINT|000***",
-    "5": "4|DDATE|0000",
-    "6": "3|NOINT2|000",
-    "7": "5|NOINT3|00000",
-    "8": "1|CTRL|567",
-    "9": "14|PRENOM|A",
-    "A": "6|BDATE|000000",
-    "B": "1|CTRL|A",
-    "C": "1|SEX|A",
-    "D": "1|CTRL|123456789ABC"
+    "1": ["2", "CODE", "ID"],
+    "2": ["3", "PAYS", "FRA"],
+    "3": ["25", "NOM", "([A-Z]|<)+"],
+    "4": ["6", "NOINT", ".+"],
+    "5": ["4", "DDATE", "[0-9]+"],
+    "6": ["3", "NOINT2", "[0-9]+"],
+    "7": ["5", "NOINT3", "[0-9]+"],
+    "8": ["1", "CTRL", "[0-9]", "567"],
+    "9": ["14", "PRENOM", "[A-Z]"],
+    "A": ["6", "BDATE", "[0-9]+"],
+    "B": ["1", "CTRL", "[0-9]", "A"],
+    "C": ["1", "SEX", "[A-Z]"],
+    "D": ["1", "CTRL", "[0-9]", "123456789ABC"]
   },
   "Pièce d'identité FR"
 ]
 
 DL = [
-  "112223333333334555555666666667|",
+  ["112223333333334555555666666667", ""],
   {
-    "1": "2|CODE|D1",
-    "2": "3|PAYS|AAA",
-    "3": "9|NO|00AA00000",
-    "4": "1|CTRL|123",
-    "5": "6|EDATE|000000",
-    "6": "8|NOM|&&&&&&&&",
-    "7": "1|CTRL|123456"
+    "1": ["2", "CODE", "D1"],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["9", "NO", "[0-9]{2}[A-Z]{2}[0-9]{5}"],
+    "4": ["1", "CTRL", "[0-9]", "123"],
+    "5": ["6", "EDATE", "[0-9]+"],
+    "6": ["8", "NOM", "([A-Z]|<)+"],
+    "7": ["1", "CTRL", "[0-9]", "123456"]
   },
   "Permis de conduire"
 ]
 
-TYPES = [ID, I__, VB, VA, AC, I_, IP, P, DL]
+#TYPES = [ID, I__, VB, VA, AC, I_, IP, P, DL]
+TYPES = [IDFR, I__, VB, AC, I_, IP, P, DL]
 
 ## THE ROOT OF THIS PROJECT !
+
+
+def limits(line, fieldtype):
+    a = line.find(fieldtype)
+    b = line.rfind(fieldtype)
+    return (a,b+1)
+
+
+def docMatch(doc, strs):
+    # Global handler
+    logfile = logger.logCur
+
+    level = 0
+    nchar = 0
+    bonus = 0
+
+    for i in range(0,2):
+        cursor = 0
+        #print("Line : {}".format(i))
+
+        while True:
+            if cursor > len(doc[0][i]) - 1:
+                break
+            # Getting the type of field on the cursor position
+            fieldtype = doc[0][i][cursor]
+            lim = limits(doc[0][i], fieldtype)
+            # ready for next field
+            cursor = lim[1]
+            # get the current field and isolates it
+            field = doc[0][i][ lim[0]:lim[1] ]
+            fstr  =   strs[i][ lim[0]:lim[1] ]
+            # Prepare regex compilation
+            regex = re.compile(doc[1][fieldtype][2])
+            # Test the match
+            matching = regex.match(fstr)
+            # Retrieve the mathing level
+            if matching:
+                level += matching.end()
+                if fieldtype == "1":
+                    bonus += 100
+            nchar += int(doc[1][fieldtype][0])
+
+            # Print for debug
+
+            #print("Field : {}, type = {}, on str : {}".format(field, fieldtype, fstr))
+            #logfile.printdbg("        REGEX : {}, match : {}".format(regex, matching))
+            # exit the loop
+
+    logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
+    return (level, nchar, bonus)
+
+def allDocMatches(strs, final=False):
+    # Global handler
+    logfile = logger.logCur
+
+    SCORES = []
+    for doc in TYPES:
+        # Get the score of the document on the strings
+        level, nchar, bonus = docMatch(doc, strs)
+        # Number of characters compatibles + bonus with the doc indication
+        SCORES += [ level + bonus ]
+        # if the len of strings is the same than document, add a bonus
+        #     but only if we are in a final situation
+        if final:
+            if len(strs[0] + strs[1]) == nchar:
+                SCORES[-1] += 100
+    candidate = SCORES.index(max(SCORES))
+    candidates = []
+    canditxt = []
+    # Search the candidates
+    for i in range(len(SCORES)):
+        if SCORES[i] == SCORES[candidate]:
+            candidates += [TYPES[i]]
+            canditxt += [TYPES[i][2]]
+    # Return the candidates
+    logfile.printdbg("Scores     : {}".format(SCORES))
+    logfile.printdbg("Candidates : {}".format(canditxt))
+    return candidates
+
 def MRZ(code):
     """
-    This function computes a control sum for a range of characters
+    This function computes a control sum for the given characters
     """
     resultat = 0
     i = -1
     facteur = [7, 3, 1]
     for car in code:
-        if car == '<' or car == '|':
+        if car == '<' or car == '\n':
             valeur = 0
             i += 1
         else:
