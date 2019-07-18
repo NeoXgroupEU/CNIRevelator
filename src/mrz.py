@@ -734,6 +734,9 @@ DL = [
 #TYPES = [ID, I__, VB, VA, AC, I_, IP, P, DL]
 TYPES = [IDFR, I__, VB, AC, I_, IP, P, DL]
 
+# longest document MRZ line
+longest = max([len(x[0][0]) for x in TYPES])
+
 ## THE ROOT OF THIS PROJECT !
 
 
@@ -786,9 +789,11 @@ def docMatch(doc, strs):
     logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
     return (level, nchar, bonus)
 
-def allDocMatches(strs, final=False):
+def allDocMatch(strs, final=False):
     # Global handler
     logfile = logger.logCur
+
+    print(strs)
 
     SCORES = []
     for doc in TYPES:

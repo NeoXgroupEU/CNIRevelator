@@ -49,12 +49,8 @@ class mainWindow(Tk):
         self.initialize()
 
     def initialize(self):
-        self.PILE_ETAT = []
-        self.MRZCHAR = ''
-        self.varnum = 10
-        self.Score = []
-        for type in mrz.TYPES:
-            self.Score += [0]
+        self.mrzChar = ''
+        self.mrzDecided = False
 
         # Get the screen size
         ws = self.winfo_screenwidth()
@@ -197,6 +193,7 @@ class mainWindow(Tk):
 
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
+        self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.update()
         logfile.printdbg('Initialization successful')
 
@@ -208,17 +205,61 @@ class mainWindow(Tk):
         """
         On the fly validation with regex
         """
-        currentText = self.termtext.get("1.0", "end")
-        currentText = (currentText.upper()[:-1]).replace(" ", "<")
+        controlled = False
 
-        regex = re.compile("([A-Z]|[0-9]|<)*")
-        while not regex.fullmatch(currentText):
-            currentText = currentText[:-1]
+        # verifying that there is no Ctrl-C/Ctrl-V and others
+        if event.state & 0x0004 and (   event.keysym == "c" or
+                                        event.keysym == "v" or
+                                        event.keysym == "a" or
+                                        event.keysym == "z" or
+                                        event.keysym == "y"  ):
+            controlled = True
 
-        self.termtext.delete("1.0", "end")
-        self.termtext.insert("1.0", currentText)
+        # If not a control char
+        if not controlled and not event.keysym in ["Return", "Right", "Left", "Home", "End", "Delete", "BackSpace", "Inser", "Shift", "Control"]:
+            # the regex
+            regex = re.compile("[A-Z]|<|[0-9]")
+            # match !
+            if not regex.fullmatch(event.char):
+                self.logOnTerm("Caractère non accepté !\n")
+                return "break"
 
-        print(currentText)
+            # analysis
+            self.mrzChar = self.termtext.get("1.0", "end")[:-1] + event.char + '\n'
+
+            # If we must decide the type of the document
+            if not self.mrzDecided:
+                # Get the candidates
+                candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
+
+                if len(candidates) == 2:
+                    # XXX demander !
+                elif len(candidates) == 1:
+                    self.logOnTerm("Document detecté : {}".format(candidates[0]))
+                    self.mrzDecided = candidates[0]
+            else:
+                # Work with the document decided
+
+
+    def pasteValidation(self, event):
+        """
+        On the fly validation of pasted text
+        """
+        # cleanup
+        self.termtext.delete("1.0","end")
+
+        # get the clipboard content
+        lines = self.clipboard_get()
+
+        # the regex
+        regex = re.compile("[^A-Z0-9<]")
+
+        lines = re.sub(regex, '', lines)
+
+        # breaking the lines
+        self.termtext.insert("1.0", lines[:mrz.longest] + '\n' + lines[mrz.longest:mrz.longest*2] )
+        return "break"
+
 
     def logOnTerm(self, text):
         self.monlog['state'] = 'normal'
