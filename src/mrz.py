@@ -639,7 +639,7 @@ AC = [
 ]
 
 ## XXXXXXXXXXX
-# VA = [
+# VB = [
 #   ["11222333333333333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCCCCCCCCCDE"],
 #   {
 #     "1": ["2", "CODE", "V."],
@@ -655,10 +655,10 @@ AC = [
 #     "B": ["1", "CTRL", "[0-9]", "A"],
 #     "C": ["14", "FACULT", ".+"]
 #   },
-#   "Visa de type A"
+#   "Visa de type B"
 # ]
 
-VB = [
+VA = [
   ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCC"],
   {
     "1": ["2", "CODE", "V."],
@@ -674,7 +674,26 @@ VB = [
     "B": ["1", "CTRL", "[0-9]", "A"],
     "C": ["8", "FACULT", ".+"]
   },
-  "Visa de type B"
+  "Visa de type A"
+]
+
+TSF = [
+  ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCC"],
+  {
+    "1": ["2", "CODE", "TS"],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["31", "NOM", "([A-Z]|<)+"],
+    "4": ["9", "NO", ".+"],
+    "5": ["1", "CTRL", "[0-9]","4"],
+    "6": ["3", "NAT", "[A-Z]+"],
+    "7": ["6", "BDATE", "[0-9]+"],
+    "8": ["1", "CTRL", "[0-9]", "7"],
+    "9": ["1", "SEX", "[A-Z]"],
+    "A": ["6", "EDATE", "[0-9]+"],
+    "B": ["1", "CTRL", "[0-9]", "A"],
+    "C": ["8", "FACULT", ".+"]
+  },
+  "Titre de séjour"
 ]
 
 I__ = [
@@ -732,7 +751,7 @@ DL = [
 ]
 
 #TYPES = [ID, I__, VB, VA, AC, I_, IP, P, DL]
-TYPES = [IDFR, I__, VB, AC, I_, IP, P, DL]
+TYPES = [IDFR, I__, VA, AC, I_, IP, P, DL, TSF]
 
 # longest document MRZ line
 longest = max([len(x[0][0]) for x in TYPES])
@@ -744,7 +763,6 @@ def limits(line, fieldtype):
     a = line.find(fieldtype)
     b = line.rfind(fieldtype)
     return (a,b+1)
-
 
 def docMatch(doc, strs):
     # Global handler
@@ -782,8 +800,8 @@ def docMatch(doc, strs):
 
             # Print for debug
 
-            #print("Field : {}, type = {}, on str : {}".format(field, fieldtype, fstr))
-            #logfile.printdbg("        REGEX : {}, match : {}".format(regex, matching))
+            # print("Field : {}, type = {}, on str : {}".format(field, fieldtype, fstr))
+            # logfile.printdbg("        REGEX : {}, match : {}".format(regex, matching))
             # exit the loop
 
     logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
@@ -793,7 +811,7 @@ def allDocMatch(strs, final=False):
     # Global handler
     logfile = logger.logCur
 
-    print(strs)
+    #print(strs)
 
     SCORES = []
     for doc in TYPES:
@@ -815,11 +833,11 @@ def allDocMatch(strs, final=False):
             candidates += [TYPES[i]]
             canditxt += [TYPES[i][2]]
     # Return the candidates
-    logfile.printdbg("Scores     : {}".format(SCORES))
-    logfile.printdbg("Candidates : {}".format(canditxt))
+    #logfile.printdbg("Scores     : {}".format(SCORES))
+    #logfile.printdbg("Candidates : {}".format(canditxt))
     return candidates
 
-def MRZ(code):
+def computeControlSum(code):
     """
     This function computes a control sum for the given characters
     """

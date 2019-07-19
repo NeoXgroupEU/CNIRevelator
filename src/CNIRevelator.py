@@ -36,6 +36,7 @@ import globs        # globs.py
 import pytesseract  # pytesseract.py
 import logger       # logger.py
 
+
 from main import *  # main.py
 
 # Global handler

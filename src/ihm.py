@@ -31,6 +31,42 @@ from tkinter import ttk
 import logger               # logger.py
 import globs                # globs.py
 
+
+controlKeys = ["Return", "Right", "Left", "Up", "Down", "Home", "End", "Delete", "BackSpace", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
+
+class DocumentAsk(Toplevel):
+
+    def __init__(self, parent, choices):
+        self.choice = 0
+        vals = [0, 1]
+        super().__init__(parent)
+        self.title("Choisir le document d'identité :")
+
+        ttk.Radiobutton(self, text=choices[0], command=self.register0, value=vals[0]).pack()
+        ttk.Radiobutton(self, text=choices[1], command=self.register1, value=vals[1]).pack()
+
+        self.button = Button(self, text='OK', command=(self.ok)).pack()
+        self.resizable(width=False, height=False)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        w = hs / 3
+        h = ws / 20
+        self.update()
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+    def register0(self):
+        self.choice = 0
+    def register1(self):
+        self.choice = 1
+    def ok(self):
+        self.destroy()
+
 class LoginDialog(Toplevel):
 
     def __init__(self, parent):

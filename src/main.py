@@ -33,6 +33,7 @@ import threading
 from datetime import datetime
 import re
 
+import ihm                      # ihm.py
 import logger                   # logger.py
 import mrz                      # mrz.py
 import globs                    # globs.py
@@ -51,6 +52,7 @@ class mainWindow(Tk):
     def initialize(self):
         self.mrzChar = ''
         self.mrzDecided = False
+        self.Tags = []
 
         # Get the screen size
         ws = self.winfo_screenwidth()
@@ -198,8 +200,36 @@ class mainWindow(Tk):
         logfile.printdbg('Initialization successful')
 
     def onTabPressed(self, event):
-
         return 'break'
+
+    def stringValidation(self):
+        # analysis
+        # If we must decide the type of the document
+        if not self.mrzDecided:
+            # Get the candidates
+            candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
+
+            if len(candidates) == 2 and len(self.mrzChar) >= 8:
+                # Parameters for the choice invite
+                invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                invite.transient(self)
+                invite.grab_set()
+                invite.focus_force()
+
+                self.wait_window(invite)
+
+                self.logOnTerm("Document detecté : {}".format(candidates[invite.choice][2]))
+                self.mrzDecided = candidates[invite.choice]
+
+            elif len(candidates) == 1:
+                self.logOnTerm("Document detecté : {}".format(candidates[0][2]))
+                self.mrzDecided = candidates[0]
+        else:
+            print("LEN mrzChar {} VS {}".format(len(self.mrzChar) - 2, len(self.mrzDecided[0][0])))
+            # break the line
+            if len(self.mrzChar) - 2 == len(self.mrzDecided[0][0]):
+                self.termtext.delete("1.0","end")
+                self.termtext.insert("1.0", self.mrzChar)
 
     def entryValidation(self, event):
         """
@@ -216,7 +246,7 @@ class mainWindow(Tk):
             controlled = True
 
         # If not a control char
-        if not controlled and not event.keysym in ["Return", "Right", "Left", "Home", "End", "Delete", "BackSpace", "Inser", "Shift", "Control"]:
+        if not controlled and not event.keysym in ihm.controlKeys:
             # the regex
             regex = re.compile("[A-Z]|<|[0-9]")
             # match !
@@ -224,21 +254,12 @@ class mainWindow(Tk):
                 self.logOnTerm("Caractère non accepté !\n")
                 return "break"
 
-            # analysis
+            # Adds the entry
             self.mrzChar = self.termtext.get("1.0", "end")[:-1] + event.char + '\n'
 
-            # If we must decide the type of the document
-            if not self.mrzDecided:
-                # Get the candidates
-                candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
+            self.stringValidation()
 
-                if len(candidates) == 2:
-                    # XXX demander !
-                elif len(candidates) == 1:
-                    self.logOnTerm("Document detecté : {}".format(candidates[0]))
-                    self.mrzDecided = candidates[0]
-            else:
-                # Work with the document decided
+
 
 
     def pasteValidation(self, event):
@@ -250,14 +271,19 @@ class mainWindow(Tk):
 
         # get the clipboard content
         lines = self.clipboard_get()
+        self.mrzChar = ""
 
         # the regex
         regex = re.compile("[^A-Z0-9<]")
 
         lines = re.sub(regex, '', lines)
 
-        # breaking the lines
-        self.termtext.insert("1.0", lines[:mrz.longest] + '\n' + lines[mrz.longest:mrz.longest*2] )
+        # Get that
+        for char in lines:
+            self.termtext.insert("1.0", self.mrzChar)
+            self.mrzChar = self.mrzChar + char
+            self.stringValidation()
+
         return "break"
 
 
