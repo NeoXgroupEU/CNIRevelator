@@ -32,7 +32,7 @@ import logger               # logger.py
 import globs                # globs.py
 
 
-controlKeys = ["Return", "Right", "Left", "Up", "Down", "Home", "End", "Delete", "BackSpace", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
+controlKeys = ["Right", "Left", "Up", "Down", "Home", "End", "Delete", "BackSpace", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
 
 class DocumentAsk(Toplevel):
 
@@ -204,6 +204,117 @@ class OpenScanWin(Toplevel):
         super().__init__(parent)
         self.parent = parent
         app = OpenScan(self, file, type, nframe)
+
+class OpenScan(ttk.Frame):
+    def __init__(self, mainframe, fileorig, type, nframe=1, pagenum=0, file=None):
+        """ Initialize the main Frame """
+        if file == None:
+            file = fileorig
+        self.file = file
+        self.fileorig = fileorig
+        self.nframe = nframe
+        self.pagenum = pagenum
+        self.parent = mainframe.parent
+        ttk.Frame.__init__(self, master=mainframe)
+        self.master.title('Ouvrir un scan... (Utilisez la roulette pour zoomer, clic gauche pour déplacer et clic droit pour sélectionner la MRZ)')
+        self.master.resizable(width=False, height=False)
+        hs = self.winfo_screenheight()
+        w = int(self.winfo_screenheight() / 1.5)
+        h = int(self.winfo_screenheight() / 2)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        if getattr(sys, 'frozen', False):
+            self.master.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.master.iconbitmap('id-card.ico')
+        self.master.rowconfigure(0, weight=1)
+        self.master.columnconfigure(0, weight=1)
+        self.cadre = CanvasImage(self.master, self.file, type)
+        self.cadre.grid(row=0, column=0)
+        self.master.menubar = Menu(self.master)
+        if type == 1:
+            self.master.menubar.add_command(label='Page précédente', command=(self.pagep))
+        self.master.menubar.add_command(label='Pivoter -90°', command=(self.cadre.rotatemm))
+        self.master.menubar.add_command(label='Pivoter -1°', command=(self.cadre.rotatem))
+        self.master.menubar.add_command(label='Pivoter +1°', command=(self.cadre.rotatep))
+        self.master.menubar.add_command(label='Pivoter +90°', command=(self.cadre.rotatepp))
+        if type == 1:
+            self.master.menubar.add_command(label='Page suivante', command=(self.pages))
+        self.master.config(menu=(self.master.menubar))
+        self.cadre.canvas.bind('<ButtonPress-3>', self.motionprep)
+        self.cadre.canvas.bind('<B3-Motion>', self.motionize)
+        self.cadre.canvas.bind('<ButtonRelease-3>', self.motionend)
+
+    def pages(self):
+        if self.pagenum + 1 < self.nframe:
+            im = Image.open(self.fileorig)
+            im.seek(self.pagenum + 1)
+            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
+            im.save(newpath)
+            im.close()
+            self.cadre.destroy()
+            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum + 1, newpath)
+
+    def pagep(self):
+        if self.pagenum - 1 >= 0:
+            im = Image.open(self.fileorig)
+            im.seek(self.pagenum - 1)
+            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
+            im.save(newpath)
+            im.close()
+            self.cadre.destroy()
+            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum - 1, newpath)
+
+    def motionprep(self, event):
+        if hasattr(self, 'rect'):
+            self.begx = event.x
+            self.begy = event.y
+            self.ix = self.cadre.canvas.canvasx(event.x)
+            self.iy = self.cadre.canvas.canvasy(event.y)
+            self.cadre.canvas.coords(self.rect, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y), self.ix, self.iy)
+        else:
+            self.begx = event.x
+            self.begy = event.y
+            self.ix = self.cadre.canvas.canvasx(event.x)
+            self.iy = self.cadre.canvas.canvasy(event.y)
+            self.rect = self.cadre.canvas.create_rectangle((self.cadre.canvas.canvasx(event.x)), (self.cadre.canvas.canvasy(event.y)), (self.ix), (self.iy), outline='red')
+
+    def motionize(self, event):
+        event.x
+        event.y
+        self.cadre.canvas.coords(self.rect, self.ix, self.iy, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y))
+
+    def motionend(self, event):
+        self.endx = event.x
+        self.endy = event.y
+        self.imtotreat = self.cadre.resizedim.crop((min(self.begx, self.endx), min(self.begy, self.endy), max(self.endx, self.begx), max(self.endy, self.begy)))
+        im = self.imtotreat
+        import CNI_pytesseract as pytesseract
+        try:
+            os.environ['PATH'] = globs.CNIREnv + '\\Tesseract-OCR4\\'
+            os.environ['TESSDATA_PREFIX'] = globs.CNIREnv + '\\Tesseract-OCR4\\tessdata'
+            self.text = pytesseract.image_to_string(im, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
+        except pytesseract.TesseractNotFoundError as e:
+            try:
+                os.remove(globs.CNIREnv + '\\Tesseract-OCR4\\*.*')
+            except Exception:
+                pass
+
+            showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable. Il sera réinstallé à la prochaine exécution'), parent=self)
+        except pytesseract.TesseractError as e:
+            pass
+
+        self.master.success = False
+        dialogconf = OpenScanDialog(self.master, self.text)
+        dialogconf.transient(self)
+        dialogconf.grab_set()
+        self.wait_window(dialogconf)
+        if self.master.success:
+            self.master.destroy()
+
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()

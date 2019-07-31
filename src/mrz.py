@@ -717,12 +717,13 @@ I__ = [
 ]
 
 IDFR = [
-  ["112223333333333333333333333333444444", "555566677777899999999999999AAAAAABCD"],
+  ["11222333333333333333333333333344444E", "555566677777899999999999999AAAAAABCD"],
   {
     "1": ["2", "CODE", "ID"],
     "2": ["3", "PAYS", "FRA"],
     "3": ["25", "NOM", "([A-Z]|<)+"],
     "4": ["6", "NOINT", ".+"],
+    "E": ["1", "CTRL", "[0-9]", "1234"],
     "5": ["4", "DDATE", "[0-9]+"],
     "6": ["3", "NOINT2", "[0-9]+"],
     "7": ["5", "NOINT3", "[0-9]+"],
@@ -731,7 +732,7 @@ IDFR = [
     "A": ["6", "BDATE", "[0-9]+"],
     "B": ["1", "CTRL", "[0-9]", "A"],
     "C": ["1", "SEX", "[A-Z]"],
-    "D": ["1", "CTRL", "[0-9]", "123456789ABC"]
+    "D": ["1", "CTRL", "[0-9]", "123456789ABCE"]
   },
   "Pièce d'identité FR"
 ]
@@ -758,13 +759,45 @@ longest = max([len(x[0][0]) for x in TYPES])
 
 ## THE ROOT OF THIS PROJECT !
 
+def getDocString(doc):
+    return doc[0][0] + doc[0][1]
+
+def getFieldLimits(doc, fieldtype):
+    """
+    This function returns the limit of a given field string id for a given document structure
+    """
+    L1 = limits(doc[0][0], fieldtype)
+    L2 = limits(doc[0][1], fieldtype)
+
+    if -1 in L1:
+        return 1, L2
+    else:
+        return 0, L1
+    return
 
 def limits(line, fieldtype):
+    """
+    Returns the limit of a given field structure
+    """
     a = line.find(fieldtype)
     b = line.rfind(fieldtype)
     return (a,b+1)
 
+def completeDocField(doc, code, position):
+    """
+    Completes with '<' the document the field that is located at given position
+    """
+    field = getDocString(doc)[position]
+    limit = limits(getDocString(doc), field)
+    res = limit[1] - position
+    #print("field : {}, limit : {}, number of char to complete : {}".format(field, limit, res))
+    return res
+
+
 def docMatch(doc, strs):
+    """
+    This function calculates a regex match score for a given document and a string couple
+    """
     # Global handler
     logfile = logger.logCur
 
@@ -808,6 +841,9 @@ def docMatch(doc, strs):
     return (level, nchar, bonus)
 
 def allDocMatch(strs, final=False):
+    """
+    This functions test all documents types on the lines provided and returns a score for each
+    """
     # Global handler
     logfile = logger.logCur
 
@@ -861,3 +897,67 @@ def computeControlSum(code):
         resultat += valeur * facteur[(i % 3)]
 
     return resultat % 10
+
+def computeAllControlSum(doc, code):
+    """
+    This function computes all the ctrl sums on a MRZ string and returns all the results
+    """
+    ctrlSumList = []
+
+    # iteration on each char of the given MRZ
+    for charPos in range(len(code)):
+        field =  getDocString(doc)[charPos]
+
+        if doc[1][field][1] == "CTRL":
+            #print("{} is CTRL field {}".format(code[charPos], field))
+
+            codeChain = ""
+            # iteration on the fields to control
+            for pos in range(len(code)):
+                target =  getDocString(doc)[pos]
+                if target in doc[1][field][3]:
+                    #print("__field : {} {} {} {}".format(target, pos, field, doc[1][field][3]))
+                    codeChain += code[pos]
+
+            #print("chain to control : _{}_".format(codeChain))
+
+            ctrlSum = computeControlSum(codeChain)
+            #print("SUM : {} vs {}".format(code[charPos], ctrlSum))
+
+            ctrlSumList += [ (field, charPos, ctrlSum) ]
+
+    return ctrlSumList
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

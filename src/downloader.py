@@ -23,7 +23,6 @@
 ********************************************************************************
 """
 
-import hashlib
 import base64, hashlib
 import os
 from pypac import PACSession
@@ -195,11 +194,11 @@ class newdownload:
                 fh.write(chunk)
                 
                 self.count = os.path.getsize(self.destinationFile)
-                Percent = int(self.count / self.filesize * 100)
+                Percent = self.count / self.filesize * 100
                 
                 launcherWindow.progressBar.stop()
                 launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)), maximum=100)
-                launcherWindow.printmsg('Downloading  {}'.format(reducedFilename) + ' : ' + str((Percent)) + ' %')
+                launcherWindow.printmsg('Downloading  {}'.format(reducedFilename) + ' : {:4.2f} %'.format(Percent))
                 
         launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
         launcherWindow.progressBar.start()

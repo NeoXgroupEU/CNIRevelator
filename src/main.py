@@ -57,7 +57,7 @@ class mainWindow(Tk):
         # Get the screen size
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        logfile.printdbg('mainWindow() : Launching main window with resolution' + str(ws) + 'x' + str(hs))
+        logfile.printdbg('Launching main window with resolution' + str(ws) + 'x' + str(hs))
         self.grid()
 
         # Configuring the size of each part of the window
@@ -65,7 +65,8 @@ class mainWindow(Tk):
         self.grid_columnconfigure(1, weight=1, minsize=(ws / 2 * 0.3333333333333333))
         self.grid_columnconfigure(2, weight=1, minsize=(ws / 2 * 0.3333333333333333))
         self.grid_rowconfigure(0, weight=1, minsize=(hs / 2 * 0.5))
-        self.grid_rowconfigure(1, weight=1, minsize=(hs / 2 * 0.5))
+        self.grid_rowconfigure(1, weight=1, minsize=(hs / 2 * 0.10))
+        self.grid_rowconfigure(2, weight=1, minsize=(hs / 2 * 0.35))
 
         # Prepare the data sections
         self.lecteur_ci = ttk.Labelframe(self, text="Informations sur la pièce d'identité")
@@ -133,15 +134,40 @@ class mainWindow(Tk):
         self.STATUStxt['text'] = 'EN ATTENTE'
 
         # The terminal to enter the MRZ
-        self.terminal = ttk.Labelframe(self, text='Terminal de saisie')
+        self.terminal = ttk.Labelframe(self, text='Terminal de saisie de MRZ complète')
         self.terminal.grid_columnconfigure(0, weight=1)
         self.terminal.grid_rowconfigure(0, weight=1)
         self.termframe = Frame(self.terminal)
         self.termframe.grid(column=0, row=0, sticky='EW')
         self.termframe.grid_columnconfigure(0, weight=1)
         self.termframe.grid_rowconfigure(0, weight=1)
+        self.termguide = Label((self.termframe), text='', font='Terminal 17', fg='#006699')
+        self.termguide.grid(column=0, row=0, padx=5, pady=0, sticky='NW')
+        self.termguide['text'] = '0   |5   |10  |15  |20  |25  |30  |35  |40  |45'
         self.termtext = Text((self.termframe), state='normal', width=60, height=4, wrap='none', font='Terminal 17', fg='#121f38')
-        self.termtext.grid(column=0, row=0, sticky='NEW', padx=5)
+        self.termtext.grid(column=0, row=0, sticky='SW', padx=5, pady=25)
+
+        # Speed Entry Zone for 731
+        self.terminal2 = ttk.Labelframe(self, text='Terminal de saisie rapide (731)')
+        self.terminal2.grid_columnconfigure(0, weight=1)
+        self.terminal2.grid_rowconfigure(0, weight=1)
+        self.speed731 = Frame(self.terminal2)
+        self.speed731.grid(column=0, row=0, sticky='EW')
+        self.speed731.grid_columnconfigure(0, weight=1)
+        self.speed731.grid_columnconfigure(1, weight=1)
+        self.speed731.grid_columnconfigure(2, weight=1)
+        self.speed731.grid_columnconfigure(3, weight=1)
+        self.speed731.grid_columnconfigure(4, weight=1)
+        self.speed731.grid_columnconfigure(5, weight=1)
+        self.speed731.grid_columnconfigure(6, weight=1)
+        self.speed731.grid_columnconfigure(7, weight=1)
+        self.speed731.grid_columnconfigure(8, weight=1)
+        self.speed731.grid_columnconfigure(9, weight=1)
+        self.speed731.grid_rowconfigure(0, weight=1)
+        self.speed731text = Entry(self.speed731, font='Terminal 14')
+        self.speed731text.grid(column=0, row=0, sticky='NEW', padx=5)
+        self.speedResult = Text((self.speed731), state='disabled', width=1, height=1, wrap='none', font='Terminal 14')
+        self.speedResult.grid(column=2, row=0, sticky='NEW')
 
         # The monitor that indicates some useful infos
         self.monitor = ttk.Labelframe(self, text='Moniteur')
@@ -156,8 +182,9 @@ class mainWindow(Tk):
         # All the items griding
         self.lecteur_ci.grid(column=0, row=0, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.STATUT.grid(column=2, row=0, sticky='EWNS', columnspan=1, padx=5, pady=5)
-        self.terminal.grid(column=0, row=1, sticky='EWNS', columnspan=2, padx=5, pady=5)
-        self.monitor.grid(column=2, row=1, sticky='EWNS', columnspan=1, padx=5, pady=5)
+        self.terminal.grid(column=0, row=2, sticky='EWNS', columnspan=2, padx=5, pady=5)
+        self.terminal2.grid(column=0, row=1, sticky='EWNS', columnspan=2, padx=5, pady=5)
+        self.monitor.grid(column=2, row=1, sticky='EWNS', columnspan=1, rowspan=2, padx=5, pady=5)
         self.update()
 
         # What is a window without a menu bar ?
@@ -169,7 +196,8 @@ class mainWindow(Tk):
         menu1.add_command(label='Quitter', command=(self.destroy))
         menubar.add_cascade(label='Fichier', menu=menu1)
         menu3 = Menu(menubar, tearoff=0)
-        menu3.add_command(label='A propos', command=(self.infobox))
+        menu3.add_command(label='Commandes au clavier', command=(self.helpbox))
+        menu3.add_command(label='A propos de CNIRevelator', command=(self.infobox))
         menubar.add_cascade(label='Aide', menu=menu3)
         self.config(menu=menubar)
 
@@ -196,11 +224,9 @@ class mainWindow(Tk):
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
+        self.speed731text.bind('<Return>', self.speedValidation)
         self.update()
         logfile.printdbg('Initialization successful')
-
-    def onTabPressed(self, event):
-        return 'break'
 
     def stringValidation(self):
         # analysis
@@ -225,16 +251,35 @@ class mainWindow(Tk):
                 self.logOnTerm("Document detecté : {}".format(candidates[0][2]))
                 self.mrzDecided = candidates[0]
         else:
-            print("LEN mrzChar {} VS {}".format(len(self.mrzChar) - 2, len(self.mrzDecided[0][0])))
             # break the line
-            if len(self.mrzChar) - 2 == len(self.mrzDecided[0][0]):
+            if (len(self.mrzChar) - 2 >= len(self.mrzDecided[0][0])) and ("\n" not in self.mrzChar[:-1]):
+                # In case of there is no second line
+                if len(self.mrzDecided[0][1]) == 0:
+                    self.mrzChar = self.termtext.get("1.0", "end")[:-2]
+                    self.termtext.delete("1.0","end")
+                    self.termtext.insert("1.0", self.mrzChar)
+                    self.nope = True
+                else:
+                    # In case of there is a second line
+                    self.mrzChar = self.termtext.get("1.0", "end")[:-1] + '\n'
+                    self.termtext.delete("1.0","end")
+                    self.termtext.insert("1.0", self.mrzChar)
+                    self.nope = True
+            # stop when limit reached
+            elif (len(self.mrzChar) - 3 >= 2 * len(self.mrzDecided[0][0])):
+                self.mrzChar = self.termtext.get("1.0", "end")[:-2]
                 self.termtext.delete("1.0","end")
                 self.termtext.insert("1.0", self.mrzChar)
+
+            # compute the control sum if needed
+            self.computeSigma()
 
     def entryValidation(self, event):
         """
         On the fly validation with regex
         """
+        print("go")
+
         controlled = False
 
         # verifying that there is no Ctrl-C/Ctrl-V and others
@@ -245,6 +290,29 @@ class mainWindow(Tk):
                                         event.keysym == "y"  ):
             controlled = True
 
+        if event.keysym == "Tab":
+            if self.mrzDecided:
+                controlled = True
+                self.mrzChar = self.termtext.get("1.0", "end")[:-1]
+                # the regex
+                regex = re.compile("[^A-Z0-9<]")
+                code = re.sub(regex, '', self.mrzChar)
+
+                position = self.termtext.index(INSERT).split(".")
+                pos = (int(position[0]) - 1) * len(self.mrzDecided[0][0]) + (int(position[1]) - 1)
+
+                number = mrz.completeDocField(self.mrzDecided, code, pos) - 1
+
+                if number == 0:
+                    return "break"
+
+                self.mrzChar = self.termtext.get("1.0", "end")[:-1] + "<"*number
+                self.termtext.delete("1.0","end")
+                self.termtext.insert("1.0", self.mrzChar)
+                self.termtext.mark_set("insert", "%d.%d" % (int(position[0]), int(position[1]) + number))
+            return "break"
+
+
         # If not a control char
         if not controlled and not event.keysym in ihm.controlKeys:
             # the regex
@@ -253,14 +321,11 @@ class mainWindow(Tk):
             if not regex.fullmatch(event.char):
                 self.logOnTerm("Caractère non accepté !\n")
                 return "break"
-
             # Adds the entry
             self.mrzChar = self.termtext.get("1.0", "end")[:-1] + event.char + '\n'
 
-            self.stringValidation()
-
-
-
+        # validation of the mrz string
+        self.stringValidation()
 
     def pasteValidation(self, event):
         """
@@ -286,12 +351,26 @@ class mainWindow(Tk):
 
         return "break"
 
+    def speedValidation(self, event):
+        """
+        Computation of the speed entry
+        """
+        char = self.speed731text.get()
+        self.speedResultPrint(str(mrz.computeControlSum(char)))
+        return "break"
 
     def logOnTerm(self, text):
         self.monlog['state'] = 'normal'
         self.monlog.insert('end', text)
         self.monlog['state'] = 'disabled'
         self.monlog.yview(END)
+
+    def speedResultPrint(self, text):
+        self.speedResult['state'] = 'normal'
+        self.speedResult.delete("1.0", 'end')
+        self.speedResult.insert('end', text)
+        self.speedResult['state'] = 'disabled'
+
 
     def openingScan(self):
         pass
@@ -304,142 +383,80 @@ class mainWindow(Tk):
     def infobox(self):
         Tk().withdraw()
 
-        showinfo('A propos du logiciel',
+        showinfo('A propos de CNIRevelator',
         (   'Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' +
-            "CNIRevelator is free software: you can redistribute it and/or modify " +
-            "it under the terms of the GNU General Public License as published by " +
-            "the Free Software Foundation, either version 3 of the License, or " +
-            "any later version. " + "\n\n" +
-            "CNIRevelator is distributed in the hope that it will be useful, " +
-            "but without even the implied warranty of " +
-            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the " +
-            "GNU General Public License for more details. " +
+            "CNIRevelator est un logiciel libre : vous avez le droit de le modifier et/ou le distribuer " +
+            "dans les termes de la GNU General Public License telle que publiée par " +
+            "la Free Software Foundation, dans sa version 3 ou " +
+            "ultérieure. " + "\n\n" +
+            "CNIRevelator est distribué dans l'espoir d'être utile, sans toutefois " +
+            "impliquer une quelconque garantie de " +
+            "QUALITÉ MARCHANDE ou APTITUDE À UN USAGE PARTICULIER. Référez vous à la " +
+            "GNU General Public License pour plus de détails à ce sujet. " +
             "\n\n" +
-            "You should have received a copy of the GNU General Public License " +
-            "along with CNIRevelator. If not, see <https://www.gnu.org/licenses/>. " +
+            "Vous devriez avoir reçu une copie de la GNU General Public License " +
+            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à '<https://www.gnu.org/licenses/>. " +
             "\n\n" +
-            "Tesseract 4.0 est soumis à l'Apache License 2004" +
+            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004" +
             "\n\n" +
-            "Anaconda 3 est soumis à la licence BSD 2018-2019" +
+            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019" +
             "\n\n" +
-            "En cas de problèmes, ouvrez une issue sur le github de CNIRevelator " +
-            "<https://github.com/neox95/CNIRevelator>, ou bien envoyez un mail à neox@os-k.eu!"
+            "Le code source de ce programme est disponible sur Github à l'adresse <https://github.com/neox95/CNIRevelator>.\n" +
+            " En cas de problèmes ou demande particulière, ouvrez-y une issue ou bien envoyez un mail à neox@os-k.eu !"
         ),
 
         parent=self)
 
-    def calculSigma(self, MRZtxt, numtype):
-        pass
-        # CALCUL DE TOUTES LES SOMMES DE LA CARTE CONFORMEMENT A SON TYPE
+    def helpbox(self):
+        Tk().withdraw()
+
+        showinfo('Aide sur les contrôles au clavier',
+        (   '' + '\n\n' +
+            "In construction"
+        ),
+
+        parent=self)
+
+    # XXX
+    def computeSigma(self):
+        # the regex
+        regex = re.compile("[^A-Z0-9<]")
+        code = re.sub(regex, '', self.mrzChar)
+
+        allSums = mrz.computeAllControlSum(self.mrzDecided, code)
+        print("Code : {} | Sums : {}".format(code, allSums))
 
 
-class OpenScan(ttk.Frame):
-    def __init__(self, mainframe, fileorig, type, nframe=1, pagenum=0, file=None):
-        """ Initialize the main Frame """
-        if file == None:
-            file = fileorig
-        self.file = file
-        self.fileorig = fileorig
-        self.nframe = nframe
-        self.pagenum = pagenum
-        self.parent = mainframe.parent
-        ttk.Frame.__init__(self, master=mainframe)
-        self.master.title('Ouvrir un scan... (Utilisez la roulette pour zoomer, clic gauche pour déplacer et clic droit pour sélectionner la MRZ)')
-        self.master.resizable(width=False, height=False)
-        hs = self.winfo_screenheight()
-        w = int(self.winfo_screenheight() / 1.5)
-        h = int(self.winfo_screenheight() / 2)
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        x = ws / 2 - w / 2
-        y = hs / 2 - h / 2
-        self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        if getattr(sys, 'frozen', False):
-            self.master.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.master.iconbitmap('id-card.ico')
-        self.master.rowconfigure(0, weight=1)
-        self.master.columnconfigure(0, weight=1)
-        self.cadre = CanvasImage(self.master, self.file, type)
-        self.cadre.grid(row=0, column=0)
-        self.master.menubar = Menu(self.master)
-        if type == 1:
-            self.master.menubar.add_command(label='Page précédente', command=(self.pagep))
-        self.master.menubar.add_command(label='Pivoter -90°', command=(self.cadre.rotatemm))
-        self.master.menubar.add_command(label='Pivoter -1°', command=(self.cadre.rotatem))
-        self.master.menubar.add_command(label='Pivoter +1°', command=(self.cadre.rotatep))
-        self.master.menubar.add_command(label='Pivoter +90°', command=(self.cadre.rotatepp))
-        if type == 1:
-            self.master.menubar.add_command(label='Page suivante', command=(self.pages))
-        self.master.config(menu=(self.master.menubar))
-        self.cadre.canvas.bind('<ButtonPress-3>', self.motionprep)
-        self.cadre.canvas.bind('<B3-Motion>', self.motionize)
-        self.cadre.canvas.bind('<ButtonRelease-3>', self.motionend)
 
-    def pages(self):
-        if self.pagenum + 1 < self.nframe:
-            im = Image.open(self.fileorig)
-            im.seek(self.pagenum + 1)
-            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
-            im.save(newpath)
-            im.close()
-            self.cadre.destroy()
-            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum + 1, newpath)
 
-    def pagep(self):
-        if self.pagenum - 1 >= 0:
-            im = Image.open(self.fileorig)
-            im.seek(self.pagenum - 1)
-            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
-            im.save(newpath)
-            im.close()
-            self.cadre.destroy()
-            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum - 1, newpath)
 
-    def motionprep(self, event):
-        if hasattr(self, 'rect'):
-            self.begx = event.x
-            self.begy = event.y
-            self.ix = self.cadre.canvas.canvasx(event.x)
-            self.iy = self.cadre.canvas.canvasy(event.y)
-            self.cadre.canvas.coords(self.rect, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y), self.ix, self.iy)
-        else:
-            self.begx = event.x
-            self.begy = event.y
-            self.ix = self.cadre.canvas.canvasx(event.x)
-            self.iy = self.cadre.canvas.canvasy(event.y)
-            self.rect = self.cadre.canvas.create_rectangle((self.cadre.canvas.canvasx(event.x)), (self.cadre.canvas.canvasy(event.y)), (self.ix), (self.iy), outline='red')
 
-    def motionize(self, event):
-        event.x
-        event.y
-        self.cadre.canvas.coords(self.rect, self.ix, self.iy, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y))
 
-    def motionend(self, event):
-        self.endx = event.x
-        self.endy = event.y
-        self.imtotreat = self.cadre.resizedim.crop((min(self.begx, self.endx), min(self.begy, self.endy), max(self.endx, self.begx), max(self.endy, self.begy)))
-        im = self.imtotreat
-        import CNI_pytesseract as pytesseract
-        try:
-            os.environ['PATH'] = globs.CNIREnv + '\\Tesseract-OCR4\\'
-            os.environ['TESSDATA_PREFIX'] = globs.CNIREnv + '\\Tesseract-OCR4\\tessdata'
-            self.text = pytesseract.image_to_string(im, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
-        except pytesseract.TesseractNotFoundError as e:
-            try:
-                os.remove(globs.CNIREnv + '\\Tesseract-OCR4\\*.*')
-            except Exception:
-                pass
 
-            showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable. Il sera réinstallé à la prochaine exécution'), parent=self)
-        except pytesseract.TesseractError as e:
-            pass
 
-        self.master.success = False
-        dialogconf = OpenScanDialog(self.master, self.text)
-        dialogconf.transient(self)
-        dialogconf.grab_set()
-        self.wait_window(dialogconf)
-        if self.master.success:
-            self.master.destroy()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
