@@ -32,7 +32,7 @@ import logger               # logger.py
 import globs                # globs.py
 
 
-controlKeys = ["Right", "Left", "Up", "Down", "Home", "End", "Delete", "BackSpace", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
+controlKeys = ["Right", "Left", "Up", "Down", "Home", "End", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
 
 class DocumentAsk(Toplevel):
 
@@ -96,6 +96,7 @@ class LoginDialog(Toplevel):
         x = ws / 2 - w / 2
         y = hs / 2 - h / 2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.bind("<Return>", self.connecti)
 
     def connecti(self):
         self.login = self.entry_login.get().strip()

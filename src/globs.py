@@ -37,7 +37,7 @@ CNIRFolder          = os.getcwd()
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
 CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
-CNIRNewVersion      = True
+CNIRNewVersion      = False
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'

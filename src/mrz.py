@@ -26,6 +26,8 @@
 
 import re
 import logger    # logger.py
+import re
+import datetime
 
 ## SEX CODES
 sexcode = {'M':'Homme', 'F':'Femme',  'X':'Non spécifié'}
@@ -717,13 +719,12 @@ I__ = [
 ]
 
 IDFR = [
-  ["11222333333333333333333333333344444E", "555566677777899999999999999AAAAAABCD"],
+  ["112223333333333333333333333333444444", "555566677777899999999999999AAAAAABCD"],
   {
     "1": ["2", "CODE", "ID"],
     "2": ["3", "PAYS", "FRA"],
     "3": ["25", "NOM", "([A-Z]|<)+"],
     "4": ["6", "NOINT", ".+"],
-    "E": ["1", "CTRL", "[0-9]", "1234"],
     "5": ["4", "DDATE", "[0-9]+"],
     "6": ["3", "NOINT2", "[0-9]+"],
     "7": ["5", "NOINT3", "[0-9]+"],
@@ -901,8 +902,10 @@ def computeControlSum(code):
 def computeAllControlSum(doc, code):
     """
     This function computes all the ctrl sums on a MRZ string and returns all the results
+        it returns the misc infos about the document too
     """
     ctrlSumList = []
+    facult = False
 
     # iteration on each char of the given MRZ
     for charPos in range(len(code)):
@@ -924,12 +927,94 @@ def computeAllControlSum(doc, code):
             ctrlSum = computeControlSum(codeChain)
             #print("SUM : {} vs {}".format(code[charPos], ctrlSum))
 
-            ctrlSumList += [ (field, charPos, ctrlSum) ]
+            ctrlSumList += [ (field, charPos, ctrlSum, facult) ]
 
-    return ctrlSumList
+        if doc[1][field][1] == "CTRLF":
+            #print("{} is CTRL field {}".format(code[charPos], field))
+
+            codeChain = ""
+            # iteration on the fields to control
+            for pos in range(len(code)):
+                target =  getDocString(doc)[pos]
+                if target in doc[1][field][3]:
+                    #print("__field : {} {} {} {}".format(target, pos, field, doc[1][field][3]))
+                    codeChain += code[pos]
+
+            #print("chain to control : _{}_".format(codeChain))
+
+            ctrlSum = computeControlSum(codeChain)
+            #print("SUM : {} vs {}".format(code[charPos], ctrlSum))
+
+            if code[charPos] == "<":
+                facult = True
+
+            ctrlSumList += [ (field, charPos, ctrlSum, facult) ]
+
+    return {
+            "ctrlSumList" : ctrlSumList
+            }
 
 
+def getDocInfos(doc, code):
+    # get all the types of infos that are in the document doc
+    infoTypes = [ (doc[1][field][1], limits(doc[0][0] + doc[0][1], field)) for field in doc[1] ]
 
+    res = {}
+
+    for field in infoTypes:
+
+        value = code[ field[1][0] : field[1][1] ]
+
+        # State code
+        if field[0] == 'PAYS' or field[0] == 'NAT':
+            try:
+                if len(value) == 3 and value[-1] != "<":
+                    res[field[0]] = landcode3[value]
+                elif len(value) == 3 and value[-1] == "<":
+                    res[field[0]] = landcode2[value[:-1]]
+                else:
+                    res[field[0]] = landcode2[value]
+            except KeyError:
+                res[field[0]] = False
+
+        # Dates
+        elif field[0][1:] == 'DATE':
+            # size adaptation
+            if len(value) == 6:
+                value = "{}/{}/{}".format(value[4:6], value[2:4], value[0:2])
+            elif len(value) == 4:
+                value = "{}/{}/{}".format("01", value[2:4], value[0:2])
+
+            # date validation
+            try:
+                 datetime.datetime.strptime(value,"%d/%m/%y")
+            except ValueError:
+                print(value)
+                if value != "":
+                    res[field[0]] = False
+            else:
+                res[field[0]] = value
+
+        # Numbers
+        elif field[0][:-1] == 'NOINT':
+            try:
+                res["NO"] += value
+            except KeyError:
+                res["NO"] = value
+        elif field[0] == 'NOINT':
+            try:
+                res["NO"] += value
+            except KeyError:
+                res["NO"] = value
+
+        elif field[0] == 'FACULT':
+            res["INDIC"] += value
+        # All other cases
+        else:
+            if value != "":
+                res[field[0]] = value.replace("<", " ").strip()
+
+    return res
 
 
 

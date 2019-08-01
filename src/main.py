@@ -53,6 +53,7 @@ class mainWindow(Tk):
         self.mrzChar = ''
         self.mrzDecided = False
         self.Tags = []
+        self.compliance = True
 
         # Get the screen size
         ws = self.winfo_screenwidth()
@@ -124,6 +125,21 @@ class mainWindow(Tk):
         self.nat['text'] = 'Inconnu(e)'
         self.pays['text'] = 'Inconnu(e)'
         self.indic['text'] = 'Inconnu(e)'
+
+
+        self.infoList = \
+        {
+            "NOM"    : self.nom,
+            "PRENOM" : self.prenom,
+            "BDATE"  : self.bdate,
+            "DDATE"  : self.ddate,
+            "EDATE"  : self.edate,
+            "NO"     : self.no,
+            "SEX"    : self.sex,
+            "NAT"    : self.nat,
+            "PAYS"   : self.pays,
+            "INDIC"  : self.indic,
+        }
 
         # The STATUS indicator
         self.STATUT = ttk.Labelframe(self, text='Statut')
@@ -224,11 +240,11 @@ class mainWindow(Tk):
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
-        self.speed731text.bind('<Return>', self.speedValidation)
+        self.speed731text.bind('<Control_R>', self.speedValidation)
         self.update()
         logfile.printdbg('Initialization successful')
 
-    def stringValidation(self):
+    def stringValidation(self, char):
         # analysis
         # If we must decide the type of the document
         if not self.mrzDecided:
@@ -244,33 +260,30 @@ class mainWindow(Tk):
 
                 self.wait_window(invite)
 
-                self.logOnTerm("Document detecté : {}".format(candidates[invite.choice][2]))
+                self.logOnTerm("Document detecté : {}\n".format(candidates[invite.choice][2]))
                 self.mrzDecided = candidates[invite.choice]
 
             elif len(candidates) == 1:
-                self.logOnTerm("Document detecté : {}".format(candidates[0][2]))
+                self.logOnTerm("Document detecté : {}\n".format(candidates[0][2]))
                 self.mrzDecided = candidates[0]
         else:
             # break the line
             if (len(self.mrzChar) - 2 >= len(self.mrzDecided[0][0])) and ("\n" not in self.mrzChar[:-1]):
                 # In case of there is no second line
                 if len(self.mrzDecided[0][1]) == 0:
-                    self.mrzChar = self.termtext.get("1.0", "end")[:-2]
+                    self.mrzChar = self.termtext.get("1.0", "end")[:-1]
                     self.termtext.delete("1.0","end")
-                    self.termtext.insert("1.0", self.mrzChar)
-                    self.nope = True
+                    self.termtext.insert("1.0", self.mrzChar[:-1])
                 else:
                     # In case of there is a second line
                     self.mrzChar = self.termtext.get("1.0", "end")[:-1] + '\n'
                     self.termtext.delete("1.0","end")
                     self.termtext.insert("1.0", self.mrzChar)
-                    self.nope = True
             # stop when limit reached
             elif (len(self.mrzChar) - 3 >= 2 * len(self.mrzDecided[0][0])):
-                self.mrzChar = self.termtext.get("1.0", "end")[:-2]
+                self.mrzChar = self.termtext.get("1.0", "end")[:-1]
                 self.termtext.delete("1.0","end")
-                self.termtext.insert("1.0", self.mrzChar)
-
+                self.termtext.insert("1.0", self.mrzChar[:-1])
             # compute the control sum if needed
             self.computeSigma()
 
@@ -278,9 +291,15 @@ class mainWindow(Tk):
         """
         On the fly validation with regex
         """
-        print("go")
-
         controlled = False
+
+        # get the cursor
+        if self.mrzDecided:
+            position = self.termtext.index(INSERT).split(".")
+            pos = (int(position[0]) - 1) * len(self.mrzDecided[0][0]) + (int(position[1]) - 1)
+        else:
+            position = self.termtext.index(INSERT).split(".")
+            pos = (int(position[1]) - 1)
 
         # verifying that there is no Ctrl-C/Ctrl-V and others
         if event.state & 0x0004 and (   event.keysym == "c" or
@@ -297,9 +316,6 @@ class mainWindow(Tk):
                 # the regex
                 regex = re.compile("[^A-Z0-9<]")
                 code = re.sub(regex, '', self.mrzChar)
-
-                position = self.termtext.index(INSERT).split(".")
-                pos = (int(position[0]) - 1) * len(self.mrzDecided[0][0]) + (int(position[1]) - 1)
 
                 number = mrz.completeDocField(self.mrzDecided, code, pos) - 1
 
@@ -321,11 +337,12 @@ class mainWindow(Tk):
             if not regex.fullmatch(event.char):
                 self.logOnTerm("Caractère non accepté !\n")
                 return "break"
-            # Adds the entry
-            self.mrzChar = self.termtext.get("1.0", "end")[:-1] + event.char + '\n'
+        # Adds the entry
+        tempChar = self.termtext.get("1.0", "end")[:-1]
+        self.mrzChar =  tempChar[:pos+1] + event.char + tempChar[pos+1:] + '\n'
 
         # validation of the mrz string
-        self.stringValidation()
+        self.stringValidation(event.char)
 
     def pasteValidation(self, event):
         """
@@ -347,7 +364,7 @@ class mainWindow(Tk):
         for char in lines:
             self.termtext.insert("1.0", self.mrzChar)
             self.mrzChar = self.mrzChar + char
-            self.stringValidation()
+            self.stringValidation("")
 
         return "break"
 
@@ -362,6 +379,12 @@ class mainWindow(Tk):
     def logOnTerm(self, text):
         self.monlog['state'] = 'normal'
         self.monlog.insert('end', text)
+        self.monlog['state'] = 'disabled'
+        self.monlog.yview(END)
+
+    def clearTerm(self):
+        self.monlog['state'] = 'normal'
+        self.monlog.delete('1.0', 'end')
         self.monlog['state'] = 'disabled'
         self.monlog.yview(END)
 
@@ -417,24 +440,67 @@ class mainWindow(Tk):
 
         parent=self)
 
-    # XXX
     def computeSigma(self):
+        """
+        Launch the checksum computation, infos validation and display the results
+        """
         # the regex
         regex = re.compile("[^A-Z0-9<]")
         code = re.sub(regex, '', self.mrzChar)
+        self.compliance = True
 
-        allSums = mrz.computeAllControlSum(self.mrzDecided, code)
-        print("Code : {} | Sums : {}".format(code, allSums))
+        allSums = mrz.computeAllControlSum(self.mrzDecided, code)["ctrlSumList"]
+        #print("Code : _{}_ | Sums : {}".format(code, allSums))
+
+        self.termtext.tag_remove("conforme",  "1.0", "end")
+        self.termtext.tag_remove("nonconforme",  "1.0", "end")
+
+        self.clearTerm()
+        self.logOnTerm("Examen du document : {}\n\n".format(self.mrzDecided[2]))
+
+        for sum in allSums:
+            x = sum[1] // len(self.mrzDecided[0][0]) +1
+            y = sum[1] %  len(self.mrzDecided[0][0])
+            #print("index : {}.{}".format(x,y))
+            #print("{} == {}".format(code[sum[1]], sum[2]))
+
+            self.logOnTerm("Somme de contrôle position {} : Lu {} VS Calculé {}\n".format(sum[1], code[sum[1]], sum[2]))
+
+            # if sum is facultative or if sum is ok
+            if sum[3] or int(code[sum[1]]) == int(sum[2]):
+                self.termtext.tag_add("conforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                self.termtext.tag_configure("conforme", background="green", foreground="white")
+            else:
+                self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
+                self.compliance = False
 
 
+        if self.compliance == True:
+            self.STATUStxt['text'] = 'CONFORME'
+            self.STATUStxt['fg'] = "green"
+        else:
+            self.STATUStxt['text'] = 'NON CONFORME'
+            self.STATUStxt['fg'] = "red"
 
+        # get the infos
+        docInfos = mrz.getDocInfos(self.mrzDecided, code)
+        #print(docInfos)
+        # display the infos
+        for key in [ e for e in docInfos ]:
+            print(docInfos[key])
+            if key in ["CODE", "CTRL"]:
+                continue
+            if not docInfos[key] == False:
+                self.infoList[key]['text'] = docInfos[key]
+                self.infoList[key]['background'] = self['background']
+                self.infoList[key]['foreground'] = "black"
+            else:
+                self.infoList[key]['background'] = "red"
+                self.infoList[key]['foreground'] = "white"
+                self.infoList[key]['text'] = "NC"
 
-
-
-
-
-
-
+        return
 
 
 
