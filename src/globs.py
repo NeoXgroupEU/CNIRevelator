@@ -30,7 +30,7 @@ verstring_full      = "{}.{}.{}".format(version[0], version[1], version[2])
 verstring           = "{}.{}".format(version[0], version[1])
 debug = True
 
-changelog           = "Mise-à-jour majeure avec les corrections suivantes :\n- Renouvellement de la signature numérique de l'exécutable\n- Amélioration de présentation du log en cas d'erreur\n- Refonte totale du code source et désobfuscation\n- Téléchargements en HTTPS fiables avec somme de contrôle\n- Nouveaux terminaux d'entrées : un rapide (731) et un complet\n- Détection des documents améliorée, possibilité de choix plus fin\n\naEt les regressions suivantes :\n- Suppression temporaire de la fonction de lecture OCR. Retour planifié pour une prochaine version"
+changelog           = "Mise-à-jour majeure avec les corrections suivantes :\n- Renouvellement de la signature numérique de l'exécutable\n- Amélioration de présentation du log en cas d'erreur\n- Refonte totale du code source et désobfuscation\n- Téléchargements en HTTPS fiables avec somme de contrôle\n- Nouveaux terminaux d'entrées : un rapide (731) et un complet\n- Détection des documents améliorée, possibilité de choix plus fin\n\nEt les regressions suivantes :\n- Suppression temporaire de la fonction de lecture OCR. Retour planifié pour une prochaine version"
 
 CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 CNIRFolder          = os.getcwd()

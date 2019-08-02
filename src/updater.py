@@ -145,6 +145,8 @@ def getLatestVersion(credentials):
             
     return (finalver, finalurl, finalchecksum)
 
+
+# XXX Warning : when tesseracturl is not found, it seems to hang and freeze
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur

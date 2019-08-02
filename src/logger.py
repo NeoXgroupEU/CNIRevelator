@@ -60,9 +60,13 @@ class NewLoggingSystem:
         self.logger = logger
         self.printerr = logger.error
 
-    def printdbg(self, text):
         if globs.debug:
-            self.logger.info(text)
+            self.printdbg = self.logger.info(text)
+        else:
+            self.printdbg = self.doNothing(text)
+
+    def doNothing(self, text):
+        pass
 
     def close(self):
         logging.shutdown()
