@@ -488,7 +488,7 @@ class mainWindow(Tk):
         #print(docInfos)
         # display the infos
         for key in [ e for e in docInfos ]:
-            print(docInfos[key])
+            #print(docInfos[key])
             if key in ["CODE", "CTRL"]:
                 continue
             if not docInfos[key] == False:

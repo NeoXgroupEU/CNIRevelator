@@ -838,7 +838,7 @@ def docMatch(doc, strs):
             # logfile.printdbg("        REGEX : {}, match : {}".format(regex, matching))
             # exit the loop
 
-    logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
+    #logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
     return (level, nchar, bonus)
 
 def allDocMatch(strs, final=False):
@@ -963,7 +963,7 @@ def getDocInfos(doc, code):
 
     for field in infoTypes:
 
-        value = code[ field[1][0] : field[1][1] ]
+        value = code[ field[1][0] : field[1][1] ].replace("<", " ").strip()
 
         # State code
         if field[0] == 'PAYS' or field[0] == 'NAT':
@@ -1008,11 +1008,14 @@ def getDocInfos(doc, code):
                 res["NO"] = value
 
         elif field[0] == 'FACULT':
-            res["INDIC"] += value
+            try:
+                res["INDIC"] += value
+            except KeyError:
+                res["INDIC"] = value
         # All other cases
         else:
             if value != "":
-                res[field[0]] = value.replace("<", " ").strip()
+                res[field[0]] = value
 
     return res
 

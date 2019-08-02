@@ -270,7 +270,33 @@ def umain():
         return 0
     
     # Cleaner for the old version if detected
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
+        globs.CNIRNewVersion = True
+        launcherWindow.printmsg('Deleting old version !')
+        logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
+        while os.path.exists(str(sys.argv[2])):
+            try:
+                os.remove(str(sys.argv[2]))
+            except Exception as e:
+                logfile.printerr(str(e))
+                logfile.printdbg('Trying stop the process !')
+                launcherWindow.printmsg('Fail :{}'.format(e))
+                try:
+                    for process in psutil.process_iter():
+                        if process.name() == 'CNIRevelator.exe':
+                            logfile.printdbg('Process found. Command line: {}'.format(process.cmdline()))
+                            if process.pid == os.getpid():
+                                logfile.printdbg("Don't touch us ! {} = {}".format(process.pid, os.getpid()))
+                            else:
+                                logfile.printdbg('Terminating process !')
+                                process.terminate()
+                                os.remove(str(sys.argv[2]))
+                                break
+                except Exception as e:
+                    logfile.printerr(str(e))
+                    launcherWindow.printmsg('Fail :{}'.format(e))
+        launcherWindow.printmsg('Starting...')
+    elif len(sys.argv) > 1:
         globs.CNIRNewVersion = True
         launcherWindow.printmsg('Deleting old version !')
         logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
@@ -290,6 +316,7 @@ def umain():
                             else:
                                 logfile.printdbg('Terminating process !')
                                 process.terminate()
+                                shutil.rmtree(str(sys.argv[1]))
                                 break
                 except Exception as e:
                     logfile.printerr(str(e))

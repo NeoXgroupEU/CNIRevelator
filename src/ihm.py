@@ -98,7 +98,7 @@ class LoginDialog(Toplevel):
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
         self.bind("<Return>", self.connecti)
 
-    def connecti(self):
+    def connecti(self, event):
         self.login = self.entry_login.get().strip()
         self.key = self.entry_pass.get().strip()
         self.destroy()
