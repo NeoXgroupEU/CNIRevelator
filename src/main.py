@@ -244,7 +244,7 @@ class mainWindow(Tk):
         self.update()
         logfile.printdbg('Initialization successful')
 
-    def stringValidation(self, char):
+    def stringValidation(self, keysym):
         # analysis
         # If we must decide the type of the document
         if not self.mrzDecided:
@@ -267,6 +267,9 @@ class mainWindow(Tk):
                 self.logOnTerm("Document detecté : {}\n".format(candidates[0][2]))
                 self.mrzDecided = candidates[0]
         else:
+            # corrects some problems
+            if keysym in ["BackSpace", "Delete"]:
+                return
             # get the cursor position
             curPos = self.termtext.index(INSERT)
             # break the line
@@ -299,10 +302,12 @@ class mainWindow(Tk):
 
         # get the cursor
         if self.mrzDecided:
-            position = self.termtext.index(INSERT).split(".")
+            curPosition = self.termtext.index(INSERT)
+            position = curPosition.split(".")
             pos = (int(position[0]) - 1) * len(self.mrzDecided[0][0]) + (int(position[1]) - 1)
         else:
-            position = self.termtext.index(INSERT).split(".")
+            curPosition = self.termtext.index(INSERT)
+            position = curPosition.split(".")
             pos = (int(position[1]) - 1)
 
         # verifying that there is no Ctrl-C/Ctrl-V and others
@@ -326,9 +331,9 @@ class mainWindow(Tk):
                 if number == 0:
                     return "break"
 
-                self.mrzChar = self.termtext.get("1.0", "end")[:-1] + "<"*number
-                self.termtext.delete("1.0","end")
-                self.termtext.insert("1.0", self.mrzChar)
+                mrzChar = self.termtext.get(curPosition, "end")[:-1]
+                self.termtext.delete(curPosition,"end")
+                self.termtext.insert(curPosition, "<"*number + mrzChar)
                 self.termtext.mark_set("insert", "%d.%d" % (int(position[0]), int(position[1]) + number))
             return "break"
 
@@ -367,7 +372,7 @@ class mainWindow(Tk):
         self.mrzChar =  tempChar[:pos+1] + event.char + tempChar[pos+1:] + '\n'
 
         # validation of the mrz string
-        self.stringValidation(event.char)
+        self.stringValidation(event.keysym)
 
     def pasteValidation(self, event):
         """
