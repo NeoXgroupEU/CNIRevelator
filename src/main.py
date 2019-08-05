@@ -267,6 +267,8 @@ class mainWindow(Tk):
                 self.logOnTerm("Document detecté : {}\n".format(candidates[0][2]))
                 self.mrzDecided = candidates[0]
         else:
+            # get the cursor position
+            curPos = self.termtext.index(INSERT)
             # break the line
             if (len(self.mrzChar) - 2 >= len(self.mrzDecided[0][0])) and ("\n" not in self.mrzChar[:-1]):
                 # In case of there is no second line
@@ -274,6 +276,7 @@ class mainWindow(Tk):
                     self.mrzChar = self.termtext.get("1.0", "end")[:-1]
                     self.termtext.delete("1.0","end")
                     self.termtext.insert("1.0", self.mrzChar[:-1])
+                    self.termtext.mark_set(INSERT, curPos)
                 else:
                     # In case of there is a second line
                     self.mrzChar = self.termtext.get("1.0", "end")[:-1] + '\n'
@@ -284,6 +287,7 @@ class mainWindow(Tk):
                 self.mrzChar = self.termtext.get("1.0", "end")[:-1]
                 self.termtext.delete("1.0","end")
                 self.termtext.insert("1.0", self.mrzChar[:-1])
+                self.termtext.mark_set(INSERT, curPos)
             # compute the control sum if needed
             self.computeSigma()
 
@@ -328,6 +332,27 @@ class mainWindow(Tk):
                 self.termtext.mark_set("insert", "%d.%d" % (int(position[0]), int(position[1]) + number))
             return "break"
 
+        if event.keysym == "Escape":
+            if self.mrzDecided:
+                # Get the candidates
+                candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
+
+                if len(candidates) == 2 and len(self.mrzChar) >= 8:
+                    # Parameters for the choice invite
+                    invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                    invite.transient(self)
+                    invite.grab_set()
+                    invite.focus_force()
+
+                    self.wait_window(invite)
+
+                    self.logOnTerm("Document re-detecté : {}\n".format(candidates[invite.choice][2]))
+                    self.mrzDecided = candidates[invite.choice]
+
+                elif len(candidates) == 1:
+                    self.logOnTerm("Document re-detecté : {}\n".format(candidates[0][2]))
+                    self.mrzDecided = candidates[0]
+            return "break"
 
         # If not a control char
         if not controlled and not event.keysym in ihm.controlKeys:
@@ -434,8 +459,19 @@ class mainWindow(Tk):
         Tk().withdraw()
 
         showinfo('Aide sur les contrôles au clavier',
-        (   '' + '\n\n' +
-            "In construction"
+        (   "Terminal de saisie rapide (731) : \n\n"
+            "       Caractères autorisés : Alphanumériques en majuscule et le caractère '<'. Pas de minuscules ni caractères spéciaux, autrement la somme est mise à zéro \n\n"
+            "       Calculer résultat :\t\t\tTouche Ctrl droite \n"
+            "       Copier :\t\t\t\tCtrl-C \n"
+            "       Coller :\t\t\t\tCtrl-V \n"
+            "\n\n"
+            "Terminal de saisie MRZ complète : \n\n"
+            "       Caractères autorisés : Alphanumériques en majuscule et le caractère '<'. Pas de minuscules ni caractères spéciaux, autrement la somme est mise à zéro \n\n"
+            "       Calculer résultat :\t\t\tTouche Ctrl droite \n"
+            "       Compléter champ :\t\t\tTouche Tab \n"
+            "       Copier :\t\t\t\tCtrl-C \n"
+            "       Coller :\t\t\t\tCtrl-V \n"
+            "       Forcer une nouvelle détection du document :\tEchap\n"
         ),
 
         parent=self)
@@ -467,14 +503,18 @@ class mainWindow(Tk):
             self.logOnTerm("Somme de contrôle position {} : Lu {} VS Calculé {}\n".format(sum[1], code[sum[1]], sum[2]))
 
             # if sum is facultative or if sum is ok
-            if sum[3] or int(code[sum[1]]) == int(sum[2]):
-                self.termtext.tag_add("conforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
-                self.termtext.tag_configure("conforme", background="green", foreground="white")
-            else:
+            try:
+                if sum[3] or int(code[sum[1]]) == int(sum[2]):
+                    self.termtext.tag_add("conforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                    self.termtext.tag_configure("conforme", background="green", foreground="white")
+                else:
+                    self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                    self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
+                    self.compliance = False
+            except ValueError:
                 self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
                 self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
                 self.compliance = False
-
 
         if self.compliance == True:
             self.STATUStxt['text'] = 'CONFORME'

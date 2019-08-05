@@ -120,8 +120,8 @@ def getLatestVersion(credentials):
         os.mkdir(globs.CNIRFolder + '\\downloads')
     except:
         pass
-    getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRVerStock).download()
-
+    getTheVersions = downloader.newdownload(credentials, urlparsed[0], globs.CNIRVerStock, "the version repository").download()
+    
     logfile.printdbg('Parsing the software versions')
     with open(globs.CNIRVerStock) as versionsFile:
         versionsTab = versionsFile.read().split("\n")[1].split("||")
@@ -130,7 +130,7 @@ def getLatestVersion(credentials):
     finalver = globs.version.copy()
     for entry in versionsTab:
         if not entry:
-            break
+            continue
         verstr, url, checksum = entry.split("|")
         # Calculating sum considering we can have 99 sub versions
         ver = verstr.split(".")
@@ -142,9 +142,14 @@ def getLatestVersion(credentials):
             finalver = ver.copy()
             finalurl = url
             finalchecksum = checksum
+        else:
+            finalurl = None
+            finalchecksum = None
             
     return (finalver, finalurl, finalchecksum)
 
+
+# XXX Warning : when tesseracturl is not found, it seems to hang and freeze
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur
@@ -157,18 +162,18 @@ def tessInstall(PATH, credentials):
         
         # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
         logfile.printdbg('Preparing download of Tesseract OCR 4...')
-        getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\TsrtPackage.zip').download()
+        getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\downloads\\TsrtPackage.zip', "Tesseract 4 OCR Module").download()
         
         # Unzip Tesseract   
         logfile.printdbg("Unzipping the package")
         launcherWindow.printmsg('Installing the updates')
-        zip_ref = zipfile.ZipFile(PATH + '\\TsrtPackage.zip', 'r')
+        zip_ref = zipfile.ZipFile(PATH + '\\downloads\\TsrtPackage.zip', 'r')
         zip_ref.extractall(PATH)
         zip_ref.close()
         
         # Cleanup
         try:
-            os.remove(UPATH + '\\TsrtPackage.zip')
+            os.remove(UPATH + '\\downloads\\TsrtPackage.zip')
         except:
             pass
 
@@ -187,7 +192,7 @@ def batch(credentials):
 
     logfile.printdbg('Preparing download for the new version')
 
-    getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\..\\CNIPackage.zip').download()
+    getTheUpdate = downloader.newdownload(credentials, finalurl, globs.CNIRFolder + '\\downloads\\CNIPackage.zip', "CNIRevelator {}.{}.{}".format(finalver[0], finalver[1], finalver[2])).download()
     
     launcherWindow.printmsg('Verifying download...')
     
@@ -196,7 +201,7 @@ def batch(credentials):
     
     sha1 = hashlib.sha1()
     
-    with open(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'rb') as f:
+    with open(globs.CNIRFolder + '\\downloads\\CNIPackage.zip', 'rb') as f:
         while True:
             data = f.read(BUF_SIZE)
             if not data:
@@ -227,7 +232,7 @@ def batch(credentials):
     # Unzip    
     logfile.printdbg("Unzipping the package")
     launcherWindow.printmsg('Installing the updates')
-    zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\..\\CNIPackage.zip', 'r')
+    zip_ref = zipfile.ZipFile(globs.CNIRFolder + '\\downloads\\CNIPackage.zip', 'r')
     zip_ref.extractall(UPATH + "temp")
     zip_ref.close()
     
@@ -243,7 +248,7 @@ def batch(credentials):
         
     # Cleanup
     try:
-        os.remove(globs.CNIRFolder + '\\..\\CNIPackage.zip')
+        os.remove(globs.CNIRFolder + '\\downloads\\CNIPackage.zip')
     except:
         pass
     # Time to quit
