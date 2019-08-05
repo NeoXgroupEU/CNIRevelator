@@ -157,15 +157,16 @@ class newcredentials:
         return
 
 class newdownload:
-    def __init__(self, credentials, urlFile, destinationFile):
+    def __init__(self, credentials, urlFile, destinationFile, title):
         self.urlFile = urlFile
         self.destinationFile = destinationFile
         self.session = credentials.sessionHandler
+        self.title = title
         
         logfile = logger.logCur
         launcherWindow = ihm.launcherWindowCur
         
-        logfile.printdbg('Requesting download of {}'.format(self.urlFile))
+        logfile.printdbg('Requesting download of {}'.format(urlFile))
         
         self.handler = self.session.get(self.urlFile, stream=True, headers={'Connection' : 'close', "Cache-Control": "no-cache", "Pragma": "no-cache"})
         self.handler.raise_for_status()
@@ -179,10 +180,12 @@ class newdownload:
         launcherWindow = ihm.launcherWindowCur
         url = self.urlFile
         filename = self.destinationFile
+        title = self.title
         
         reducedFilename = filename.split("\\")[-1]
         
-        launcherWindow.printmsg('Downloading  {}'.format(reducedFilename))
+        launcherWindow.printmsg('Downloading  {}'.format(title))
+        logfile.printdbg('Requesting download of {}'.format(reducedFilename))
 
         try:
             os.remove(filename)
@@ -198,7 +201,7 @@ class newdownload:
                 
                 launcherWindow.progressBar.stop()
                 launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)), maximum=100)
-                launcherWindow.printmsg('Downloading  {}'.format(reducedFilename) + ' : {:4.2f} %'.format(Percent))
+                launcherWindow.printmsg('Downloading  {}'.format(title) + ' : {:4.2f} %'.format(Percent))
                 
         launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
         launcherWindow.progressBar.start()

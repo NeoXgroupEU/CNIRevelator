@@ -32,7 +32,7 @@ import logger               # logger.py
 import globs                # globs.py
 
 
-controlKeys = ["Right", "Left", "Up", "Down", "Home", "End", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
+controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
 
 class DocumentAsk(Toplevel):
 

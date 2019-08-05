@@ -25,8 +25,9 @@
 import os
 
 # CNIRevelator version
-version             = [3, 0, 1]
-verstring_full      = "{}.{}.{}".format(version[0], version[1], version[2])
+verType             = "alpha"
+version             = [3, 0, 2]
+verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 debug = True
 

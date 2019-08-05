@@ -61,9 +61,9 @@ class NewLoggingSystem:
         self.printerr = logger.error
 
         if globs.debug:
-            self.printdbg = self.logger.info(text)
+            self.printdbg = self.logger.info
         else:
-            self.printdbg = self.doNothing(text)
+            self.printdbg = self.doNothing
 
     def doNothing(self, text):
         pass
