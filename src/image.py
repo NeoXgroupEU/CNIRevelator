@@ -24,7 +24,7 @@
 """
 
 class CanvasImage:
-    
+
     def __init__(self, placeholder, file, type):
         """ Initialize the ImageFrame """
         self.type = type

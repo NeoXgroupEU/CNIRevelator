@@ -108,35 +108,41 @@ class LauncherWindow(Tk):
     def __init__(self):
         # Initialize the tkinter main class
         Tk.__init__(self)
-        self.configure(bg=globs.CNIRLColor)
         self.resizable(width=False, height=False)
-        self.queue = []
 
         # Setting up the geometry
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        wheight = hs /4
-        wwidth  = ws /4
+        wheight = 274
+        wwidth  = 480
+        # Centering
+        x = ws / 2 - wwidth  / 2
+        y = hs / 2 - wheight / 2
+        self.geometry('%dx%d+%d+%d' % (wwidth, wheight, x, y))
 
         # Creating objects
-        self.mainCanvas = Canvas(self, width=wwidth, height=wheight*9/10, bg=globs.CNIRLColor, highlightthickness=0)
-        self.pBarZone = Canvas(self, width=wwidth, height=wheight/10, bg=globs.CNIRLColor)
+        self.image =  PhotoImage(file = "background.png")
+        self.mainCanvas = Canvas(self, width=wwidth, height=wheight, bg=globs.CNIRLColor, highlightthickness=0)
+        self.mainCanvas.create_image(wwidth /2, wheight /2, image=self.image)
 
-        self.progressBar = ttk.Progressbar(self.pBarZone, orient=HORIZONTAL, length=wwidth-10, mode='determinate')
+        # Column
+        self.mainCanvas.grid_rowconfigure(0, weight=1, minsize=(wheight / 10 * 9))
+        self.mainCanvas.grid_rowconfigure(1, weight=1, minsize=(wheight / 10 * 1))
 
         self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Helvetica 30', fill='white')
         self.mainCanvas.create_text((wwidth / 2), (wheight / 2), text="version " + (globs.verstring_full), font='Helvetica 8', fill='white')
         self.msg = self.mainCanvas.create_text((wwidth / 2), (wheight / 1.20), text='Booting up...', font='Helvetica 9', fill='white')
 
+        #self.pBarZone = Frame(self.mainCanvas, width=wwidth, height=wheight/10)
+        self.update()
+
+        self.progressBar = ttk.Progressbar(self.mainCanvas, orient=HORIZONTAL, length=wwidth, mode='determinate')
+
         self.wm_title(globs.CNIRName)
 
-        # Centering
-        x = ws / 2 - wwidth  / 2
-        y = hs / 2 - wheight / 2
-        self.geometry('%dx%d+%d+%d' % (wwidth, wheight, x, y))
-        self.mainCanvas.grid()
-        self.pBarZone.grid()
-        self.progressBar.grid()
+        self.mainCanvas.grid(row=0)
+        self.update()
+        self.progressBar.grid(row=1, sticky='S')
 
 
         if getattr(sys, 'frozen', False):

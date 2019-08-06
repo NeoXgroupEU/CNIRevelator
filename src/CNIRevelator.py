@@ -6,6 +6,7 @@
 *                                                                              *
 *  Copyright © 2018-2019 Adrien Bourmault (neox95)                             *
 *                                                                              *
+*                                                                              *
 *  This file is part of CNIRevelator.                                          *
 *                                                                              *
 *  CNIRevelator is free software: you can redistribute it and/or modify        *
