@@ -125,7 +125,8 @@ class LauncherWindow(Tk):
         self.progressBar = ttk.Progressbar(self.pBarZone, orient=HORIZONTAL, length=wwidth-10, mode='determinate')
 
         self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Helvetica 30', fill='white')
-        self.msg = self.mainCanvas.create_text((wwidth / 2.05), (wheight / 1.20), text='Booting up...', font='Helvetica 9', fill='white')
+        self.mainCanvas.create_text((wwidth / 2), (wheight / 2), text="version " + (globs.verstring_full), font='Helvetica 8', fill='white')
+        self.msg = self.mainCanvas.create_text((wwidth / 2), (wheight / 1.20), text='Booting up...', font='Helvetica 9', fill='white')
 
         self.wm_title(globs.CNIRName)
 
