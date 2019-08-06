@@ -143,7 +143,7 @@ def getLatestVersion(credentials):
             finalurl = url
             finalchecksum = checksum
         else:
-            finalurl = None
+            finalurl = url
             finalchecksum = None
             
     return (finalver, finalurl, finalchecksum)
@@ -243,9 +243,6 @@ def batch(credentials):
 
     launcherWindow.printmsg('Success !')
     
-    # Install Tesseract !
-    tessInstall(UPATH, credentials)
-        
     # Cleanup
     try:
         os.remove(globs.CNIRFolder + '\\downloads\\CNIPackage.zip')
