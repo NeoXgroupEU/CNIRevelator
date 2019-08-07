@@ -27,9 +27,12 @@ from tkinter import *
 from tkinter.messagebox import *
 from tkinter import filedialog
 from tkinter import ttk
+import cv2
+import PIL.Image, PIL.ImageTk
 
 import logger               # logger.py
 import globs                # globs.py
+import image                # image.py
 
 
 controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
@@ -121,9 +124,18 @@ class LauncherWindow(Tk):
         self.geometry('%dx%d+%d+%d' % (wwidth, wheight, x, y))
 
         # Creating objects
-        self.image =  PhotoImage(file = "background.png")
+        # Load an image using OpenCV
+        cv_img = cv2.imread("background.png")
+        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        cv_img = cv2.blur(cv_img, (15, 15))
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width, no_channels = cv_img.shape
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width, no_channels = cv_img.shape
+        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+        self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
         self.mainCanvas = Canvas(self, width=wwidth, height=wheight, bg=globs.CNIRLColor, highlightthickness=0)
-        self.mainCanvas.create_image(wwidth /2, wheight /2, image=self.image)
+        self.mainCanvas.create_image(wwidth /2, wheight /2, image=self.photo)
 
         # Column
         self.mainCanvas.grid_rowconfigure(0, weight=1, minsize=(wheight / 10 * 9))
@@ -158,6 +170,9 @@ class LauncherWindow(Tk):
     def printmsg(self, msg):
         self.mainCanvas.itemconfigure(self.msg, text=(msg))
 
+    def exit(self):
+        self.after(1000, self.destroy)
+
 class AutoScrollbar(ttk.Scrollbar):
 
     def set(self, lo, hi):
@@ -173,156 +188,21 @@ class AutoScrollbar(ttk.Scrollbar):
     def place(self, **kw):
         raise TclError('Cannot use place with the widget ' + self.__class__.__name__)
 
-class OpenPageDialog(Toplevel):
+class ResizeableCanvas(Canvas):
+    def __init__(self,parent,**kwargs):
+        Canvas.__init__(self,parent,**kwargs)
+        self.bind("<Configure>", self.on_resize)
+        self.height = self.winfo_reqheight()
+        self.width = self.winfo_reqwidth()
 
-    def __init__(self, parent, number):
-        super().__init__(parent)
-        self.parent = parent
-        self.title("Choisir la page à afficher de l'image selectionnée")
-        self.resizable(width=False, height=False)
-        self.termtext = Label(self, text='Merci de selectionner un numéro de page dans la liste ci-dessous.')
-        self.termtext.grid(column=0, row=0, sticky='N', padx=5, pady=5)
-        self.combotry = ttk.Combobox(self)
-        self.combotry['values'] = tuple(str(x) for x in range(1, number + 1))
-        self.combotry.grid(column=0, row=1, sticky='N', padx=5, pady=5)
-        self.button = Button(self, text='Valider', command=(self.valid))
-        self.button.grid(column=0, row=2, sticky='S', padx=5, pady=5)
-        self.update()
-        hs = self.winfo_screenheight()
-        w = int(self.winfo_width())
-        h = int(self.winfo_height())
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        x = ws / 2 - w / 2
-        y = hs / 2 - h / 2
-        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        if getattr(sys, 'frozen', False):
-            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.iconbitmap('id-card.ico')
-
-    def valid(self):
-        self.parent.page = self.combotry.current()
-        self.destroy()
-
-
-class OpenScanWin(Toplevel):
-
-    def __init__(self, parent, file, type, nframe=1):
-        super().__init__(parent)
-        self.parent = parent
-        app = OpenScan(self, file, type, nframe)
-
-class OpenScan(ttk.Frame):
-    def __init__(self, mainframe, fileorig, type, nframe=1, pagenum=0, file=None):
-        """ Initialize the main Frame """
-        if file == None:
-            file = fileorig
-        self.file = file
-        self.fileorig = fileorig
-        self.nframe = nframe
-        self.pagenum = pagenum
-        self.parent = mainframe.parent
-        ttk.Frame.__init__(self, master=mainframe)
-        self.master.title('Ouvrir un scan... (Utilisez la roulette pour zoomer, clic gauche pour déplacer et clic droit pour sélectionner la MRZ)')
-        self.master.resizable(width=False, height=False)
-        hs = self.winfo_screenheight()
-        w = int(self.winfo_screenheight() / 1.5)
-        h = int(self.winfo_screenheight() / 2)
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        x = ws / 2 - w / 2
-        y = hs / 2 - h / 2
-        self.master.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        if getattr(sys, 'frozen', False):
-            self.master.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.master.iconbitmap('id-card.ico')
-        self.master.rowconfigure(0, weight=1)
-        self.master.columnconfigure(0, weight=1)
-        self.cadre = CanvasImage(self.master, self.file, type)
-        self.cadre.grid(row=0, column=0)
-        self.master.menubar = Menu(self.master)
-        if type == 1:
-            self.master.menubar.add_command(label='Page précédente', command=(self.pagep))
-        self.master.menubar.add_command(label='Pivoter -90°', command=(self.cadre.rotatemm))
-        self.master.menubar.add_command(label='Pivoter -1°', command=(self.cadre.rotatem))
-        self.master.menubar.add_command(label='Pivoter +1°', command=(self.cadre.rotatep))
-        self.master.menubar.add_command(label='Pivoter +90°', command=(self.cadre.rotatepp))
-        if type == 1:
-            self.master.menubar.add_command(label='Page suivante', command=(self.pages))
-        self.master.config(menu=(self.master.menubar))
-        self.cadre.canvas.bind('<ButtonPress-3>', self.motionprep)
-        self.cadre.canvas.bind('<B3-Motion>', self.motionize)
-        self.cadre.canvas.bind('<ButtonRelease-3>', self.motionend)
-
-    def pages(self):
-        if self.pagenum + 1 < self.nframe:
-            im = Image.open(self.fileorig)
-            im.seek(self.pagenum + 1)
-            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
-            im.save(newpath)
-            im.close()
-            self.cadre.destroy()
-            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum + 1, newpath)
-
-    def pagep(self):
-        if self.pagenum - 1 >= 0:
-            im = Image.open(self.fileorig)
-            im.seek(self.pagenum - 1)
-            newpath = globs.CNIREnv + '\\temp' + str(random.randint(11111, 99999)) + '.tif'
-            im.save(newpath)
-            im.close()
-            self.cadre.destroy()
-            self.__init__(self.master, self.fileorig, 1, self.nframe, self.pagenum - 1, newpath)
-
-    def motionprep(self, event):
-        if hasattr(self, 'rect'):
-            self.begx = event.x
-            self.begy = event.y
-            self.ix = self.cadre.canvas.canvasx(event.x)
-            self.iy = self.cadre.canvas.canvasy(event.y)
-            self.cadre.canvas.coords(self.rect, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y), self.ix, self.iy)
-        else:
-            self.begx = event.x
-            self.begy = event.y
-            self.ix = self.cadre.canvas.canvasx(event.x)
-            self.iy = self.cadre.canvas.canvasy(event.y)
-            self.rect = self.cadre.canvas.create_rectangle((self.cadre.canvas.canvasx(event.x)), (self.cadre.canvas.canvasy(event.y)), (self.ix), (self.iy), outline='red')
-
-    def motionize(self, event):
-        event.x
-        event.y
-        self.cadre.canvas.coords(self.rect, self.ix, self.iy, self.cadre.canvas.canvasx(event.x), self.cadre.canvas.canvasy(event.y))
-
-    def motionend(self, event):
-        self.endx = event.x
-        self.endy = event.y
-        self.imtotreat = self.cadre.resizedim.crop((min(self.begx, self.endx), min(self.begy, self.endy), max(self.endx, self.begx), max(self.endy, self.begy)))
-        im = self.imtotreat
-        import CNI_pytesseract as pytesseract
-        try:
-            os.environ['PATH'] = globs.CNIREnv + '\\Tesseract-OCR4\\'
-            os.environ['TESSDATA_PREFIX'] = globs.CNIREnv + '\\Tesseract-OCR4\\tessdata'
-            self.text = pytesseract.image_to_string(im, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
-        except pytesseract.TesseractNotFoundError as e:
-            try:
-                os.remove(globs.CNIREnv + '\\Tesseract-OCR4\\*.*')
-            except Exception:
-                pass
-
-            showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable. Il sera réinstallé à la prochaine exécution'), parent=self)
-        except pytesseract.TesseractError as e:
-            pass
-
-        self.master.success = False
-        dialogconf = OpenScanDialog(self.master, self.text)
-        dialogconf.transient(self)
-        dialogconf.grab_set()
-        self.wait_window(dialogconf)
-        if self.master.success:
-            self.master.destroy()
-
+    def on_resize(self,event):
+        # determine the ratio of old width/height to new width/height
+        wscale = float(event.width)/self.width
+        hscale = float(event.height)/self.height
+        self.width = event.width
+        self.height = event.height
+        # rescale all the objects tagged with the "all" tag
+        self.scale("all",0,0,wscale,hscale)
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()

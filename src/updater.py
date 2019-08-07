@@ -42,6 +42,8 @@ import downloader   # downloader.py
 UPDATE_IS_MADE = False
 UPATH = ' '
 
+launcherWindow = ihm.launcherWindowCur
+
 def createShortcut(path, target='', wDir='', icon=''):
     """
     Creates a shortcut for a program or an internet link
@@ -127,7 +129,7 @@ def getLatestVersion(credentials):
 
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
 
     # First retrieving the urls !
     while True:
@@ -194,7 +196,7 @@ def getLatestVersion(credentials):
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
     
     # Verifying that Tesseract is installed
     if not os.path.exists(PATH + '\\Tesseract-OCR4\\'):
@@ -222,7 +224,7 @@ def tessInstall(PATH, credentials):
 def batch(credentials):
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
 
     # Get the latest version of CNIRevelator
     finalver, finalurl, finalchecksum = getLatestVersion(credentials)
@@ -300,7 +302,7 @@ def umain():
     
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
     
     credentials = downloader.newcredentials()
     
@@ -308,8 +310,7 @@ def umain():
         logfile.printerr("Credentials Error. No effective update !")
         launcherWindow.printmsg('Credentials Error. No effective update !')
         time.sleep(2)
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         return 0
     
     # Cleaner for the old version if detected
@@ -376,7 +377,7 @@ def umain():
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
-            launcherWindow.destroy()
+            launcherWindow.exit()
             return 1
 
         if success:
@@ -386,14 +387,12 @@ def umain():
             logfile.printerr("An error occured. No effective update !")
             launcherWindow.printmsg('An error occured. No effective update !')
         time.sleep(2)
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         return 0
 
     except:
         logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         sys.exit(2)
         return 2
 
