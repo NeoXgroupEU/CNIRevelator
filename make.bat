@@ -4,7 +4,7 @@ title Compilation de CNIRevelator
 
 
 
-call pyinstaller -c -D --exclude-module PyQt5 --bootloader-ignore-signals --add-data "C:\Users\pf04950\AppData\Local\Continuum\anaconda3\Lib\site-packages\tld\res\effective_tld_names.dat.txt";"tld\res" --add-data "id-card.ico";"id-card.ico" -i "id-card.ico" -n CNIRevelator src\CNIRevelator.py 
+call pyinstaller -w -D --exclude-module PyQt5 --bootloader-ignore-signals --add-data "C:\Users\pf04950\AppData\Local\Continuum\anaconda3\Lib\site-packages\tld\res\effective_tld_names.dat.txt";"tld\res" --add-data "id-card.ico";"id-card.ico" -i "id-card.ico" -n CNIRevelator src\CNIRevelator.py 
 
 
 
