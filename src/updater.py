@@ -34,9 +34,9 @@ import hashlib
 import subprocess
 import psutil
 
+import ihm          # ihm.py
 import logger       # logger.py
 import globs        # globs.py
-import ihm          # ihm.py
 import downloader   # downloader.py
 
 UPDATE_IS_MADE = False

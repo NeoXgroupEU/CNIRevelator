@@ -125,6 +125,11 @@ class LauncherWindow(Tk):
 
         # Creating objects
         # Load an image using OpenCV
+        # if getattr(sys, 'frozen', False):
+        #    cv_img = cv2.imread(sys._MEIPASS +  r"\background.png\background.png")
+        # else:
+        cv_img = cv2.imread("background.png")
+
         cv_img = cv2.imread("background.png")
         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         cv_img = cv2.blur(cv_img, (15, 15))
