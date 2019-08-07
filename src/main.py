@@ -55,11 +55,13 @@ class mainWindow(Tk):
         self.Tags = []
         self.compliance = True
 
-        # Get the screen size
+        # Hide during construction
+        self.withdraw()
+
+        # Get the screen size and center
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
         logfile.printdbg('Launching main window with resolution' + str(ws) + 'x' + str(hs))
-        self.grid()
 
         # Configuring the size of each part of the window
         self.grid_columnconfigure(0, weight=1, minsize=(ws / 2 * 0.3333333333333333))
@@ -201,7 +203,6 @@ class mainWindow(Tk):
         self.terminal.grid(column=0, row=2, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.terminal2.grid(column=0, row=1, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.monitor.grid(column=2, row=1, sticky='EWNS', columnspan=1, rowspan=2, padx=5, pady=5)
-        self.update()
 
         # What is a window without a menu bar ?
         menubar = Menu(self)
@@ -229,19 +230,21 @@ class mainWindow(Tk):
         # Make this window resizable and set her size
         self.resizable(width=True, height=True)
         self.minsize(self.winfo_width(), self.winfo_height())
-        w = int(self.winfo_width())
-        h = int(self.winfo_height())
+        self.update()
+        w = int(self.winfo_reqwidth())
+        h = int(self.winfo_reqheight())
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        x = ws / 2 - w / 2
-        y = hs / 2 - h / 2
+        x = (ws - w)/2
+        y = (hs - h)/2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.update()
+        self.deiconify()
 
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
-        self.update()
         logfile.printdbg('Initialization successful')
 
     def stringValidation(self, keysym):
