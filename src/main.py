@@ -32,6 +32,9 @@ from tkinter import ttk
 import threading
 from datetime import datetime
 import re
+import traceback
+import cv2
+import PIL.Image, PIL.ImageTk
 
 import ihm                      # ihm.py
 import logger                   # logger.py
@@ -55,11 +58,13 @@ class mainWindow(Tk):
         self.Tags = []
         self.compliance = True
 
-        # Get the screen size
+        # Hide during construction
+        self.withdraw()
+
+        # Get the screen size and center
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
         logfile.printdbg('Launching main window with resolution' + str(ws) + 'x' + str(hs))
-        self.grid()
 
         # Configuring the size of each part of the window
         self.grid_columnconfigure(0, weight=1, minsize=(ws / 2 * 0.3333333333333333))
@@ -141,13 +146,18 @@ class mainWindow(Tk):
             "INDIC"  : self.indic,
         }
 
-        # The STATUS indicator
-        self.STATUT = ttk.Labelframe(self, text='Statut')
+        # The STATUS indicator + image display
+        self.STATUT = ttk.Labelframe(self, text='Affichage de documents et statut')
         self.STATUT.grid_columnconfigure(0, weight=1)
         self.STATUT.grid_rowconfigure(0, weight=1)
-        self.STATUStxt = Label((self.STATUT), text='', font='Times 24', fg='#FFBF00')
-        self.STATUStxt.grid(column=0, row=0, padx=0, pady=0, sticky='EWNS')
-        self.STATUStxt['text'] = 'EN ATTENTE'
+        self.STATUT.frame = Frame(self.STATUT)
+        self.STATUT.frame.grid(column=0, row=0, sticky='NSEW')
+        self.STATUT.frame.grid_columnconfigure(0, weight=1)
+        self.STATUT.frame.grid_rowconfigure(0, weight=1)
+        self.STATUT.ZONE = ihm.ResizeableCanvas(self.STATUT.frame, bg=self["background"])
+        self.STATUT.ZONE.pack(fill="both", expand=True)
+        self.STATUSimg = self.STATUT.ZONE.create_image(0,0, image=None)
+        self.STATUStxt = self.STATUT.ZONE.create_text(0,0, text='', font='Times 24', fill='#FFBF00')
 
         # The terminal to enter the MRZ
         self.terminal = ttk.Labelframe(self, text='Terminal de saisie de MRZ complète')
@@ -201,7 +211,6 @@ class mainWindow(Tk):
         self.terminal.grid(column=0, row=2, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.terminal2.grid(column=0, row=1, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.monitor.grid(column=2, row=1, sticky='EWNS', columnspan=1, rowspan=2, padx=5, pady=5)
-        self.update()
 
         # What is a window without a menu bar ?
         menubar = Menu(self)
@@ -228,21 +237,47 @@ class mainWindow(Tk):
 
         # Make this window resizable and set her size
         self.resizable(width=True, height=True)
-        self.minsize(self.winfo_width(), self.winfo_height())
-        w = int(self.winfo_width())
-        h = int(self.winfo_height())
+        self.update()
+        w = int(self.winfo_reqwidth())
+        h = int(self.winfo_reqheight())
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        x = ws / 2 - w / 2
-        y = hs / 2 - h / 2
+        x = (ws - w)/2
+        y = (hs - h)/2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.update()
+        self.deiconify()
+        self.minsize(self.winfo_width(), self.winfo_height())
+
+        # Load an image using OpenCV
+        cv_img = cv2.imread("background.png")
+        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        cv_img = cv2.blur(cv_img, (15, 15))
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width = cv_img.shape
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width = cv_img.shape
+        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+        photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
+        self.statusUpdate("EN ATTENTE", "#FFBF00", photo, setplace=True)
+
 
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
-        self.update()
         logfile.printdbg('Initialization successful')
+
+    def statusUpdate(self, msg, color, image=None, setplace=False):
+        if image:
+            self.STATUT.image = image
+
+        self.STATUT.ZONE.itemconfigure(self.STATUSimg, image=(self.STATUT.image))
+        self.STATUT.ZONE.itemconfigure(self.STATUStxt, text=(msg), fill=color)
+
+        if setplace:
+            self.STATUT.ZONE.move(self.STATUSimg, self.STATUT.ZONE.winfo_reqwidth() / 2, self.STATUT.ZONE.winfo_reqheight() / 2)
+            self.STATUT.ZONE.move(self.STATUStxt, self.STATUT.ZONE.winfo_reqwidth() / 2, self.STATUT.ZONE.winfo_reqheight() / 2)
 
     def stringValidation(self, keysym):
         # analysis
@@ -426,8 +461,13 @@ class mainWindow(Tk):
 
 
     def openingScan(self):
-        pass
-        # OPEN A SCAN
+        path = ''
+        path = filedialog.askopenfilename(parent=self, title='Ouvrir un scan de CNI...', filetypes=(('TIF files', '*.tif'),
+                                                                                                    ('TIF files', '*.tiff'),
+                                                                                                    ('JPEG files', '*.jpg'),
+                                                                                                    ('JPEG files', '*.jpeg')))
+        self.mrzdetected = ''
+        self.mrzdict = {}
 
     def newEntry(self):
         self.initialize()
@@ -521,13 +561,6 @@ class mainWindow(Tk):
                 self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
                 self.compliance = False
 
-        if self.compliance == True:
-            self.STATUStxt['text'] = 'CONFORME'
-            self.STATUStxt['fg'] = "green"
-        else:
-            self.STATUStxt['text'] = 'NON CONFORME'
-            self.STATUStxt['fg'] = "red"
-
         # get the infos
         docInfos = mrz.getDocInfos(self.mrzDecided, code)
         #print(docInfos)
@@ -544,6 +577,12 @@ class mainWindow(Tk):
                 self.infoList[key]['background'] = "red"
                 self.infoList[key]['foreground'] = "white"
                 self.infoList[key]['text'] = "NC"
+                self.compliance = False
+
+        if self.compliance == True:
+            self.statusUpdate("CONFORME", "chartreuse2")
+        else:
+            self.statusUpdate("NON-CONFORME","red")
 
         return
 

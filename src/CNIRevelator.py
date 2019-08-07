@@ -6,6 +6,7 @@
 *                                                                              *
 *  Copyright © 2018-2019 Adrien Bourmault (neox95)                             *
 *                                                                              *
+*                                                                              *
 *  This file is part of CNIRevelator.                                          *
 *                                                                              *
 *  CNIRevelator is free software: you can redistribute it and/or modify        *
@@ -63,7 +64,10 @@ def main():
     if globs.CNIRNewVersion:
         showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' + globs.changelog), parent=mainw)
     logfile.printdbg('main() : **** Launching App_main() ****')
-    mainw.mainloop()
+    try:
+        mainw.mainloop()
+    except Exception as e:
+        showerror("CNIRevelator Fatal Error", "An error has occured : {}".format(e), parent=mainw)
     logfile.printdbg('main() : **** Ending App_main() ****')
 
     logfile.printdbg('*** CNIRevelator LOGFILE. Goodbye World ! ***')

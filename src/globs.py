@@ -26,12 +26,13 @@ import os
 
 # CNIRevelator version
 verType             = "alpha"
-version             = [3, 0, 5]
+version             = [3, 0, 6]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 debug = True
 
-changelog           =   "Version 3.0.5 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'icône de l'exécutable afin de refléter le changement de version majeur accompli en 3.0\n\n" + \
+changelog           =   "Version 3.0.6 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'apparence du launcher de l'application\n- Améliorations de l'interface, notamment de la stabilité\n- Ajout de la signature numérique de l'exécutable\n\n" + \
+"Version 3.0.5 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'icône de l'exécutable afin de refléter le changement de version majeur accompli en 3.0\n\n" + \
 "Version 3.0.4 \nMise-à-jour mineure avec les corrections suivantes :\n- Correction d'un bug affectant le système de mise-à-jour\n\n" + \
 "Version 3.0.3 \nMise-à-jour mineure avec les corrections suivantes :\n- Correction d'un bug affectant le changelog\n- Correction d'une erreur avec la touche Suppr Arrière et Suppr causant une perte de données\n\n" + \
 "Version 3.0.2 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement d'icône de l'exécutable\n- Correction d'un bug affectant le logging\n- Correction d'un bug affectant la détection de documents\n- Et autres modifications mineures\n\n" + \

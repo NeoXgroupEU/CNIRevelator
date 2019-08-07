@@ -42,6 +42,8 @@ import downloader   # downloader.py
 UPDATE_IS_MADE = False
 UPATH = ' '
 
+launcherWindow = ihm.launcherWindowCur
+
 def createShortcut(path, target='', wDir='', icon=''):
     """
     Creates a shortcut for a program or an internet link
@@ -79,6 +81,47 @@ def exitProcess(arg):
             process.terminate()
     sys.exit(arg)
 
+def runPowershell(scriptblock, cwd=os.getcwd()):
+    """
+    Executes a powershell command
+    """
+    log.debug("Running PowerShell Block:\r\n%s", scriptblock)
+    log.debug("Current Directory: %s\r\n" % cwd)
+    psProc = subprocess.Popen([r'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe',
+                                '-ExecutionPolicy', 'Bypass',
+                                '-noprofile',
+                                '-c', '-',],
+                                cwd=cwd,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    stdoutdata, stderrdata = psProc.communicate(scriptblock)
+
+    if stdoutdata:
+        log.debug("Script Output:\r\n%s" % stdoutdata)
+    elif not stderrdata:
+        log.debug("Script completed succssfully (no stdout/stderr).")
+    if stderrdata:
+        log.error("Script Error:\r\n%s" % stderrdata)
+
+    return stdoutdata, stderrdata
+
+
+def getCertificates(server_list, location="LocalMachine", store="My"):
+    """
+    Returns the json data of all installed certificates
+    """
+    cmd = '''
+$sb = { ls Cert:\%s\%s | Select Subject,ThumbPrint }
+$Servers = '%s' | ConvertFrom-Json
+
+Invoke-Command -ComputerName $Servers -ScriptBlock $sb -Authentication Negotiate | ConvertTo-Json -Depth 999
+    ''' % (location, store, json.dumps(server_list))
+    stdoutdata, stderrdata = runPowershell(cmd)
+    return json.loads(stdoutdata)
+
+
+
 def getLatestVersion(credentials):
     """
     Returns the latest version of the software
@@ -86,7 +129,7 @@ def getLatestVersion(credentials):
 
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
 
     # First retrieving the urls !
     while True:
@@ -153,7 +196,7 @@ def getLatestVersion(credentials):
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
     
     # Verifying that Tesseract is installed
     if not os.path.exists(PATH + '\\Tesseract-OCR4\\'):
@@ -181,7 +224,7 @@ def tessInstall(PATH, credentials):
 def batch(credentials):
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
 
     # Get the latest version of CNIRevelator
     finalver, finalurl, finalchecksum = getLatestVersion(credentials)
@@ -259,7 +302,7 @@ def umain():
     
     # Global Handlers
     logfile = logger.logCur
-    launcherWindow = ihm.launcherWindowCur
+     
     
     credentials = downloader.newcredentials()
     
@@ -267,8 +310,7 @@ def umain():
         logfile.printerr("Credentials Error. No effective update !")
         launcherWindow.printmsg('Credentials Error. No effective update !')
         time.sleep(2)
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         return 0
     
     # Cleaner for the old version if detected
@@ -335,7 +377,7 @@ def umain():
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
-            launcherWindow.destroy()
+            launcherWindow.exit()
             return 1
 
         if success:
@@ -345,14 +387,12 @@ def umain():
             logfile.printerr("An error occured. No effective update !")
             launcherWindow.printmsg('An error occured. No effective update !')
         time.sleep(2)
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         return 0
 
     except:
         logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
-        launcherWindow = ihm.launcherWindowCur
-        launcherWindow.destroy()
+        launcherWindow.exit()
         sys.exit(2)
         return 2
 

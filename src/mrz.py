@@ -989,7 +989,7 @@ def getDocInfos(doc, code):
             try:
                  datetime.datetime.strptime(value,"%d/%m/%y")
             except ValueError:
-                print(value)
+                #print(value)
                 if value != "":
                     res[field[0]] = False
             else:
