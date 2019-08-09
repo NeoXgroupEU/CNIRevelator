@@ -32,7 +32,6 @@ import PIL.Image, PIL.ImageTk
 
 import logger               # logger.py
 import globs                # globs.py
-import image                # image.py
 
 
 controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
@@ -177,21 +176,6 @@ class LauncherWindow(Tk):
 
     def exit(self):
         self.after(1000, self.destroy)
-
-class AutoScrollbar(ttk.Scrollbar):
-
-    def set(self, lo, hi):
-        if float(lo) <= 0.0:
-            if float(hi) >= 1.0:
-                self.grid_remove()
-            self.grid()
-            ttk.Scrollbar.set(self, lo, hi)
-
-    def pack(self, **kw):
-        raise TclError('Cannot use pack with the widget ' + self.__class__.__name__)
-
-    def place(self, **kw):
-        raise TclError('Cannot use place with the widget ' + self.__class__.__name__)
 
 class ResizeableCanvas(Canvas):
     def __init__(self,parent,**kwargs):

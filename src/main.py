@@ -41,7 +41,6 @@ import logger                   # logger.py
 import mrz                      # mrz.py
 import globs                    # globs.py
 import pytesseract              # pytesseract.py
-from image import *             # image.py
 
 # Global handler
 logfile = logger.logCur
@@ -57,6 +56,7 @@ class mainWindow(Tk):
         self.mrzDecided = False
         self.Tags = []
         self.compliance = True
+        self.corners = []
 
         # Hide during construction
         self.withdraw()
@@ -146,16 +146,98 @@ class mainWindow(Tk):
             "INDIC"  : self.indic,
         }
 
-        # The STATUS indicator + image display
+        # The STATUS indicator
         self.STATUT = ttk.Labelframe(self, text='Affichage de documents et statut')
         self.STATUT.grid_columnconfigure(0, weight=1)
+        self.STATUT.grid_columnconfigure(1, weight=0)
         self.STATUT.grid_rowconfigure(0, weight=1)
+        self.STATUT.grid_rowconfigure(1, weight=1)
+        self.STATUT.grid_rowconfigure(2, weight=1)
         self.STATUT.frame = Frame(self.STATUT)
         self.STATUT.frame.grid(column=0, row=0, sticky='NSEW')
         self.STATUT.frame.grid_columnconfigure(0, weight=1)
         self.STATUT.frame.grid_rowconfigure(0, weight=1)
-        self.STATUT.ZONE = ihm.ResizeableCanvas(self.STATUT.frame, bg=self["background"])
-        self.STATUT.ZONE.pack(fill="both", expand=True)
+        # + toolbar
+        self.toolbar = ttk.Frame(self.STATUT)
+        self.toolbar.grid_columnconfigure(0, weight=1)
+        self.toolbar.grid_columnconfigure(1, weight=1)
+        self.toolbar.grid_columnconfigure(2, weight=1)
+        self.toolbar.grid_columnconfigure(3, weight=1)
+        self.toolbar.grid_columnconfigure(4, weight=1)
+        self.toolbar.grid_columnconfigure(5, weight=1)
+        self.toolbar.grid_columnconfigure(6, weight=1, minsize=10)
+        self.toolbar.grid_columnconfigure(7, weight=1)
+        self.toolbar.grid_columnconfigure(8, weight=1, minsize=10)
+        self.toolbar.grid_columnconfigure(9, weight=1)
+        self.toolbar.grid_columnconfigure(10, weight=1)
+        self.toolbar.grid_columnconfigure(11, weight=1)
+        self.toolbar.grid_columnconfigure(12, weight=1)
+        self.toolbar.grid_columnconfigure(13, weight=1, minsize=10)
+        self.toolbar.grid_columnconfigure(14, weight=1)
+        self.toolbar.grid_rowconfigure(0, weight=1)
+
+        self.toolbar.zoomIn50Img = ImageTk.PhotoImage(PIL.Image.open("zoomIn50.png"))
+        self.toolbar.zoomIn50 = ttk.Button(self.toolbar, image=self.toolbar.zoomIn50Img, command=self.zoomInScan50)
+        self.toolbar.zoomIn50.grid(column=0, row=0)
+
+        self.toolbar.zoomIn20Img = ImageTk.PhotoImage(PIL.Image.open("zoomIn20.png"))
+        self.toolbar.zoomIn20 = ttk.Button(self.toolbar, image=self.toolbar.zoomIn20Img, command=self.zoomInScan20)
+        self.toolbar.zoomIn20.grid(column=1, row=0)
+
+        self.toolbar.zoomInImg = ImageTk.PhotoImage(PIL.Image.open("zoomIn.png"))
+        self.toolbar.zoomIn = ttk.Button(self.toolbar, image=self.toolbar.zoomInImg, command=self.zoomInScan)
+        self.toolbar.zoomIn.grid(column=2, row=0)
+
+        self.toolbar.zoomOutImg = ImageTk.PhotoImage(PIL.Image.open("zoomOut.png"))
+        self.toolbar.zoomOut = ttk.Button(self.toolbar, image=self.toolbar.zoomOutImg, command=self.zoomOutScan)
+        self.toolbar.zoomOut.grid(column=3, row=0)
+
+        self.toolbar.zoomOut20Img = ImageTk.PhotoImage(PIL.Image.open("zoomOut20.png"))
+        self.toolbar.zoomOut20 = ttk.Button(self.toolbar, image=self.toolbar.zoomOut20Img, command=self.zoomOutScan20)
+        self.toolbar.zoomOut20.grid(column=4, row=0)
+
+        self.toolbar.zoomOut50Img = ImageTk.PhotoImage(PIL.Image.open("zoomOut50.png"))
+        self.toolbar.zoomOut50 = ttk.Button(self.toolbar, image=self.toolbar.zoomOut50Img, command=self.zoomOutScan50)
+        self.toolbar.zoomOut50.grid(column=5, row=0)
+
+        self.toolbar.invertImg = ImageTk.PhotoImage(PIL.Image.open("invert.png"))
+        self.toolbar.invert = ttk.Button(self.toolbar, image=self.toolbar.invertImg, command=self.negativeScan)
+        self.toolbar.invert.grid(column=7, row=0)
+
+        self.toolbar.rotateLeftImg = ImageTk.PhotoImage(PIL.Image.open("rotateLeft.png"))
+        self.toolbar.rotateLeft = ttk.Button(self.toolbar, image=self.toolbar.rotateLeftImg, command=self.rotateLeft)
+        self.toolbar.rotateLeft.grid(column=9, row=0)
+
+        self.toolbar.rotateLeft1Img = ImageTk.PhotoImage(PIL.Image.open("rotateLeft1.png"))
+        self.toolbar.rotateLeft1 = ttk.Button(self.toolbar, image=self.toolbar.rotateLeft1Img, command=self.rotateLeft1)
+        self.toolbar.rotateLeft1.grid(column=10, row=0)
+
+        self.toolbar.rotateRight1Img = ImageTk.PhotoImage(PIL.Image.open("rotateRight1.png"))
+        self.toolbar.rotateRight1 = ttk.Button(self.toolbar, image=self.toolbar.rotateRight1Img, command=self.rotateRight1)
+        self.toolbar.rotateRight1.grid(column=11, row=0)
+
+        self.toolbar.rotateRightImg = ImageTk.PhotoImage(PIL.Image.open("rotateRight.png"))
+        self.toolbar.rotateRight = ttk.Button(self.toolbar, image=self.toolbar.rotateRightImg, command=self.rotateRight)
+        self.toolbar.rotateRight.grid(column=12, row=0)
+
+        self.toolbar.goOCR = ttk.Button(self.toolbar, text="OCR", command=self.goOCRDetection)
+        self.toolbar.goOCR.grid(column=14, row=0)
+
+        self.toolbar.grid(column=0, row=2, padx=0, pady=0)
+
+        # + image with scrollbars
+        self.STATUT.hbar = ttk.Scrollbar(self.STATUT, orient='horizontal')
+        self.STATUT.vbar = ttk.Scrollbar(self.STATUT, orient='vertical')
+        self.STATUT.hbar.grid(row=1, column=0, sticky="NSEW")
+        self.STATUT.vbar.grid(row=0, column=1, sticky="NSEW")
+
+        self.STATUT.ZONE = ihm.ResizeableCanvas(self.STATUT.frame, bg=self["background"], xscrollcommand=(self.STATUT.hbar.set),
+          yscrollcommand=(self.STATUT.vbar.set))
+        self.STATUT.ZONE.grid(sticky="NSEW")
+
+        self.STATUT.hbar.config(command=self.STATUT.ZONE.xview)
+        self.STATUT.vbar.config(command=self.STATUT.ZONE.yview)
+
         self.STATUSimg = self.STATUT.ZONE.create_image(0,0, image=None)
         self.STATUStxt = self.STATUT.ZONE.create_text(0,0, text='', font='Times 24', fill='#FFBF00')
 
@@ -191,7 +273,7 @@ class mainWindow(Tk):
         self.speed731.grid_columnconfigure(9, weight=1)
         self.speed731.grid_rowconfigure(0, weight=1)
         self.speed731text = Entry(self.speed731, font='Terminal 14')
-        self.speed731text.grid(column=0, row=0, sticky='NEW', padx=5)
+        self.speed731text.grid(column=0, row=0, sticky='NEW', padx=5, pady=5)
         self.speedResult = Text((self.speed731), state='disabled', width=1, height=1, wrap='none', font='Terminal 14')
         self.speedResult.grid(column=2, row=0, sticky='NEW')
 
@@ -206,8 +288,8 @@ class mainWindow(Tk):
         self.monitor.grid_rowconfigure(0, weight=1)
 
         # All the items griding
-        self.lecteur_ci.grid(column=0, row=0, sticky='EWNS', columnspan=2, padx=5, pady=5)
-        self.STATUT.grid(column=2, row=0, sticky='EWNS', columnspan=1, padx=5, pady=5)
+        self.lecteur_ci.grid(column=2, row=0, sticky='EWNS', columnspan=1, padx=5, pady=5)
+        self.STATUT.grid(column=0, row=0, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.terminal.grid(column=0, row=2, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.terminal2.grid(column=0, row=1, sticky='EWNS', columnspan=2, padx=5, pady=5)
         self.monitor.grid(column=2, row=1, sticky='EWNS', columnspan=1, rowspan=2, padx=5, pady=5)
@@ -260,12 +342,17 @@ class mainWindow(Tk):
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
         self.statusUpdate("EN ATTENTE", "#FFBF00", photo, setplace=True)
-
+        self.STATUT.imagePath = "background.png"
+        self.STATUT.imgZoom = 1
+        self.STATUT.rotateCount = 0
+        self.STATUT.blackhat = False
 
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
+        self.STATUT.ZONE.bind("<Button-1>", self.rectangleSelectScan)
+
         logfile.printdbg('Initialization successful')
 
     def statusUpdate(self, msg, color, image=None, setplace=False):
@@ -278,6 +365,8 @@ class mainWindow(Tk):
         if setplace:
             self.STATUT.ZONE.move(self.STATUSimg, self.STATUT.ZONE.winfo_reqwidth() / 2, self.STATUT.ZONE.winfo_reqheight() / 2)
             self.STATUT.ZONE.move(self.STATUStxt, self.STATUT.ZONE.winfo_reqwidth() / 2, self.STATUT.ZONE.winfo_reqheight() / 2)
+
+        self.STATUT.ZONE.configure(scrollregion=self.STATUT.ZONE.bbox("all"))
 
     def stringValidation(self, keysym):
         # analysis
@@ -433,6 +522,37 @@ class mainWindow(Tk):
 
         return "break"
 
+    def goOCRDetection(self):
+        cv_img = cv2.imread(self.STATUT.imagePath)
+        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        if self.STATUT.blackhat:
+            self.negativeScan()
+        if not self.STATUT.blackhat:
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width, channels_no = cv_img.shape
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width, channels_no = cv_img.shape
+        else:
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width = cv_img.shape
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width = cv_img.shape
+        # Rotate
+        rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.STATUT.rotateCount*90),1)
+        cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+        # Resize
+        dim = (int(width * (self.STATUT.imgZoom + 100) / 100), int(height * (self.STATUT.imgZoom + 100) / 100))
+        cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
+
+        x0 = int(self.corners[0][0]) + self.STATUT.ZONE.coords(self.STATUSimg)[0]
+        x1 = int(self.corners[0][1]) + self.STATUT.ZONE.coords(self.STATUSimg)[0]
+        y0 = int(self.corners[1][0]) + self.STATUT.ZONE.coords(self.STATUSimg)[1]
+        y1 = int(self.corners[1][1]) + self.STATUT.ZONE.coords(self.STATUSimg)[1]
+
+        crop_img = cv_img[y0:y1, x0:x1]
+        cv2.imshow("cropped", crop_img)
+        cv2.waitKey(0)
+
     def speedValidation(self, event):
         """
         Computation of the speed entry
@@ -466,8 +586,145 @@ class mainWindow(Tk):
                                                                                                     ('TIF files', '*.tiff'),
                                                                                                     ('JPEG files', '*.jpg'),
                                                                                                     ('JPEG files', '*.jpeg')))
-        self.mrzdetected = ''
-        self.mrzdict = {}
+        # Load an image using OpenCV
+        self.STATUT.imagePath = path
+        self.STATUT.imgZoom = 1
+        self.STATUT.blackhat = False
+        self.STATUT.rotateCount = 0
+        cv_img = cv2.imread(path)
+        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width, channels_no = cv_img.shape
+        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+        height, width, channels_no = cv_img.shape
+        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+        photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
+        self.statusUpdate("", "#FFBF00", photo)
+
+    def zoomInScan50(self, quantity = 50):
+        self.STATUT.imgZoom += quantity
+        self.resizeScan()
+
+    def zoomOutScan50(self, quantity = 50):
+        self.STATUT.imgZoom -= quantity
+        self.resizeScan()
+
+    def zoomInScan20(self, quantity = 20):
+        self.STATUT.imgZoom += quantity
+        self.resizeScan()
+
+    def zoomOutScan20(self, quantity = 20):
+        self.STATUT.imgZoom -= quantity
+        self.resizeScan()
+
+    def zoomInScan(self, quantity = 1):
+        self.STATUT.imgZoom += quantity
+        self.resizeScan()
+
+    def zoomOutScan(self, quantity = 1):
+        self.STATUT.imgZoom -= quantity
+        self.resizeScan()
+
+    def rotateLeft(self):
+        self.STATUT.rotateCount -= 1
+        if self.STATUT.rotateCount < 0:
+            self.STATUT.rotateCount = 4
+        self.resizeScan()
+
+    def rotateRight(self):
+        self.STATUT.rotateCount += 1
+        if self.STATUT.rotateCount > 4:
+            self.STATUT.rotateCount = 0
+        self.resizeScan()
+
+    def rotateRight1(self):
+        self.STATUT.rotateCount += 0.1
+        if self.STATUT.rotateCount > 4:
+            self.STATUT.rotateCount = 0
+        self.resizeScan()
+
+    def rotateLeft1(self):
+        self.STATUT.rotateCount -= 0.1
+        if self.STATUT.rotateCount < 0:
+            self.STATUT.rotateCount = 4
+        self.resizeScan()
+
+    def rectangleSelectScan(self, event):
+        canvas = event.widget
+        self.corners.append([canvas.canvasx(event.x), canvas.canvasy(event.y)])
+        if len(self.corners) == 2:
+            self.select = self.STATUT.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='cyan', width = 2)
+            print("y")
+        if len(self.corners) > 2:
+            self.corners = []
+            self.STATUT.ZONE.delete(self.select)
+
+        print(self.corners)
+
+    def negativeScan(self):
+        # Load an image using OpenCV
+        cv_img = cv2.imread(self.STATUT.imagePath)
+        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        if not self.STATUT.blackhat:
+            self.STATUT.blackhat = True
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+            cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+            cv_img = cv2.bitwise_not(cv_img)
+        else:
+            self.STATUT.blackhat = False
+        self.resizeScan(cv_img)
+
+    def resizeScan(self, cv_img = None):
+        try:
+            if not hasattr(cv_img, 'shape'):
+                # Load an image using OpenCV
+                cv_img = cv2.imread(self.STATUT.imagePath)
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                if self.STATUT.blackhat:
+                    self.negativeScan()
+
+            if not self.STATUT.blackhat:
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+            else:
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width = cv_img.shape
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width = cv_img.shape
+            # Rotate
+            rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.STATUT.rotateCount*90),1)
+            cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+            # Resize
+            dim = (int(width * (self.STATUT.imgZoom + 100) / 100), int(height * (self.STATUT.imgZoom + 100) / 100))
+            cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
+            # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+            photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
+            self.statusUpdate("", "#FFBF00", photo)
+        except Exception as e:
+            logfile.printerr("Error with opencv : {}".format(e))
+            traceback.print_exc(file=sys.stdout)
+            try:
+                # Reload an image using OpenCV
+                path = self.STATUT.imagePath
+                self.STATUT.imgZoom = 1
+                self.STATUT.blackhat = False
+                self.STATUT.rotateCount = 0
+                cv_img = cv2.imread(path)
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+                # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+                photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
+                self.statusUpdate("", "#FFBF00", photo)
+            except Exception as e:
+                logfile.printerr("Critical error with opencv : ".format(e))
+                traceback.print_exc(file=sys.stdout)
+                showerror("Erreur OpenCV (traitement d'images)", "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. L'application va se réinitialiser")
+                self.initialize()
 
     def newEntry(self):
         self.initialize()
