@@ -8,3 +8,7 @@
 
 build/*
 dist/*
+src/Tesseract-OCR4/*
+src/downloads/*
+src/config/*
+src/logs/*
