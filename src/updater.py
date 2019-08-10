@@ -56,7 +56,7 @@ def createShortcut(path, target='', wDir='', icon=''):
         shortcut.close()
     else:
         shell = Dispatch('WScript.Shell')
-        shortcut = shell.CreateShortCut(path)
+        shortcut = shell.CreateShortCut(shell.SpecialFolders("Desktop") + r"\{}".format(path))
         shortcut.Targetpath = target
         shortcut.WorkingDirectory = wDir
         if icon == '':
@@ -283,6 +283,9 @@ def batch(credentials):
     shutil.copytree(UPATH + 'temp\\CNIRevelator', UPATH)
     shutil.rmtree(UPATH + 'temp')
     logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')    
+
+    # Make a shortcut
+    createShortcut("CNIRevelator.lnk", UPATH + '\\CNIRevelator.exe', UPATH)
 
     launcherWindow.printmsg('Success !')
     
