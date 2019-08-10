@@ -382,7 +382,9 @@ class mainWindow(Tk):
         cv_img = cv2.imread(self.imageViewer.imagePath)
         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         if self.imageViewer.blackhat:
-            self.negativeScan()
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+            cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+            cv_img = cv2.bitwise_not(cv_img)
         if not self.imageViewer.blackhat:
             # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
             height, width, channels_no = cv_img.shape
@@ -405,20 +407,21 @@ class mainWindow(Tk):
         x1 = int(self.corners[1][0])
         y1 = int(self.corners[1][1])
         
-        # print("crop at {}:{}, {}:{}".format(x0,y0,x1,y1))
-        # print("real crop at {}:{}, {}:{}".format(x0+self.imageViewer.ZONE.winfo_height()/2, y0+self.imageViewer.ZONE.winfo_width()/2, x1+self.imageViewer.ZONE.winfo_height()/2, y1+self.imageViewer.ZONE.winfo_width()/2))
-        
         crop_img = cv_img[y0:y1, x0:x1]
+        
+        cv2.imshow("image", crop_img)
 
         # Get the text by OCR
         try:
             os.environ['PATH'] = globs.CNIRTesser
             os.environ['TESSDATA_PREFIX'] =  globs.CNIRTesser + '\\tessdata'
             
-            image = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(crop_img))
             text = pytesseract.image_to_string(crop_img, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
             
             # manual validation
+            # the regex
+            regex = re.compile("[^A-Z0-9<\n]")
+            text = re.sub(regex, '', text)
             self.validatedtext = ''
             invite = ihm.OpenScanDialog(self, text)
             invite.transient(self)
@@ -429,10 +432,6 @@ class mainWindow(Tk):
             print("text : {}".format(self.validatedtext))
             
             self.mrzChar = ""
-            
-            # the regex
-            regex = re.compile("[^A-Z0-9<\n]")
-            self.validatedtext = re.sub(regex, '', self.validatedtext)
             
             # Get that
             for char in self.validatedtext:
@@ -730,7 +729,9 @@ class mainWindow(Tk):
                 cv_img = cv2.imread(self.imageViewer.imagePath)
                 cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
                 if self.imageViewer.blackhat:
-                    self.negativeScan()
+                    cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                    cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+                    cv_img = cv2.bitwise_not(cv_img)
 
             if not self.imageViewer.blackhat:
                 # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
