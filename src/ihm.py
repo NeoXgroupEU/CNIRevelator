@@ -68,7 +68,45 @@ class DocumentAsk(Toplevel):
         self.choice = 1
     def ok(self):
         self.destroy()
+        
+        
+class OpenScanDialog(Toplevel):
 
+    def __init__(self, parent, text):
+        super().__init__(parent)
+        self.parent = parent
+        self.title('Validation de la MRZ détectée par OCR')
+        self.resizable(width=False, height=False)
+        self.termtext = Text(self, state='normal', width=45, height=2, wrap='none', font='Terminal 17', fg='#121f38')
+        self.termtext.grid(column=0, row=0, sticky='NEW', padx=5, pady=5)
+        self.termtext.insert('end', text + '\n')
+        self.button = Button(self, text='Valider', command=(self.valid))
+        self.button.grid(column=0, row=1, sticky='S', padx=5, pady=5)
+        self.update()
+        hs = self.winfo_screenheight()
+        w = int(self.winfo_width())
+        h = int(self.winfo_height())
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+
+    def valid(self):
+        self.parent.validatedtext = self.termtext.get('1.0', 'end')
+        texting = self.parent.validatedtext.replace(' ', '').replace('\r', '').split('\n')
+        for i in range(len(texting)):
+            for char in texting[i]:
+                if char not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<':
+                    showerror('Erreur de validation', 'La MRZ soumise contient des caractères invalides', parent=self)
+                    self.parent.validatedtext = ''
+
+        self.destroy()
+        
 class LoginDialog(Toplevel):
 
     def __init__(self, parent):
@@ -192,7 +230,7 @@ class ResizeableCanvas(Canvas):
         self.height = event.height
         # rescale all the objects tagged with the "all" tag
         self.scale("all",0,0,wscale,hscale)
-
+        
 ## Global Handler
 launcherWindowCur = LauncherWindow()
 

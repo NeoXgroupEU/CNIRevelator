@@ -46,6 +46,7 @@ CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
 CNIRNewVersion      = False
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
+CNIRTesser          = CNIRFolder + '\\Tesseract-OCR4\\'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
 CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
