@@ -93,7 +93,7 @@ class mainWindow(Tk):
 
         # Fill the data sections
         ttk.Label((self.lecteur_ci), text='Statut : ').grid(column=0, row=0, padx=5, pady=5)
-        self.STATUStxt = ttk.Label((self.lecteur_ci), text='EN ATTENTE', foreground="orange")
+        self.STATUStxt = ttk.Label((self.lecteur_ci), text='EN ATTENTE', font=("TkDefaultFont", 13, "bold"), foreground="orange", anchor=CENTER)
         self.STATUStxt.grid(column=1, row=0, padx=5, pady=5)
         ttk.Label((self.lecteur_ci), text='Nom : ').grid(column=0, row=1, padx=5, pady=5)
         self.nom = ttk.Label((self.lecteur_ci), text=' ')
@@ -291,7 +291,7 @@ class mainWindow(Tk):
         self.speed731text = Entry(self.speed731, font='Terminal 14')
         self.speed731text.grid(column=0, row=0, sticky='NEW', padx=5, pady=5)
         self.speedResult = Text((self.speed731), state='disabled', width=1, height=1, wrap='none', font='Terminal 14')
-        self.speedResult.grid(column=2, row=0, sticky='NEW')
+        self.speedResult.grid(column=2, row=0, sticky='NEW', padx=5, pady=5)
 
         # The monitor that indicates some useful infos
         self.monitor = ttk.Labelframe(self, text='Moniteur')
@@ -415,8 +415,6 @@ class mainWindow(Tk):
             y1 = int(self.corners[1][1])
             
             crop_img = cv_img[y0:y1, x0:x1]
-            
-            cv2.imshow("image", crop_img)
     
             # Get the text by OCR
             try:

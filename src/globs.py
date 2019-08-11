@@ -25,21 +25,13 @@
 import os
 
 # CNIRevelator version
-verType             = "final release (hotfix)"
-version             = [3, 0, 8]
+verType             = "final release"
+version             = [3, 1, 0]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 debug = True
 
-changelog           =   "Version 3.0.8 finale\nCorrectif : bug du système de mise-à-jour'\n\n" + \
-"Version 3.0.6 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'apparence du launcher de l'application\n- Améliorations de l'interface, notamment de la stabilité\n- Ajout de la signature numérique de l'exécutable\n\n" + \
-"Version 3.0.7 finale\nMise-à-jour majeure avec les corrections suivantes :\n- Refonte de l'interface utilisateur\n- Fonction OCR intégrée à l'application avec support des TIFF et JPEG\n- Corrections d'erreurs sur le traitement des VISA de type A et B, ainsi que les titres de séjour\n\n" + \
-"Version 3.0.6 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'apparence du launcher de l'application\n- Améliorations de l'interface, notamment de la stabilité\n- Ajout de la signature numérique de l'exécutable\n\n" + \
-"Version 3.0.5 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'icône de l'exécutable afin de refléter le changement de version majeur accompli en 3.0\n\n" + \
-"Version 3.0.4 \nMise-à-jour mineure avec les corrections suivantes :\n- Correction d'un bug affectant le système de mise-à-jour\n\n" + \
-"Version 3.0.3 \nMise-à-jour mineure avec les corrections suivantes :\n- Correction d'un bug affectant le changelog\n- Correction d'une erreur avec la touche Suppr Arrière et Suppr causant une perte de données\n\n" + \
-"Version 3.0.2 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement d'icône de l'exécutable\n- Correction d'un bug affectant le logging\n- Correction d'un bug affectant la détection de documents\n- Et autres modifications mineures\n\n" + \
-"Version 3.0.1 \nMise-à-jour majeure avec les corrections suivantes :\n- Renouvellement de la signature numérique de l'exécutable\n- Amélioration de présentation du log en cas d'erreur\n- Refonte totale du code source et désobfuscation\n- Téléchargements en HTTPS fiables avec somme de contrôle\n- Nouveaux terminaux d'entrées : un rapide (731) et un complet\n- Détection des documents améliorée, possibilité de choix plus fin\nEt les regressions suivantes :\n- Suppression temporaire de la fonction de lecture OCR. Retour planifié pour une prochaine version"
+changelog           =   "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging"
 
 CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 CNIRFolder          = os.getcwd()

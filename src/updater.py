@@ -192,7 +192,6 @@ def getLatestVersion(credentials):
     return (finalver, finalurl, finalchecksum)
 
 
-# XXX Warning : when tesseracturl is not found, it seems to hang and freeze
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur
@@ -208,6 +207,25 @@ def tessInstall(PATH, credentials):
         getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\downloads\\TsrtPackage.zip', "Tesseract 4 OCR Module").download()
         
         try:
+            # CHECKSUM
+            BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+            
+            sha1 = hashlib.sha1()
+            
+            with open(globs.CNIRFolder + '\\downloads\\TsrtPackage.zip', 'rb') as f:
+                while True:
+                    data = f.read(BUF_SIZE)
+                    if not data:
+                        break
+                    sha1.update(data)
+                    
+            check = sha1.hexdigest()
+            logfile.printdbg("SHA1: {0}".format(check))
+            
+            if not check == globs.CNIRTesserHash:
+                logfile.printerr("Checksum error")
+                return False
+            
             # Unzip Tesseract   
             logfile.printdbg("Unzipping the package")
             launcherWindow.printmsg('Installing the updates')
