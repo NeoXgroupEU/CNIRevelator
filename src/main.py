@@ -825,7 +825,7 @@ class mainWindow(Tk):
 
         showinfo('A propos de CNIRevelator',
         (   'Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n'
-            "Le fonctionnement de ce logiciel est conforme aux normes du document 9303 de l'OACI régissant les documents de voyages et d'identité" + '\n\n'
+            "Copyright © 2018-2019 Adrien Bourmault (neox95)" + "\n\n"
             "CNIRevelator est un logiciel libre : vous avez le droit de le modifier et/ou le distribuer "
             "dans les termes de la GNU General Public License telle que publiée par "
             "la Free Software Foundation, dans sa version 3 ou "
@@ -836,14 +836,15 @@ class mainWindow(Tk):
             "GNU General Public License pour plus de détails à ce sujet. "
             "\n\n"
             "Vous devriez avoir reçu une copie de la GNU General Public License "
-            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à '<https://www.gnu.org/licenses/>. "
+            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à <https://www.gnu.org/licenses/>. "
             "\n\n"
-            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004"
+            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004."
             "\n\n"
-            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019"
+            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019."
             "\n\n"
             "Le code source de ce programme est disponible sur Github à l'adresse <https://github.com/neox95/CNIRevelator>.\n"
-            " En cas de problèmes ou demande particulière, ouvrez-y une issue ou bien envoyez un mail à neox@os-k.eu !"
+            "Son fonctionnement est conforme aux normes et directives du document 9303 de l'OACI régissant les documents de voyages et d'identité." + '\n\n'
+            " En cas de problèmes ou demande particulière, ouvrez-y une issue ou bien envoyez un mail à neox@os-k.eu !\n\n"
         ),
 
         parent=self)
