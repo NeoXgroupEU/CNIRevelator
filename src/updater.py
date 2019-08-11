@@ -369,13 +369,12 @@ def umain():
                     logfile.printerr(str(e))
                     launcherWindow.printmsg('Fail :{}'.format(e))
         launcherWindow.printmsg('Starting...')
-    else:
-        tessInstall(globs.CNIRFolder, credentials)
     
     try:
         try:
             # EXECUTING THE UPDATE BATCH
             success = batch(credentials)
+            tessInstall(globs.CNIRFolder, credentials)
         except Exception as e:
             logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
             launcherWindow.printmsg('ERROR : ' + str(e))
