@@ -10,7 +10,7 @@ call pyinstaller -w -D --exclude-module PyQt5 --bootloader-ignore-signals --add-
 
 copy LICENSE dist\CNIRevelator\LICENSE
 copy src\id-card.ico dist\CNIRevelator\id-card.ico
-copy src\background.png dist\CNIRevelator\background.png
+copy src\*.png dist\CNIRevelator\*.png
 
 signtool_8.1\signtool\signtool.exe  sign /n "CNIRevelator by Adrien Bourmault (neox95)" dist\CNIRevelator\CNIRevelator.exe
 
