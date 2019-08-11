@@ -31,7 +31,7 @@ import threading
 import traceback
 import psutil
 
-import launcher     # launcher.py
+import launcher     # launcher.py"
 import updater      # updater.py
 import globs        # globs.py
 import pytesseract  # pytesseract.py

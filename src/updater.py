@@ -56,7 +56,7 @@ def createShortcut(path, target='', wDir='', icon=''):
         shortcut.close()
     else:
         shell = Dispatch('WScript.Shell')
-        shortcut = shell.CreateShortCut(path)
+        shortcut = shell.CreateShortCut(shell.SpecialFolders("Desktop") + r"\{}".format(path))
         shortcut.Targetpath = target
         shortcut.WorkingDirectory = wDir
         if icon == '':
@@ -192,7 +192,6 @@ def getLatestVersion(credentials):
     return (finalver, finalurl, finalchecksum)
 
 
-# XXX Warning : when tesseracturl is not found, it seems to hang and freeze
 def tessInstall(PATH, credentials):
     # Global Handlers
     logfile = logger.logCur
@@ -207,18 +206,43 @@ def tessInstall(PATH, credentials):
         logfile.printdbg('Preparing download of Tesseract OCR 4...')
         getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\downloads\\TsrtPackage.zip', "Tesseract 4 OCR Module").download()
         
-        # Unzip Tesseract   
-        logfile.printdbg("Unzipping the package")
-        launcherWindow.printmsg('Installing the updates')
-        zip_ref = zipfile.ZipFile(PATH + '\\downloads\\TsrtPackage.zip', 'r')
-        zip_ref.extractall(PATH)
-        zip_ref.close()
-        
-        # Cleanup
         try:
-            os.remove(UPATH + '\\downloads\\TsrtPackage.zip')
+            # CHECKSUM
+            BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+            
+            sha1 = hashlib.sha1()
+            
+            with open(globs.CNIRFolder + '\\downloads\\TsrtPackage.zip', 'rb') as f:
+                while True:
+                    data = f.read(BUF_SIZE)
+                    if not data:
+                        break
+                    sha1.update(data)
+                    
+            check = sha1.hexdigest()
+            logfile.printdbg("SHA1: {0}".format(check))
+            
+            if not check == globs.CNIRTesserHash:
+                logfile.printerr("Checksum error")
+                return False
+            
+            # Unzip Tesseract   
+            logfile.printdbg("Unzipping the package")
+            launcherWindow.printmsg('Installing the updates')
+            zip_ref = zipfile.ZipFile(PATH + '\\downloads\\TsrtPackage.zip', 'r')
+            zip_ref.extractall(PATH)
+            zip_ref.close()            
+            # Cleanup
+            try:
+                os.remove(UPATH + '\\downloads\\TsrtPackage.zip')
+            except:
+                pass                
+            return True
+
         except:
-            pass
+            return False
+    else:
+        return True
 
 ## Main Batch Function
 def batch(credentials):
@@ -283,6 +307,9 @@ def batch(credentials):
     shutil.copytree(UPATH + 'temp\\CNIRevelator', UPATH)
     shutil.rmtree(UPATH + 'temp')
     logfile.printdbg('Extracted :' + UPATH + '\\CNIRevelator.exe')    
+
+    # Make a shortcut
+    createShortcut("CNIRevelator.lnk", UPATH + '\\CNIRevelator.exe', UPATH)
 
     launcherWindow.printmsg('Success !')
     
@@ -366,8 +393,6 @@ def umain():
                     logfile.printerr(str(e))
                     launcherWindow.printmsg('Fail :{}'.format(e))
         launcherWindow.printmsg('Starting...')
-    else:
-        tessInstall(globs.CNIRFolder, credentials)
     
     try:
         try:
@@ -386,9 +411,39 @@ def umain():
         else:
             logfile.printerr("An error occured. No effective update !")
             launcherWindow.printmsg('An error occured. No effective update !')
-        time.sleep(2)
+            time.sleep(2)
+            launcherWindow.exit()
+            return 0         
+               
+        if UPDATE_IS_MADE:
+            launcherWindow.exit()
+            return 0
+    except:
+        logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
         launcherWindow.exit()
-        return 0
+        sys.exit(2)
+        return 2
+        
+    try:
+        try:
+            # INSTALLING TESSERACT OCR
+            success = tessInstall(globs.CNIRFolder, credentials)
+        except Exception as e:
+            logfile.printerr("An error occured on the thread : " + str(traceback.format_exc()))
+            launcherWindow.printmsg('ERROR : ' + str(e))
+            time.sleep(3)
+            launcherWindow.exit()
+            return 1
+
+        if success:
+            logfile.printdbg("Software is up-to-date !")
+            launcherWindow.printmsg('Software is up-to-date !')
+        else:
+            logfile.printerr("An error occured. No effective update !")
+            launcherWindow.printmsg('An error occured. No effective update !')
+            time.sleep(2)
+            launcherWindow.exit()
+            return 0
 
     except:
         logfile.printerr("A FATAL ERROR OCCURED : " + str(traceback.format_exc()))
@@ -396,5 +451,6 @@ def umain():
         sys.exit(2)
         return 2
 
-    return
-
+    time.sleep(2)
+    launcherWindow.exit()
+    return 0
