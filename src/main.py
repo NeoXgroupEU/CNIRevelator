@@ -36,6 +36,7 @@ import traceback
 import cv2
 import PIL.Image, PIL.ImageTk
 import os, shutil
+import webbrowser
 
 import ihm                      # ihm.py
 import logger                   # logger.py
@@ -179,6 +180,8 @@ class mainWindow(Tk):
         self.toolbar.grid_columnconfigure(12, weight=1)
         self.toolbar.grid_columnconfigure(13, weight=1, minsize=10)
         self.toolbar.grid_columnconfigure(14, weight=1)
+        self.toolbar.grid_columnconfigure(15, weight=1, minsize=10)
+        self.toolbar.grid_columnconfigure(16, weight=1)
         self.toolbar.grid_rowconfigure(0, weight=1)
 
         self.toolbar.zoomIn50Img = ImageTk.PhotoImage(PIL.Image.open("zoomIn50.png"))
@@ -224,9 +227,17 @@ class mainWindow(Tk):
         self.toolbar.rotateRightImg = ImageTk.PhotoImage(PIL.Image.open("rotateRight.png"))
         self.toolbar.rotateRight = ttk.Button(self.toolbar, image=self.toolbar.rotateRightImg, command=self.rotateRight)
         self.toolbar.rotateRight.grid(column=12, row=0)
-
-        self.toolbar.goOCR = ttk.Button(self.toolbar, text="OCR", command=self.goOCRDetection)
+        
+        self.toolbar.goOCRImg = ImageTk.PhotoImage(PIL.Image.open("OCR.png"))
+        self.toolbar.goOCR = ttk.Button(self.toolbar, image=self.toolbar.goOCRImg, command=self.goOCRDetection)
         self.toolbar.goOCR.grid(column=14, row=0)
+        
+        self.toolbar.pagenumber = StringVar()
+        self.toolbar.pageChooser = ttk.Combobox(self.toolbar, textvariable=self.toolbar.pagenumber)
+        self.toolbar.pageChooser.bind("<<ComboboxSelected>>", self.goPageChoice)
+        self.toolbar.pageChooser['values'] = ('1')
+        self.toolbar.pageChooser.current(0)
+        self.toolbar.pageChooser.grid(column=16, row=0)
 
         self.toolbar.grid(column=0, row=2, padx=0, pady=0)
 
@@ -309,6 +320,8 @@ class mainWindow(Tk):
         menubar.add_cascade(label='Fichier', menu=menu1)
         menu3 = Menu(menubar, tearoff=0)
         menu3.add_command(label='Commandes au clavier', command=(self.helpbox))
+        menu3.add_command(label='Signaler un problème', command=(self.openIssuePage))
+        menu3.add_separator()
         menu3.add_command(label='A propos de CNIRevelator', command=(self.infobox))
         menubar.add_cascade(label='Aide', menu=menu3)
         self.config(menu=menubar)
@@ -335,22 +348,14 @@ class mainWindow(Tk):
         self.update()
         self.deiconify()
         self.minsize(self.winfo_width(), self.winfo_height())
-
-        # Load an image using OpenCV
-        cv_img = cv2.imread("background.png")
-        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        cv_img = cv2.blur(cv_img, (15, 15))
-        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-        height, width = cv_img.shape
-        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-        height, width = cv_img.shape
-        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
-        photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-        self.statusUpdate(photo, setplace=True)
-        self.imageViewer.imagePath = "background.png"
+        
+        # Set image
+        self.imageViewer.image = None
+        self.imageViewer.imagePath = None
         self.imageViewer.imgZoom = 1
         self.imageViewer.rotateCount = 0
         self.imageViewer.blackhat = False
+        self.imageViewer.pagenumber = 0
 
         # Some bindings
         self.termtext.bind('<Key>', self.entryValidation)
@@ -363,98 +368,100 @@ class mainWindow(Tk):
     def statusUpdate(self, image=None, setplace=False):
         if image:
             self.imageViewer.image = image
-        self.imageViewer.ZONE.itemconfigure(self.STATUSimg, image=(self.imageViewer.image))
-        self.imageViewer.ZONE.configure(scrollregion=self.imageViewer.ZONE.bbox("all"))
-
-    def rectangleSelectScan(self, event):
-        canvas = event.widget
-        print("Get coordinates : [{}, {}], for [{}, {}]".format(canvas.canvasx(event.x), canvas.canvasy(event.y), event.x, event.y))
+            self.imageViewer.ZONE.itemconfigure(self.STATUSimg, image=(self.imageViewer.image))
+            self.imageViewer.ZONE.configure(scrollregion=self.imageViewer.ZONE.bbox("all"))
         
-        self.corners.append([canvas.canvasx(event.x), canvas.canvasy(event.y)])
-        if len(self.corners) == 2:
-            self.select = self.imageViewer.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='cyan', width = 2)
-            print("Get rectangle : [{}, {}], for [{}, {}]".format(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1]))
-        if len(self.corners) > 2:
-            self.corners = []
-            self.imageViewer.ZONE.delete(self.select)
+    def rectangleSelectScan(self, event):
+        if self.imageViewer.image:
+            canvas = event.widget
+            print("Get coordinates : [{}, {}], for [{}, {}]".format(canvas.canvasx(event.x), canvas.canvasy(event.y), event.x, event.y))
+            
+            self.corners.append([canvas.canvasx(event.x), canvas.canvasy(event.y)])
+            if len(self.corners) == 2:
+                self.select = self.imageViewer.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='cyan', width = 2)
+                print("Get rectangle : [{}, {}], for [{}, {}]".format(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1]))
+            if len(self.corners) > 2:
+                self.corners = []
+                self.imageViewer.ZONE.delete(self.select)
 
     def goOCRDetection(self):
-        cv_img = cv2.imread(self.imageViewer.imagePath)
-        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        if self.imageViewer.blackhat:
-            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-            cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-            cv_img = cv2.bitwise_not(cv_img)
-        if not self.imageViewer.blackhat:
-            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-            height, width, channels_no = cv_img.shape
-            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-            height, width, channels_no = cv_img.shape
-        else:
-            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-            height, width = cv_img.shape
-            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-            height, width = cv_img.shape
-        # Rotate
-        rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
-        cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
-        # Resize
-        dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
-        cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
-
-        x0 = int(self.corners[0][0])
-        y0 = int(self.corners[0][1])
-        x1 = int(self.corners[1][0])
-        y1 = int(self.corners[1][1])
-        
-        crop_img = cv_img[y0:y1, x0:x1]
-        
-        cv2.imshow("image", crop_img)
-
-        # Get the text by OCR
-        try:
-            os.environ['PATH'] = globs.CNIRTesser
-            os.environ['TESSDATA_PREFIX'] =  globs.CNIRTesser + '\\tessdata'
-            
-            text = pytesseract.image_to_string(crop_img, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
-            
-            # manual validation
-            # the regex
-            regex = re.compile("[^A-Z0-9<\n]")
-            text = re.sub(regex, '', text)
-            self.validatedtext = ''
-            invite = ihm.OpenScanDialog(self, text)
-            invite.transient(self)
-            invite.grab_set()
-            invite.focus_force()
-            self.wait_window(invite)
-            
-            print("text : {}".format(self.validatedtext))
-            
-            self.mrzChar = ""
-            
-            # Get that
-            for char in self.validatedtext:
-                self.termtext.delete("1.0","end")
-                self.termtext.insert("1.0", self.mrzChar)
-                self.mrzChar = self.mrzChar + char
-            
-            self.stringValidation("")
-            print(self.mrzChar)
-        
-        # Reinstall tesseract 
-        except pytesseract.TesseractNotFoundError as e:
+        if self.imageViewer.image:
+            cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+            if self.imageViewer.blackhat:
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+                cv_img = cv2.bitwise_not(cv_img)
             try:
-                shutil.rmtree(globs.CNIRTesser)
-            except Exception:
-                pass
-            showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable ou corrompu. Il sera réinstallé à la prochaine exécution'), parent=self)
-            logfile.printerr("Tesseract error : {}. Will be reinstallated".format(e))
-             
-        # Tesseract error
-        except pytesseract.TesseractError as e:
-            logfile.printerr("Tesseract error : {}".format(e))
-            showerror('Erreur de module OCR', ("Le module Tesseract a rencontré un problème : {}".format(e)), parent=self)
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width, channels_no = cv_img.shape
+            except ValueError:
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width  = cv_img.shape
+                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                height, width  = cv_img.shape
+            # Rotate
+            rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
+            cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+            # Resize
+            dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
+            cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
+    
+            x0 = int(self.corners[0][0])
+            y0 = int(self.corners[0][1])
+            x1 = int(self.corners[1][0])
+            y1 = int(self.corners[1][1])
+            
+            crop_img = cv_img[y0:y1, x0:x1]
+            
+            cv2.imshow("image", crop_img)
+    
+            # Get the text by OCR
+            try:
+                os.environ['PATH'] = globs.CNIRTesser
+                os.environ['TESSDATA_PREFIX'] =  globs.CNIRTesser + '\\tessdata'
+                
+                text = pytesseract.image_to_string(crop_img, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
+                
+                # manual validation
+                # the regex
+                regex = re.compile("[^A-Z0-9<\n]")
+                text = re.sub(regex, '', text)
+                self.validatedtext = ''
+                invite = ihm.OpenScanDialog(self, text)
+                invite.transient(self)
+                invite.grab_set()
+                invite.focus_force()
+                self.wait_window(invite)
+                
+                print("text : {}".format(self.validatedtext))
+                
+                self.mrzChar = ""
+                
+                # Get that
+                for char in self.validatedtext:
+                    self.termtext.delete("1.0","end")
+                    self.termtext.insert("1.0", self.mrzChar)
+                    self.mrzChar = self.mrzChar + char
+                
+                self.stringValidation("")
+                print(self.mrzChar)
+            
+            # Reinstall tesseract 
+            except pytesseract.TesseractNotFoundError as e:
+                try:
+                    shutil.rmtree(globs.CNIRTesser)
+                except Exception:
+                    pass
+                showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable ou corrompu. Il sera réinstallé à la prochaine exécution'), parent=self)
+                logfile.printerr("Tesseract error : {}. Will be reinstallated".format(e))
+                
+            # Tesseract error
+            except pytesseract.TesseractError as e:
+                logfile.printerr("Tesseract error : {}".format(e))
+                showerror('Erreur de module OCR', ("Le module Tesseract a rencontré un problème : {}".format(e)), parent=self)
 
 
     def stringValidation(self, keysym):
@@ -639,7 +646,10 @@ class mainWindow(Tk):
         self.speedResult.insert('end', text)
         self.speedResult['state'] = 'disabled'
 
-
+    def goPageChoice(self, event):
+        self.imageViewer.pagenumber = int(self.toolbar.pageChooser.get()) - 1
+        self.resizeScan()
+        
     def openingScan(self):
         path = ''
         path = filedialog.askopenfilename(parent=self, title='Ouvrir un scan de CNI...', filetypes=(('TIF files', '*.tif'),
@@ -651,130 +661,160 @@ class mainWindow(Tk):
         self.imageViewer.imgZoom = 1
         self.imageViewer.blackhat = False
         self.imageViewer.rotateCount = 0
-        cv_img = cv2.imread(path)
+        self.imageViewer.pagenumber = 0
+        
+        # Determine how many pages
+        self.toolbar.pageChooser['values'] = ('1')
+        total = len(cv2.imreadmulti(self.imageViewer.imagePath)[1])
+        
+        for i in range(2, total + 1):
+             self.toolbar.pageChooser['values'] += tuple(str(i))
+        
+        # Open the first page
+        cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-        height, width, channels_no = cv_img.shape
-        # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-        height, width, channels_no = cv_img.shape
+        
+        try:
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width, channels_no = cv_img.shape
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width, channels_no = cv_img.shape
+        except ValueError:
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width  = cv_img.shape
+            # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+            height, width  = cv_img.shape
+            
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
         self.statusUpdate(photo)
 
     def zoomInScan50(self, quantity = 50):
-        self.imageViewer.imgZoom += quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom += quantity
+            self.resizeScan()
 
     def zoomOutScan50(self, quantity = 50):
-        self.imageViewer.imgZoom -= quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom -= quantity
+            self.resizeScan()
 
     def zoomInScan20(self, quantity = 20):
-        self.imageViewer.imgZoom += quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom += quantity
+            self.resizeScan()
 
     def zoomOutScan20(self, quantity = 20):
-        self.imageViewer.imgZoom -= quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom -= quantity
+            self.resizeScan()
 
     def zoomInScan(self, quantity = 1):
-        self.imageViewer.imgZoom += quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom += quantity
+            self.resizeScan()
 
     def zoomOutScan(self, quantity = 1):
-        self.imageViewer.imgZoom -= quantity
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.imgZoom -= quantity
+            self.resizeScan()
 
     def rotateRight(self):
-        self.imageViewer.rotateCount -= 1
-        if self.imageViewer.rotateCount < 0:
-            self.imageViewer.rotateCount = 4
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.rotateCount -= 1
+            if self.imageViewer.rotateCount < 0:
+                self.imageViewer.rotateCount = 4
+            self.resizeScan()
 
     def rotateLeft(self):
-        self.imageViewer.rotateCount += 1
-        if self.imageViewer.rotateCount > 4:
-            self.imageViewer.rotateCount = 0
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.rotateCount += 1
+            if self.imageViewer.rotateCount > 4:
+                self.imageViewer.rotateCount = 0
+            self.resizeScan()
 
     def rotateLeft1(self):
-        self.imageViewer.rotateCount += 0.01
-        if self.imageViewer.rotateCount > 4:
-            self.imageViewer.rotateCount = 0
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.rotateCount += 0.01
+            if self.imageViewer.rotateCount > 4:
+                self.imageViewer.rotateCount = 0
+            self.resizeScan()
 
     def rotateRight1(self):
-        self.imageViewer.rotateCount -= 0.01
-        if self.imageViewer.rotateCount < 0:
-            self.imageViewer.rotateCount = 4
-        self.resizeScan()
+        if self.imageViewer.image:
+            self.imageViewer.rotateCount -= 0.01
+            if self.imageViewer.rotateCount < 0:
+                self.imageViewer.rotateCount = 4
+            self.resizeScan()
 
     def negativeScan(self):
-        # Load an image using OpenCV
-        cv_img = cv2.imread(self.imageViewer.imagePath)
-        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        if not self.imageViewer.blackhat:
-            self.imageViewer.blackhat = True
-            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-            cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-            cv_img = cv2.bitwise_not(cv_img)
-        else:
-            self.imageViewer.blackhat = False
-        self.resizeScan(cv_img)
+        if self.imageViewer.image:
+            # Load an image using OpenCV
+            cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+            if not self.imageViewer.blackhat:
+                self.imageViewer.blackhat = True
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+                cv_img = cv2.bitwise_not(cv_img)
+            else:
+                self.imageViewer.blackhat = False
+            self.resizeScan(cv_img)
 
     def resizeScan(self, cv_img = None):
-        try:
-            if not hasattr(cv_img, 'shape'):
-                # Load an image using OpenCV
-                cv_img = cv2.imread(self.imageViewer.imagePath)
-                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-                if self.imageViewer.blackhat:
-                    cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-                    cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-                    cv_img = cv2.bitwise_not(cv_img)
-
-            if not self.imageViewer.blackhat:
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width, channels_no = cv_img.shape
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width, channels_no = cv_img.shape
-            else:
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width = cv_img.shape
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width = cv_img.shape
-            # Rotate
-            rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
-            cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
-            # Resize
-            dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
-            cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
-            # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
-            photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-            self.statusUpdate( photo)
-        except Exception as e:
-            logfile.printerr("Error with opencv : {}".format(e))
-            traceback.print_exc(file=sys.stdout)
+        if self.imageViewer.image:
             try:
-                # Reload an image using OpenCV
-                path = self.imageViewer.imagePath
-                self.imageViewer.imgZoom = 1
-                self.imageViewer.blackhat = False
-                self.imageViewer.rotateCount = 0
-                cv_img = cv2.imread(path)
-                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width, channels_no = cv_img.shape
-                # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
-                height, width, channels_no = cv_img.shape
+                if not hasattr(cv_img, 'shape'):
+                    # Load an image using OpenCV
+                    cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
+                    cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                    if self.imageViewer.blackhat:
+                        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                        cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
+                        cv_img = cv2.bitwise_not(cv_img)
+    
+                try:
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width, channels_no = cv_img.shape
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width, channels_no = cv_img.shape
+                except ValueError:
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width  = cv_img.shape
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width  = cv_img.shape
+                # Rotate
+                rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
+                cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+                # Resize
+                dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
+                cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
                 # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
                 photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-                self.statusUpdate(photo)
+                self.statusUpdate( photo)
             except Exception as e:
-                logfile.printerr("Critical error with opencv : ".format(e))
+                logfile.printerr("Error with opencv : {}".format(e))
                 traceback.print_exc(file=sys.stdout)
-                showerror("Erreur OpenCV (traitement d'images)", "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. L'application va se réinitialiser")
-                self.initialize()
+                try:
+                    # Reload an image using OpenCV
+                    path = self.imageViewer.imagePath
+                    self.imageViewer.imgZoom = 1
+                    self.imageViewer.blackhat = False
+                    self.imageViewer.rotateCount = 0
+                    cv_img = cv2.imreadmulti(path)
+                    cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width, channels_no = cv_img.shape
+                    # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
+                    height, width, channels_no = cv_img.shape
+                    # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+                    photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
+                    self.statusUpdate(photo)
+                except Exception as e:
+                    logfile.printerr("Critical error with opencv : ".format(e))
+                    traceback.print_exc(file=sys.stdout)
+                    showerror("Erreur OpenCV (traitement d'images)", "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. L'application va se réinitialiser")
+                    self.initialize()
 
     def newEntry(self):
         self.initialize()
@@ -784,24 +824,25 @@ class mainWindow(Tk):
         Tk().withdraw()
 
         showinfo('A propos de CNIRevelator',
-        (   'Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' +
-            "CNIRevelator est un logiciel libre : vous avez le droit de le modifier et/ou le distribuer " +
-            "dans les termes de la GNU General Public License telle que publiée par " +
-            "la Free Software Foundation, dans sa version 3 ou " +
-            "ultérieure. " + "\n\n" +
-            "CNIRevelator est distribué dans l'espoir d'être utile, sans toutefois " +
-            "impliquer une quelconque garantie de " +
-            "QUALITÉ MARCHANDE ou APTITUDE À UN USAGE PARTICULIER. Référez vous à la " +
-            "GNU General Public License pour plus de détails à ce sujet. " +
-            "\n\n" +
-            "Vous devriez avoir reçu une copie de la GNU General Public License " +
-            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à '<https://www.gnu.org/licenses/>. " +
-            "\n\n" +
-            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004" +
-            "\n\n" +
-            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019" +
-            "\n\n" +
-            "Le code source de ce programme est disponible sur Github à l'adresse <https://github.com/neox95/CNIRevelator>.\n" +
+        (   'Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n'
+            "Le fonctionnement de ce logiciel est conforme aux normes du document 9303 de l'OACI régissant les documents de voyages et d'identité" + '\n\n'
+            "CNIRevelator est un logiciel libre : vous avez le droit de le modifier et/ou le distribuer "
+            "dans les termes de la GNU General Public License telle que publiée par "
+            "la Free Software Foundation, dans sa version 3 ou "
+            "ultérieure. " + "\n\n"
+            "CNIRevelator est distribué dans l'espoir d'être utile, sans toutefois "
+            "impliquer une quelconque garantie de "
+            "QUALITÉ MARCHANDE ou APTITUDE À UN USAGE PARTICULIER. Référez vous à la "
+            "GNU General Public License pour plus de détails à ce sujet. "
+            "\n\n"
+            "Vous devriez avoir reçu une copie de la GNU General Public License "
+            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à '<https://www.gnu.org/licenses/>. "
+            "\n\n"
+            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004"
+            "\n\n"
+            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019"
+            "\n\n"
+            "Le code source de ce programme est disponible sur Github à l'adresse <https://github.com/neox95/CNIRevelator>.\n"
             " En cas de problèmes ou demande particulière, ouvrez-y une issue ou bien envoyez un mail à neox@os-k.eu !"
         ),
 
@@ -827,6 +868,12 @@ class mainWindow(Tk):
         ),
 
         parent=self)
+        
+    def openIssuePage(self):
+        self.openBrowser("https://github.com/neox95/CNIRevelator/issues")
+        
+    def openBrowser(self, url):
+        webbrowser.open_new(url)
 
     def computeSigma(self):
         """
