@@ -209,7 +209,7 @@ class LauncherWindow(Tk):
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : 0)
-                self.update()
+        self.update()
 
     def printmsg(self, msg):
         self.mainCanvas.itemconfigure(self.msg, text=(msg))
