@@ -79,24 +79,33 @@ def main():
 
 ## BOOTSTRAP OF CNIREVELATOR
 
+try:
+    # LANGUAGE
+    if os.path.isfile(globs.CNIRLangFile):
+        with open(globs.CNIRLangFile, 'r') as (configFile):
+            try:
+                # Reading it
+                globs.CNIRlang = configFile.read()
+            except Exception as e:
+                ihm.crashCNIR()
+                raise IOError(str(e))
+    else:
+        # Recreating the url file
+        try:
+            os.mkdir(globs.CNIRFolder + '\\config')
+        except:
+            pass
 
-# LANGUAGE
-if os.path.isfile(globs.CNIRLangFile):
-    with open(globs.CNIRLangFile, 'r') as (configFile):
-        try:
-            # Reading it
-            globs.CNIRlang = configFile.read()
-        except Exception as e:
-            ihm.crashCNIR()
-            raise IOError(str(e))
-else:
-    with open(globs.CNIRLangFile, 'w') as (configFile):
-        try:
-            # Writing it
-            configFile.write(globs.CNIRlang)
-        except Exception as e:
-            ihm.crashCNIR()
-            raise IOError(str(e))
+        with open(globs.CNIRLangFile, 'w') as (configFile):
+            try:
+                # Writing it
+                configFile.write(globs.CNIRlang)
+            except Exception as e:
+                ihm.crashCNIR()
+                raise IOError(str(e))
+except:
+    ihm.crashCNIR()
+    updater.exitProcess(1)
 
 # GO
 try:
@@ -124,5 +133,6 @@ try:
     main()
 except Exception as e:
     ihm.crashCNIR()
+    updater.exitProcess(1)
 
 updater.exitProcess(0)

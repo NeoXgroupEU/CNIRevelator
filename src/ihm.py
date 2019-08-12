@@ -1,4 +1,4 @@
-"""
+﻿"""
 ********************************************************************************
 *                             CNIRevelator                                     *
 *                                                                              *
@@ -209,8 +209,6 @@ class LauncherWindow(Tk):
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : 0)
-        self.attributes("-topmost", 1)
-
         self.update()
 
     def printmsg(self, msg):

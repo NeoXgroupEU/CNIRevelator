@@ -50,4 +50,4 @@ CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
 CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
 CNIREnv             = CNIRFolder + '\\Data\\'
 
-CNIROpenFile        = True
+CNIROpenFile        = False
