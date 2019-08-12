@@ -25,9 +25,10 @@
 """
 
 import re
-import logger    # logger.py
-import re
 import datetime
+
+import logger       # logger.py
+import lang         # lang.py
 
 ## SEX CODES
 sexcode = {'M':'Homme', 'F':'Femme',  'X':'Non spécifié'}

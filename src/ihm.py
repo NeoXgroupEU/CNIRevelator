@@ -24,14 +24,17 @@
 """
 
 from tkinter import *
+import webbrowser
 from tkinter.messagebox import *
 from tkinter import filedialog
 from tkinter import ttk
 import cv2
 import PIL.Image, PIL.ImageTk
+import traceback
 
 import logger               # logger.py
 import globs                # globs.py
+import lang                 # lang.py
 
 
 controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
@@ -42,7 +45,7 @@ class DocumentAsk(Toplevel):
         self.choice = 0
         vals = [0, 1]
         super().__init__(parent)
-        self.title("Choisir le document d'identité :")
+        self.title("{} :".format(lang.all[globs.CNIRlang]["Choose the identity document"]))
 
         ttk.Radiobutton(self, text=choices[0], command=self.register0, value=vals[0]).pack()
         ttk.Radiobutton(self, text=choices[1], command=self.register1, value=vals[1]).pack()
@@ -68,19 +71,19 @@ class DocumentAsk(Toplevel):
         self.choice = 1
     def ok(self):
         self.destroy()
-        
-        
+
+
 class OpenScanDialog(Toplevel):
 
     def __init__(self, parent, text):
         super().__init__(parent)
         self.parent = parent
-        self.title('Validation de la MRZ détectée par OCR')
+        self.title(lang.all[globs.CNIRlang]["OCR Detection Validation"])
         self.resizable(width=False, height=False)
         self.termtext = Text(self, state='normal', width=45, height=2, wrap='none', font='Terminal 17', fg='#121f38')
         self.termtext.grid(column=0, row=0, sticky='NEW', padx=5, pady=5)
         self.termtext.insert('end', text + '\n')
-        self.button = Button(self, text='Valider', command=(self.valid))
+        self.button = Button(self, text=lang.all[globs.CNIRlang]["Validate"], command=(self.valid))
         self.button.grid(column=0, row=1, sticky='S', padx=5, pady=5)
         self.update()
         hs = self.winfo_screenheight()
@@ -102,27 +105,27 @@ class OpenScanDialog(Toplevel):
         for i in range(len(texting)):
             for char in texting[i]:
                 if char not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<':
-                    showerror('Erreur de validation', 'La MRZ soumise contient des caractères invalides', parent=self)
+                    showerror(lang.all[globs.CNIRlang]["Validation Error"], lang.all[globs.CNIRlang]["The submitted MRZ contains invalid characters"], parent=self)
                     self.parent.validatedtext = ''
 
         self.destroy()
-        
+
 class LoginDialog(Toplevel):
 
     def __init__(self, parent):
         self.key = ''
         self.login = ''
         super().__init__(parent)
-        self.title('Connexion')
+        self.title(lang.all[globs.CNIRlang]["Connection"])
         Label(self, text='IPN : ').pack()
         self.entry_login = Entry(self)
         self.entry_login.insert(0, '')
         self.entry_login.pack()
-        Label(self, text='Mot de passe : ').pack()
+        Label(self, text='{} : '.format(lang.all[globs.CNIRlang]["Password"])).pack()
         self.entry_pass = Entry(self, show='*')
         self.entry_pass.insert(0, '')
         self.entry_pass.pack()
-        Button(self, text='Connexion', command=(self.connecti)).pack()
+        Button(self, text=lang.all[globs.CNIRlang]["Connection"], command=(self.connecti)).pack()
         self.resizable(width=False, height=False)
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
@@ -185,7 +188,7 @@ class LauncherWindow(Tk):
 
         self.mainCanvas.create_text((wwidth / 2), (wheight / 3), text=(globs.CNIRName), font='Helvetica 30', fill='white')
         self.mainCanvas.create_text((wwidth / 2), (wheight / 2), text="version " + (globs.verstring_full), font='Helvetica 8', fill='white')
-        self.msg = self.mainCanvas.create_text((wwidth / 2), (wheight / 1.20), text='Booting up...', font='Helvetica 9', fill='white')
+        self.msg = self.mainCanvas.create_text((wwidth / 2), (wheight / 1.20), text=lang.all[globs.CNIRlang]["Booting up..."], font='Helvetica 9', fill='white')
 
         #self.pBarZone = Frame(self.mainCanvas, width=wwidth, height=wheight/10)
         self.update()
@@ -205,7 +208,8 @@ class LauncherWindow(Tk):
             self.iconbitmap('id-card.ico')
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
-        self.protocol('WM_DELETE_WINDOW', lambda : self.destroy())
+        self.protocol('WM_DELETE_WINDOW', lambda : 0)
+        self.attributes("-topmost", 1)
 
         self.update()
 
@@ -230,7 +234,24 @@ class ResizeableCanvas(Canvas):
         self.height = event.height
         # rescale all the objects tagged with the "all" tag
         self.scale("all",0,0,wscale,hscale)
-        
+
+def crashCNIR():
+    """
+    last solution
+    """
+    # Global handler
+    logfile = logger.logCur
+    # hide main window
+    root = Tk()
+    root.withdraw()
+    logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
+    showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
+    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
+    if res == "yes":
+        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
+    root.destroy()
+
+
 ## Global Handler
 launcherWindowCur = LauncherWindow()
 

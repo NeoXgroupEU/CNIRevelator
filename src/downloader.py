@@ -35,6 +35,7 @@ from time import time
 import logger   # logger.py
 import globs    # globs.py
 import ihm      # ihm.py
+import lang         # lang.py
 
 class AESCipher(object):
 
@@ -184,8 +185,8 @@ class newdownload:
         
         reducedFilename = filename.split("\\")[-1]
         
-        launcherWindow.printmsg('Downloading  {}'.format(title))
-        logfile.printdbg('Requesting download of {}'.format(reducedFilename))
+        launcherWindow.printmsg('{}  {}'.format(lang.all[globs.CNIRlang]["Downloading"], title))
+        logfile.printdbg('{} {}'.format("Downloading", reducedFilename))
 
         try:
             os.remove(filename)
@@ -201,12 +202,12 @@ class newdownload:
                 
                 launcherWindow.progressBar.stop()
                 launcherWindow.progressBar.configure(mode='determinate', value=(int(Percent)), maximum=100)
-                launcherWindow.printmsg('Downloading  {}'.format(title) + ' : {:4.2f} %'.format(Percent))
+                launcherWindow.printmsg('{}  {}'.format(lang.all[globs.CNIRlang]["Downloading"], title) + ' : {:4.2f} %'.format(Percent))
                 
         launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
         launcherWindow.progressBar.start()
         
-        logfile.printdbg('Successful retrieved {}'.format(filename))
+        logfile.printdbg('{} {}'.format(lang.all[globs.CNIRlang]["Successful retrieved"], filename))
         
         return filename
         

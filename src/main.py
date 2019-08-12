@@ -32,17 +32,18 @@ from tkinter import ttk
 import threading
 from datetime import datetime
 import re
-import traceback
 import cv2
 import PIL.Image, PIL.ImageTk
 import os, shutil
 import webbrowser
+import sys, os
 
 import ihm                      # ihm.py
 import logger                   # logger.py
 import mrz                      # mrz.py
 import globs                    # globs.py
 import pytesseract              # pytesseract.py
+import lang                     # lang.py
 
 # Global handler
 logfile = logger.logCur
@@ -78,7 +79,7 @@ class mainWindow(Tk):
         self.grid_rowconfigure(2, weight=1, minsize=(hs / 2 * 0.35))
 
         # Prepare the data sections
-        self.lecteur_ci = ttk.Labelframe(self, text="Informations sur la pièce d'identité")
+        self.lecteur_ci = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Informations about the current document"])
         self.lecteur_ci.grid_columnconfigure(0, weight=1)
         self.lecteur_ci.grid_columnconfigure(1, weight=1)
         self.lecteur_ci.grid_columnconfigure(2, weight=1)
@@ -92,50 +93,50 @@ class mainWindow(Tk):
         self.lecteur_ci.grid_rowconfigure(5, weight=1)
 
         # Fill the data sections
-        ttk.Label((self.lecteur_ci), text='Statut : ').grid(column=0, row=0, padx=5, pady=5)
-        self.STATUStxt = ttk.Label((self.lecteur_ci), text='EN ATTENTE', font=("TkDefaultFont", 13, "bold"), foreground="orange", anchor=CENTER)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Status"])).grid(column=0, row=0, padx=5, pady=5)
+        self.STATUStxt = ttk.Label((self.lecteur_ci), text=lang.all[globs.CNIRlang]["IDLE"], font=("TkDefaultFont", 13, "bold"), foreground="orange", anchor=CENTER)
         self.STATUStxt.grid(column=1, row=0, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Nom : ').grid(column=0, row=1, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Name"])).grid(column=0, row=1, padx=5, pady=5)
         self.nom = ttk.Label((self.lecteur_ci), text=' ')
         self.nom.grid(column=1, row=1, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Nom (2) : ').grid(column=0, row=2, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} (2) : '.format(lang.all[globs.CNIRlang]["Name"])).grid(column=0, row=2, padx=5, pady=5)
         self.prenom = ttk.Label((self.lecteur_ci), text=' ')
         self.prenom.grid(column=1, row=2, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Date de naissance : ').grid(column=0, row=3, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Birth date"])).grid(column=0, row=3, padx=5, pady=5)
         self.bdate = ttk.Label((self.lecteur_ci), text=' ')
         self.bdate.grid(column=1, row=3, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Date de délivrance : ').grid(column=0, row=4, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Issue date"])).grid(column=0, row=4, padx=5, pady=5)
         self.ddate = ttk.Label((self.lecteur_ci), text=' ')
         self.ddate.grid(column=1, row=4, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text="Date d'expiration : ").grid(column=0, row=5, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text="{} : ".format(lang.all[globs.CNIRlang]["Expiration date"])).grid(column=0, row=5, padx=5, pady=5)
         self.edate = ttk.Label((self.lecteur_ci), text=' ')
         self.edate.grid(column=1, row=5, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Sexe du porteur : ').grid(column=4, row=1, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Sex"])).grid(column=4, row=1, padx=5, pady=5)
         self.sex = ttk.Label((self.lecteur_ci), text=' ')
         self.sex.grid(column=5, row=1, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Pays de délivrance : ').grid(column=4, row=2, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Issuing country"])).grid(column=4, row=2, padx=5, pady=5)
         self.pays = ttk.Label((self.lecteur_ci), text=' ')
         self.pays.grid(column=5, row=2, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Nationalité du porteur : ').grid(column=4, row=3, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Nationality"])).grid(column=4, row=3, padx=5, pady=5)
         self.nat = ttk.Label((self.lecteur_ci), text=' ')
         self.nat.grid(column=5, row=3, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Immatriculation : ').grid(column=4, row=4, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Registration"])).grid(column=4, row=4, padx=5, pady=5)
         self.indic = ttk.Label((self.lecteur_ci), text=' ')
         self.indic.grid(column=5, row=4, padx=5, pady=5)
-        ttk.Label((self.lecteur_ci), text='Numéro de document : ').grid(column=4, row=5, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Document number"])).grid(column=4, row=5, padx=5, pady=5)
         self.no = ttk.Label((self.lecteur_ci), text=' ')
         self.no.grid(column=5, row=5, padx=5, pady=5)
 
-        self.nom['text'] = 'Inconnu(e)'
-        self.prenom['text'] = 'Inconnu(e)'
-        self.bdate['text'] = 'Inconnu(e)'
-        self.ddate['text'] = 'Inconnu(e)'
-        self.edate['text'] = 'Inconnu(e)'
-        self.no['text'] = 'Inconnu(e)'
-        self.sex['text'] = 'Inconnu(e)'
-        self.nat['text'] = 'Inconnu(e)'
-        self.pays['text'] = 'Inconnu(e)'
-        self.indic['text'] = 'Inconnu(e)'
+        self.nom['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.prenom['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.bdate['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.ddate['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.edate['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.no['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.sex['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.nat['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.pays['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.indic['text'] = lang.all[globs.CNIRlang]["Unknown"]
 
 
         self.infoList = \
@@ -153,7 +154,7 @@ class mainWindow(Tk):
         }
 
         # The the image viewer
-        self.imageViewer = ttk.Labelframe(self, text='Affichage et traitement de documents')
+        self.imageViewer = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Display and processing of documents"])
         self.imageViewer.grid_columnconfigure(0, weight=1)
         self.imageViewer.grid_columnconfigure(1, weight=0)
         self.imageViewer.grid_rowconfigure(0, weight=1)
@@ -258,7 +259,7 @@ class mainWindow(Tk):
         
 
         # The terminal to enter the MRZ
-        self.terminal = ttk.Labelframe(self, text='Terminal de saisie de MRZ complète')
+        self.terminal = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Complete MRZ capture terminal"])
         self.terminal.grid_columnconfigure(0, weight=1)
         self.terminal.grid_rowconfigure(0, weight=1)
         self.termframe = Frame(self.terminal)
@@ -272,7 +273,7 @@ class mainWindow(Tk):
         self.termtext.grid(column=0, row=0, sticky='SW', padx=5, pady=25)
 
         # Speed Entry Zone for 731
-        self.terminal2 = ttk.Labelframe(self, text='Terminal de saisie rapide (731)')
+        self.terminal2 = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Quick entry terminal (731)"])
         self.terminal2.grid_columnconfigure(0, weight=1)
         self.terminal2.grid_rowconfigure(0, weight=1)
         self.speed731 = Frame(self.terminal2)
@@ -294,7 +295,7 @@ class mainWindow(Tk):
         self.speedResult.grid(column=2, row=0, sticky='NEW', padx=5, pady=5)
 
         # The monitor that indicates some useful infos
-        self.monitor = ttk.Labelframe(self, text='Moniteur')
+        self.monitor = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Monitor"])
         self.monlog = Text((self.monitor), state='disabled', width=60, height=10, wrap='word')
         self.monlog.grid(column=0, row=0, sticky='EWNS', padx=5, pady=5)
         self.scrollb = ttk.Scrollbar((self.monitor), command=(self.monlog.yview))
@@ -313,17 +314,17 @@ class mainWindow(Tk):
         # What is a window without a menu bar ?
         menubar = Menu(self)
         menu1 = Menu(menubar, tearoff=0)
-        menu1.add_command(label='Nouveau', command=(self.newEntry))
-        menu1.add_command(label='Ouvrir scan...', command=(self.openingScan))
+        menu1.add_command(label=lang.all[globs.CNIRlang]["New"], command=(self.newEntry))
+        menu1.add_command(label=lang.all[globs.CNIRlang]["Open scan..."], command=(self.openingScan))
         menu1.add_separator()
-        menu1.add_command(label='Quitter', command=(self.destroy))
-        menubar.add_cascade(label='Fichier', menu=menu1)
+        menu1.add_command(label=lang.all[globs.CNIRlang]["Quit"], command=(self.destroy))
+        menubar.add_cascade(label=lang.all[globs.CNIRlang]["File"], menu=menu1)
         menu3 = Menu(menubar, tearoff=0)
-        menu3.add_command(label='Commandes au clavier', command=(self.helpbox))
-        menu3.add_command(label='Signaler un problème', command=(self.openIssuePage))
+        menu3.add_command(label=lang.all[globs.CNIRlang]["Keyboard commands"], command=(self.helpbox))
+        menu3.add_command(label=lang.all[globs.CNIRlang]["Report a bug"], command=(self.openIssuePage))
         menu3.add_separator()
-        menu3.add_command(label='A propos de CNIRevelator', command=(self.infobox))
-        menubar.add_cascade(label='Aide', menu=menu3)
+        menu3.add_command(label=lang.all[globs.CNIRlang]["About CNIRevelator"], command=(self.infobox))
+        menubar.add_cascade(label=lang.all[globs.CNIRlang]["Help"], menu=menu3)
         self.config(menu=menubar)
 
         # The title
@@ -347,6 +348,7 @@ class mainWindow(Tk):
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
         self.update()
         self.deiconify()
+        self.attributes("-topmost", 1)
         self.minsize(self.winfo_width(), self.winfo_height())
         
         # Set image
@@ -364,6 +366,9 @@ class mainWindow(Tk):
         self.imageViewer.ZONE.bind("<Button-1>", self.rectangleSelectScan)
 
         logfile.printdbg('Initialization successful')
+        
+        if globs.CNIROpenFile:
+            self.after_idle(lambda : self.openScanFile(sys.argv[1]))
 
     def statusUpdate(self, image=None, setplace=False):
         if image:
@@ -374,12 +379,12 @@ class mainWindow(Tk):
     def rectangleSelectScan(self, event):
         if self.imageViewer.image:
             canvas = event.widget
-            print("Get coordinates : [{}, {}], for [{}, {}]".format(canvas.canvasx(event.x), canvas.canvasy(event.y), event.x, event.y))
+            #print("Get coordinates : [{}, {}], for [{}, {}]".format(canvas.canvasx(event.x), canvas.canvasy(event.y), event.x, event.y))
             
             self.corners.append([canvas.canvasx(event.x), canvas.canvasy(event.y)])
             if len(self.corners) == 2:
                 self.select = self.imageViewer.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='cyan', width = 2)
-                print("Get rectangle : [{}, {}], for [{}, {}]".format(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1]))
+                #print("Get rectangle : [{}, {}], for [{}, {}]".format(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1]))
             if len(self.corners) > 2:
                 self.corners = []
                 self.imageViewer.ZONE.delete(self.select)
@@ -434,7 +439,7 @@ class mainWindow(Tk):
                 invite.focus_force()
                 self.wait_window(invite)
                 
-                print("text : {}".format(self.validatedtext))
+                #print("text : {}".format(self.validatedtext))
                 
                 self.mrzChar = ""
                 
@@ -445,7 +450,7 @@ class mainWindow(Tk):
                     self.mrzChar = self.mrzChar + char
                 
                 self.stringValidation("")
-                print(self.mrzChar)
+                #print(self.mrzChar)
             
             # Reinstall tesseract 
             except pytesseract.TesseractNotFoundError as e:
@@ -453,13 +458,13 @@ class mainWindow(Tk):
                     shutil.rmtree(globs.CNIRTesser)
                 except Exception:
                     pass
-                showerror('Erreur de module OCR', ('Le module OCR localisé en ' + str(os.environ['PATH']) + 'est introuvable ou corrompu. Il sera réinstallé à la prochaine exécution'), parent=self)
-                logfile.printerr("Tesseract error : {}. Will be reinstallated".format(e))
+                showerror(lang.all[globs.CNIRlang]["OCR module error"], (lang.all[globs.CNIRlang]["The OCR module located at {} can not be found or corrupted. It will be reinstalled at the next run"].format(os.environ['PATH'])), parent=self)
+                logfile.printerr(lang.all[globs.CNIRlang]["Tesseract error : {}. Will be reinstallated"].format(e))
                 
             # Tesseract error
             except pytesseract.TesseractError as e:
                 logfile.printerr("Tesseract error : {}".format(e))
-                showerror('Erreur de module OCR', ("Le module Tesseract a rencontré un problème : {}".format(e)), parent=self)
+                showerror(lang.all[globs.CNIRlang]["OCR module error"], (lang.all[globs.CNIRlang]["The Tesseract module encountered a problem: {}"].format(e)), parent=self)
 
 
     def stringValidation(self, keysym):
@@ -478,11 +483,11 @@ class mainWindow(Tk):
 
                 self.wait_window(invite)
 
-                self.logOnTerm("Document detecté : {}\n".format(candidates[invite.choice][2]))
+                self.logOnTerm(lang.all[globs.CNIRlang]["Document detected: {}\n"].format(candidates[invite.choice][2]))
                 self.mrzDecided = candidates[invite.choice]
 
             elif len(candidates) == 1:
-                self.logOnTerm("Document detecté : {}\n".format(candidates[0][2]))
+                self.logOnTerm(lang.all[globs.CNIRlang]["Document detected: {}\n"].format(candidates[0][2]))
                 self.mrzDecided = candidates[0]
         else:
             # corrects some problems
@@ -569,11 +574,11 @@ class mainWindow(Tk):
 
                     self.wait_window(invite)
 
-                    self.logOnTerm("Document re-detecté : {}\n".format(candidates[invite.choice][2]))
+                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {} \ n"].format(candidates[invite.choice][2]))
                     self.mrzDecided = candidates[invite.choice]
 
                 elif len(candidates) == 1:
-                    self.logOnTerm("Document re-detecté : {}\n".format(candidates[0][2]))
+                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {} \ n"].format(candidates[0][2]))
                     self.mrzDecided = candidates[0]
             return "break"
 
@@ -583,7 +588,7 @@ class mainWindow(Tk):
             regex = re.compile("[A-Z]|<|[0-9]")
             # match !
             if not regex.fullmatch(event.char):
-                self.logOnTerm("Caractère non accepté !\n")
+                self.logOnTerm(lang.all[globs.CNIRlang]["Character not accepted !\n"])
                 return "break"
         # Adds the entry
         tempChar = self.termtext.get("1.0", "end")[:-1]
@@ -650,10 +655,22 @@ class mainWindow(Tk):
         
     def openingScan(self):
         path = ''
-        path = filedialog.askopenfilename(parent=self, title='Ouvrir un scan de CNI...', filetypes=(('TIF files', '*.tif'),
+        path = filedialog.askopenfilename(parent=self, title=lang.all[globs.CNIRlang]["Open a scan of document..."], filetypes=(('TIF files', '*.tif'),
                                                                                                     ('TIF files', '*.tiff'),
                                                                                                     ('JPEG files', '*.jpg'),
                                                                                                     ('JPEG files', '*.jpeg')))
+        self.openScanFile(path)
+        
+    def openScanFile(self, path):
+        
+        # Check if the file is valid
+        if (    path[-3:] != 'jpg' 
+            and path[-3:] != 'tif' 
+            and path[-4:] != 'jpeg'
+            and path[-4:] != 'tiff' ) or not os.path.isfile(path):
+                showerror(lang.all[globs.CNIRlang]["Open a scan of document..."], lang.all[globs.CNIRlang]["The file you provided is not valid : {}"].format(path))
+                return 
+                       
         # Load an image using OpenCV
         self.imageViewer.imagePath = path
         self.imageViewer.imgZoom = 1
@@ -685,7 +702,7 @@ class mainWindow(Tk):
             
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-        self.statusUpdate(photo)
+        self.statusUpdate(photo)    
 
     def zoomInScan50(self, quantity = 50):
         if self.imageViewer.image:
@@ -792,7 +809,7 @@ class mainWindow(Tk):
                 self.statusUpdate( photo)
             except Exception as e:
                 logfile.printerr("Error with opencv : {}".format(e))
-                traceback.print_exc(file=sys.stdout)
+                ihm.crashCNIR()
                 try:
                     # Reload an image using OpenCV
                     path = self.imageViewer.imagePath
@@ -810,70 +827,37 @@ class mainWindow(Tk):
                     self.statusUpdate(photo)
                 except Exception as e:
                     logfile.printerr("Critical error with opencv : ".format(e))
-                    traceback.print_exc(file=sys.stdout)
-                    showerror("Erreur OpenCV (traitement d'images)", "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. L'application va se réinitialiser")
+                    ihm.crashCNIR()
+                    showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself"])
                     self.initialize()
 
     def newEntry(self):
         self.initialize()
-        self.logOnTerm('\n\nEntrez la première ligne de MRZ svp \n')
+        self.logOnTerm('\n\n{}\n'.format(lang.all[globs.CNIRlang]["Please type a MRZ or open a scan"]))
 
     def infobox(self):
+        
         Tk().withdraw()
 
-        showinfo('A propos de CNIRevelator',
-        (   'Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n'
-            "Copyright © 2018-2019 Adrien Bourmault (neox95)" + "\n\n"
-            "CNIRevelator est un logiciel libre : vous avez le droit de le modifier et/ou le distribuer "
-            "dans les termes de la GNU General Public License telle que publiée par "
-            "la Free Software Foundation, dans sa version 3 ou "
-            "ultérieure. " + "\n\n"
-            "CNIRevelator est distribué dans l'espoir d'être utile, sans toutefois "
-            "impliquer une quelconque garantie de "
-            "QUALITÉ MARCHANDE ou APTITUDE À UN USAGE PARTICULIER. Référez vous à la "
-            "GNU General Public License pour plus de détails à ce sujet. "
-            "\n\n"
-            "Vous devriez avoir reçu une copie de la GNU General Public License "
-            "avec CNIRevelator. Si cela n'est pas le cas, jetez un oeil à <https://www.gnu.org/licenses/>. "
-            "\n\n"
-            "Le module d'OCR Tesseract 4.0 est soumis à l'Apache License 2004."
-            "\n\n"
-            "Les bibliothèques python et l'environnement Anaconda 3 sont soumis à la licence BSD 2018-2019."
-            "\n\n"
-            "Le code source de ce programme est disponible sur Github à l'adresse <https://github.com/neox95/CNIRevelator>.\n"
-            "Son fonctionnement est conforme aux normes et directives du document 9303 de l'OACI régissant les documents de voyages et d'identité." + '\n\n'
-            " En cas de problèmes ou demande particulière, ouvrez-y une issue ou bien envoyez un mail à neox@os-k.eu !\n\n"
+        showinfo( lang.all[globs.CNIRlang]["About CNIRevelator"],
+        (   
+            lang.all[globs.CNIRlang]["ABOUT"]
         ),
-
         parent=self)
 
     def helpbox(self):
         Tk().withdraw()
 
-        showinfo('Aide sur les contrôles au clavier',
-        (   "Terminal de saisie rapide (731) : \n\n"
-            "       Caractères autorisés : Alphanumériques en majuscule et le caractère '<'. Pas de minuscules ni caractères spéciaux, autrement la somme est mise à zéro \n\n"
-            "       Calculer résultat :\t\t\tTouche Ctrl droite \n"
-            "       Copier :\t\t\t\tCtrl-C \n"
-            "       Coller :\t\t\t\tCtrl-V \n"
-            "\n\n"
-            "Terminal de saisie MRZ complète : \n\n"
-            "       Caractères autorisés : Alphanumériques en majuscule et le caractère '<'. Pas de minuscules ni caractères spéciaux, autrement la somme est mise à zéro \n\n"
-            "       Calculer résultat :\t\t\tTouche Ctrl droite \n"
-            "       Compléter champ :\t\t\tTouche Tab \n"
-            "       Copier :\t\t\t\tCtrl-C \n"
-            "       Coller :\t\t\t\tCtrl-V \n"
-            "       Forcer une nouvelle détection du document :\tEchap\n"
+        showinfo( lang.all[globs.CNIRlang]["Keyboard commands"], 
+        (
+            lang.all[globs.CNIRlang]["KEYBHELP"]
         ),
 
         parent=self)
         
     def openIssuePage(self):
-        self.openBrowser("https://github.com/neox95/CNIRevelator/issues")
+        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
         
-    def openBrowser(self, url):
-        webbrowser.open_new(url)
-
     def computeSigma(self):
         """
         Launch the checksum computation, infos validation and display the results
@@ -890,7 +874,7 @@ class mainWindow(Tk):
         self.termtext.tag_remove("nonconforme",  "1.0", "end")
 
         self.clearTerm()
-        self.logOnTerm("Examen du document : {}\n\n".format(self.mrzDecided[2]))
+        self.logOnTerm(lang.all[globs.CNIRlang]["Document Review: {}\n\n"].format(self.mrzDecided[2]))
 
         for sum in allSums:
             x = sum[1] // len(self.mrzDecided[0][0]) +1
@@ -898,7 +882,7 @@ class mainWindow(Tk):
             #print("index : {}.{}".format(x,y))
             #print("{} == {}".format(code[sum[1]], sum[2]))
 
-            self.logOnTerm("Somme de contrôle position {} : Lu {} VS Calculé {}\n".format(sum[1], code[sum[1]], sum[2]))
+            self.logOnTerm(lang.all[globs.CNIRlang]["Check sum position {}: Lu {} VS Calculated {} and {}\n"].format(sum[1], code[sum[1]], sum[2], sum[3]))
 
             # if sum is facultative or if sum is ok
             try:
@@ -920,7 +904,7 @@ class mainWindow(Tk):
         # display the infos
         for key in [ e for e in docInfos ]:
             #print(docInfos[key])
-            if key in ["CODE", "CTRL"]:
+            if key in ["CODE", "CTRL", "CTRLF"]:
                 continue
             if not docInfos[key] == False:
                 self.infoList[key]['text'] = docInfos[key]
@@ -933,10 +917,10 @@ class mainWindow(Tk):
                 self.compliance = False
 
         if self.compliance == True:
-            self.STATUStxt["text"] = "CONFORME"
+            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["COMPLIANT"]
             self.STATUStxt["foreground"] = "green"
         else:
-            self.STATUStxt["text"] = "NON CONFORME"
+            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["IMPROPER"]
             self.STATUStxt["foreground"] = "red"
 
         return
