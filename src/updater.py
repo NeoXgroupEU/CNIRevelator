@@ -336,6 +336,7 @@ def umain():
     # check we want open a file
     elif len(sys.argv) > 1 and str(sys.argv[1]) != "DELETE":
         globs.CNIROpenFile = True
+        print(sys.argv)
     
     try:
         try:

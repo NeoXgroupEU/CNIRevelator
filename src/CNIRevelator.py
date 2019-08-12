@@ -23,22 +23,30 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
-
+# Import critical files
 import sys
 import os
 import subprocess
 import threading
 import psutil
-from tkinter import *
-from tkinter.messagebox import *
+import traceback
 
-import launcher     # launcher.py"
-import updater      # updater.py
-import globs        # globs.py
-import pytesseract  # pytesseract.py
-import logger       # logger.py
 import lang         # lang.py
-import ihm          # ihm.py
+import logger       # logger.py
+import globs        # globs.py
+import critical     # critical.py
+
+# Import all other files
+try:
+
+    import launcher     # launcher.py"
+    import updater      # updater.py
+    import pytesseract  # pytesseract.py
+    import ihm          # ihm.py
+    from tkinter.messagebox import *
+    from tkinter import *
+except:
+    critical.LASTCHANCECRASH()
 
 
 from main import *  # main.py
@@ -78,7 +86,6 @@ def main():
 
 
 ## BOOTSTRAP OF CNIREVELATOR
-
 try:
     # LANGUAGE
     if os.path.isfile(globs.CNIRLangFile):

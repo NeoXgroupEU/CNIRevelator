@@ -34,7 +34,7 @@ debug = True
 changelog           =   "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues"
 
 CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
-CNIRFolder          = os.getcwd()
+CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
 CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
