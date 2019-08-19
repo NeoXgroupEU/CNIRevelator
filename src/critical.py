@@ -24,16 +24,27 @@
 """
 from tkinter.messagebox import *
 from tkinter import *
+import webbrowser
+import traceback
+import psutil
+import os
 
 import lang         # lang.py
 import logger       # logger.py
+import globs        # globs.py
 
 def LASTCHANCECRASH():
+    """
+    very last solution
+    """
     root = Tk()
     root.withdraw()
     logfile = logger.logCur
     logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
     showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
+    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
+    if res == "yes":
+        webbrowser.open_new(globs.CNIRErrLog)
     res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
     if res == "yes":
         webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")

@@ -80,6 +80,14 @@ def exitProcess(arg):
         if process.pid == os.getpid():
             process.terminate()
     sys.exit(arg)
+    
+def updateChannel(choice):
+    if choice == "Beta":
+        with open(globs.CNIRUrlConfig, 'w') as (configFile):
+            configFile.write("{}\n0\n0".format(globs.CNIRBetaURL))
+    else:
+        with open(globs.CNIRUrlConfig, 'w') as (configFile):
+            configFile.write("{}\n0\n0".format(globs.CNIRDefaultURL))
 
 def getLatestVersion(credentials):
     """
@@ -114,7 +122,7 @@ def getLatestVersion(credentials):
             except:
                 pass
             with open(globs.CNIRUrlConfig, 'w') as (configFile):
-                configFile.write("https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST\n0\n0")
+                configFile.write("{}\n0\n0".format(globs.CNIRDefaultURL))
 
     # Getting the list of versions of the software
     logfile.printdbg('Retrieving the software versions')

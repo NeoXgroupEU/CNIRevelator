@@ -24,19 +24,15 @@
 ********************************************************************************
 """
 # Import critical files
-import sys
 import os
-import subprocess
 import threading
-import psutil
-import traceback
 
 import lang         # lang.py
 import logger       # logger.py
 import globs        # globs.py
 import critical     # critical.py
 
-# Import all other files
+# Import all other files and crash if necessary
 try:
 
     import launcher     # launcher.py"
@@ -47,9 +43,6 @@ try:
     from tkinter import *
 except:
     critical.LASTCHANCECRASH()
-
-
-from main import *  # main.py
 
 # Global handler
 logfile = logger.logCur
@@ -72,8 +65,10 @@ def main():
 
     mainw.logOnTerm('\n\n{} \n'.format(lang.all[globs.CNIRlang]["Please type a MRZ or open a scan"]))
 
+    # changelog
     if globs.CNIRNewVersion:
-        showinfo("Changelog : update summary", ('{} : CNIRevelator {}\n\n{}'.format(lang.all[globs.CNIRlang]["Program version"], globs.verstring_full, globs.changelog)), parent=mainw)
+        mainw.after_idle(mainw.showChangeLog)
+
     logfile.printdbg('main() : **** Launching App_main() ****')
     try:
         mainw.mainloop()
@@ -87,59 +82,44 @@ def main():
 
 ## BOOTSTRAP OF CNIREVELATOR
 try:
-    # LANGUAGE
-    if os.path.isfile(globs.CNIRLangFile):
-        with open(globs.CNIRLangFile, 'r') as (configFile):
-            try:
-                # Reading it
-                globs.CNIRlang = configFile.read()
-            except Exception as e:
-                ihm.crashCNIR()
-                raise IOError(str(e))
-    else:
-        # Recreating the url file
-        try:
-            os.mkdir(globs.CNIRFolder + '\\config')
-        except:
-            pass
 
-        with open(globs.CNIRLangFile, 'w') as (configFile):
+    try:
+        # LANGUAGE
+        lang.readLang()
+    except:
+        ihm.crashCNIR()
+        updater.exitProcess(1)
+
+    from main import *  # main.py
+    # GO
+    try:
+        launcherThread = threading.Thread(target=updater.umain, daemon=False)
+        launcher.lmain(launcherThread)
+    except Exception:
+        ihm.crashCNIR()
+        updater.exitProcess(1)
+
+    if updater.UPDATE_IS_MADE:
+        # Launch app !
+        args = updater.UPATH + '\\CNIRevelator.exe' + " DELETE " + globs.CNIRFolder
+        cd = updater.UPATH
+        for i in range(0,3):
             try:
-                # Writing it
-                configFile.write(globs.CNIRlang)
-            except Exception as e:
-                ihm.crashCNIR()
-                raise IOError(str(e))
+                updater.spawnProcess(args, cd)
+            except:
+                time.sleep(3)
+                continue
+            break
+        updater.exitProcess(0)
+
+    # Here we go !
+    try:
+        main()
+    except Exception as e:
+        ihm.crashCNIR()
+        updater.exitProcess(1)
+
 except:
-    ihm.crashCNIR()
-    updater.exitProcess(1)
-
-# GO
-try:
-    launcherThread = threading.Thread(target=updater.umain, daemon=False)
-    launcher.lmain(launcherThread)
-except Exception:
-    ihm.crashCNIR()
-    updater.exitProcess(1)
-
-if updater.UPDATE_IS_MADE:
-    # Launch app !
-    args = updater.UPATH + '\\CNIRevelator.exe' + " DELETE " + globs.CNIRFolder
-    cd = updater.UPATH
-    for i in range(0,3):
-        try:
-            updater.spawnProcess(args, cd)
-        except:
-            time.sleep(3)
-            continue
-        break
-    updater.exitProcess(0)
-
-# Here we go !
-try:
-    main()
-except Exception as e:
-    ihm.crashCNIR()
-    updater.exitProcess(1)
+    critical.LASTCHANCECRASH()
 
 updater.exitProcess(0)

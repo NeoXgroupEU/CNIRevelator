@@ -31,6 +31,7 @@ from tkinter import filedialog
 from tkinter import ttk
 import threading
 from datetime import datetime
+from importlib import reload
 import re
 import cv2
 import PIL.Image, PIL.ImageTk
@@ -50,11 +51,16 @@ logfile = logger.logCur
 
 class mainWindow(Tk):
 
+    ## App Pattern
+
     def __init__(self):
         Tk.__init__(self)
         self.initialize()
 
     def initialize(self):
+        """
+        Initializes the main window
+        """
         self.mrzChar = ""
         self.mrzDecided = False
         self.Tags = []
@@ -71,12 +77,13 @@ class mainWindow(Tk):
         logfile.printdbg('Launching main window with resolution' + str(ws) + 'x' + str(hs))
 
         # Configuring the size of each part of the window
-        self.grid_columnconfigure(0, weight=1, minsize=(ws / 2 * 0.3333333333333333))
-        self.grid_columnconfigure(1, weight=1, minsize=(ws / 2 * 0.3333333333333333))
+        self.grid_columnconfigure(0, minsize=(ws / 2 * 0.3333333333333333))
+        self.grid_columnconfigure(1, minsize=(ws / 2 * 0.3333333333333333))
         self.grid_columnconfigure(2, weight=1, minsize=(ws / 2 * 0.3333333333333333))
-        self.grid_rowconfigure(0, weight=1, minsize=(hs / 2 * 0.5))
-        self.grid_rowconfigure(1, weight=1, minsize=(hs / 2 * 0.10))
-        self.grid_rowconfigure(2, weight=1, minsize=(hs / 2 * 0.35))
+        self.grid_rowconfigure(0, minsize=(hs / 2 * 0.5))
+        self.grid_rowconfigure(1, minsize=(hs / 2 * 0.10))
+        self.grid_rowconfigure(2, minsize=(hs / 2 * 0.35))
+        self.grid_rowconfigure(3, minsize=10)
 
         # Prepare the data sections
         self.lecteur_ci = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Informations about the current document"])
@@ -91,9 +98,14 @@ class mainWindow(Tk):
         self.lecteur_ci.grid_rowconfigure(3, weight=1)
         self.lecteur_ci.grid_rowconfigure(4, weight=1)
         self.lecteur_ci.grid_rowconfigure(5, weight=1)
+        
+        # And what about the status bar ? 
+        self.statusbar = ihm.StatusBar(self)
+        self.statusbar.grid(row=3, columnspan=3, sticky="NSEW")
 
         # Fill the data sections
         ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Status"])).grid(column=0, row=0, padx=5, pady=5)
+        self.statusbar.set(lang.all[globs.CNIRlang]["IDLE"])
         self.STATUStxt = ttk.Label((self.lecteur_ci), text=lang.all[globs.CNIRlang]["IDLE"], font=("TkDefaultFont", 13, "bold"), foreground="orange", anchor=CENTER)
         self.STATUStxt.grid(column=1, row=0, padx=5, pady=5)
         ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Name"])).grid(column=0, row=1, padx=5, pady=5)
@@ -319,14 +331,21 @@ class mainWindow(Tk):
         menu1.add_separator()
         menu1.add_command(label=lang.all[globs.CNIRlang]["Quit"], command=(self.destroy))
         menubar.add_cascade(label=lang.all[globs.CNIRlang]["File"], menu=menu1)
+        menu2 = Menu(menubar, tearoff=0)
+        menu2.add_command(label=lang.all[globs.CNIRlang]["Update options"], command=(self.updateSet))
+        menu2.add_command(label=lang.all[globs.CNIRlang]["Show Changelog"], command=(self.showChangeLog))
+        menu2.add_separator()
+        menu2.add_command(label=lang.all[globs.CNIRlang]["Language"], command=(self.languageSet))
+        menubar.add_cascade(label=lang.all[globs.CNIRlang]["Settings"], menu=menu2)
         menu3 = Menu(menubar, tearoff=0)
         menu3.add_command(label=lang.all[globs.CNIRlang]["Keyboard commands"], command=(self.helpbox))
         menu3.add_command(label=lang.all[globs.CNIRlang]["Report a bug"], command=(self.openIssuePage))
         menu3.add_separator()
         menu3.add_command(label=lang.all[globs.CNIRlang]["About CNIRevelator"], command=(self.infobox))
         menubar.add_cascade(label=lang.all[globs.CNIRlang]["Help"], menu=menu3)
+        menubar.add_command(label="<|>", command=(self.panelResize))
         self.config(menu=menubar)
-
+        
         # The title
         self.wm_title(globs.CNIRName)
 
@@ -337,19 +356,21 @@ class mainWindow(Tk):
             self.iconbitmap('id-card.ico')
 
         # Make this window resizable and set her size
-        self.resizable(width=True, height=True)
+        self.resizable(0, 0)
         self.update()
-        w = int(self.winfo_reqwidth())
-        h = int(self.winfo_reqheight())
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        x = (ws - w)/2
-        y = (hs - h)/2
-        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.w = int(self.winfo_reqwidth())
+        self.h = int(self.winfo_reqheight())
+        self.ws = self.winfo_screenwidth()
+        self.hs = self.winfo_screenheight()
+        self.x = (self.ws - self.w)/2
+        self.y = (self.hs - self.h)/2
+        self.geometry('%dx%d+%d+%d' % (self.w, self.h, self.x, self.y))
         self.update()
         self.deiconify()
         self.attributes("-topmost", 1)
-        self.minsize(self.winfo_width(), self.winfo_height())
+        self.maxsize(self.w, self.h)
+        self.minsize(int(2.15 * (self.ws / 2 * 0.3333333333333333)), self.h)
+        self.currentw = self.w
         
         # Set image
         self.imageViewer.image = None
@@ -370,13 +391,13 @@ class mainWindow(Tk):
         if globs.CNIROpenFile:
             self.after_idle(lambda : self.openScanFile(sys.argv[1]))
 
-    def statusUpdate(self, image=None, setplace=False):
-        if image:
-            self.imageViewer.image = image
-            self.imageViewer.ZONE.itemconfigure(self.STATUSimg, image=(self.imageViewer.image))
-            self.imageViewer.ZONE.configure(scrollregion=self.imageViewer.ZONE.bbox("all"))
-        
+
+    ## OCR related functions
+    
     def rectangleSelectScan(self, event):
+        """
+        Realises the selection of the MRZ to make OCR possible
+        """
         if self.imageViewer.image:
             canvas = event.widget
             #print("Get coordinates : [{}, {}], for [{}, {}]".format(canvas.canvasx(event.x), canvas.canvasy(event.y), event.x, event.y))
@@ -390,6 +411,9 @@ class mainWindow(Tk):
                 self.imageViewer.ZONE.delete(self.select)
 
     def goOCRDetection(self):
+        """
+        Realises the OCR detection and get the text in self.mrzChar (and prints it)
+        """
         if self.imageViewer.image:
             cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
             cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -466,8 +490,12 @@ class mainWindow(Tk):
                 logfile.printerr("Tesseract error : {}".format(e))
                 showerror(lang.all[globs.CNIRlang]["OCR module error"], (lang.all[globs.CNIRlang]["The Tesseract module encountered a problem: {}"].format(e)), parent=self)
 
-
+    ## Regex and document detection + control related functions
+    
     def stringValidation(self, keysym):
+        """
+        Analysis of the already typed document
+        """
         # analysis
         # If we must decide the type of the document
         if not self.mrzDecided:
@@ -484,10 +512,12 @@ class mainWindow(Tk):
                 self.wait_window(invite)
 
                 self.logOnTerm(lang.all[globs.CNIRlang]["Document detected: {}\n"].format(candidates[invite.choice][2]))
+                self.statusbar.set(candidates[invite.choice][2])
                 self.mrzDecided = candidates[invite.choice]
 
             elif len(candidates) == 1:
                 self.logOnTerm(lang.all[globs.CNIRlang]["Document detected: {}\n"].format(candidates[0][2]))
+                self.statusbar.set(candidates[0][2])
                 self.mrzDecided = candidates[0]
         else:
             # corrects some problems
@@ -574,11 +604,13 @@ class mainWindow(Tk):
 
                     self.wait_window(invite)
 
-                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {} \ n"].format(candidates[invite.choice][2]))
+                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {}\n"].format(candidates[invite.choice][2]))
+                    self.statusbar.set(candidates[invite.choice][2])
                     self.mrzDecided = candidates[invite.choice]
 
                 elif len(candidates) == 1:
-                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {} \ n"].format(candidates[0][2]))
+                    self.logOnTerm(lang.all[globs.CNIRlang]["Document detected again: {}\n"].format(candidates[0][2]))
+                    self.statusbar.set(candidates[0][2])
                     self.mrzDecided = candidates[0]
             return "break"
 
@@ -630,30 +662,128 @@ class mainWindow(Tk):
         char = self.speed731text.get()
         self.speedResultPrint(str(mrz.computeControlSum(char)))
         return "break"
+        
+    def computeSigma(self):
+        """
+        Launch the checksum computation, infos validation and print/display the results
+        """
+        # the regex
+        regex = re.compile("[^A-Z0-9<]")
+        code = re.sub(regex, '', self.mrzChar)
+        self.compliance = True
 
+        allSums = mrz.computeAllControlSum(self.mrzDecided, code)["ctrlSumList"]
+        #print("Code : _{}_ | Sums : {}".format(code, allSums))
+
+        self.termtext.tag_remove("conforme",  "1.0", "end")
+        self.termtext.tag_remove("nonconforme",  "1.0", "end")
+
+        self.clearTerm()
+        self.logOnTerm(lang.all[globs.CNIRlang]["Document Review: {}\n\n"].format(self.mrzDecided[2]))
+
+        for sum in allSums:
+            x = sum[1] // len(self.mrzDecided[0][0]) +1
+            y = sum[1] %  len(self.mrzDecided[0][0])
+            #print("index : {}.{}".format(x,y))
+            #print("{} == {}".format(code[sum[1]], sum[2]))
+
+            if sum[3]:
+                self.logOnTerm(lang.all[globs.CNIRlang]["Checksum position {}: Lu {} VS Calculated {} [facultative]\n"].format(sum[1], code[sum[1]], sum[2]))
+            else:
+                self.logOnTerm(lang.all[globs.CNIRlang]["Checksum position {}: Lu {} VS Calculated {}\n"].format(sum[1], code[sum[1]], sum[2]))
+
+            # if sum is facultative or if sum is ok
+            try:
+                if sum[3] or int(code[sum[1]]) == int(sum[2]):
+                    self.termtext.tag_add("conforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                    self.termtext.tag_configure("conforme", background="green", foreground="white")
+                else:
+                    self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                    self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
+                    self.compliance = False
+            except ValueError:
+                self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
+                self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
+                self.compliance = False
+
+        # get the infos
+        docInfos = mrz.getDocInfos(self.mrzDecided, code)
+        #print(docInfos)
+        # display the infos
+        for key in [ e for e in docInfos ]:
+            #print(docInfos[key])
+            if key in ["CODE", "CTRL", "CTRLF"]:
+                continue
+            if not docInfos[key] == False:
+                self.infoList[key]['text'] = docInfos[key]
+                self.infoList[key]['background'] = self['background']
+                self.infoList[key]['foreground'] = "black"
+            else:
+                self.infoList[key]['background'] = "red"
+                self.infoList[key]['foreground'] = "white"
+                self.infoList[key]['text'] = "NC"
+                self.compliance = False
+
+        if self.compliance == True:
+            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["COMPLIANT"]
+            self.STATUStxt["foreground"] = "green"
+            self.statusbar.set(lang.all[globs.CNIRlang]["COMPLIANT"])
+        else:
+            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["IMPROPER"]
+            self.STATUStxt["foreground"] = "red"
+            self.statusbar.set(lang.all[globs.CNIRlang]["IMPROPER"])
+
+    ## Print functions
+    
     def logOnTerm(self, text):
+        """
+        Writes on the monitor
+        """
         self.monlog['state'] = 'normal'
         self.monlog.insert('end', text)
         self.monlog['state'] = 'disabled'
         self.monlog.yview(END)
 
     def clearTerm(self):
+        """
+        Clears the monitor
+        """
         self.monlog['state'] = 'normal'
         self.monlog.delete('1.0', 'end')
         self.monlog['state'] = 'disabled'
         self.monlog.yview(END)
 
     def speedResultPrint(self, text):
+        """
+        Prints a result in the quick entry terminal
+        """
         self.speedResult['state'] = 'normal'
         self.speedResult.delete("1.0", 'end')
         self.speedResult.insert('end', text)
         self.speedResult['state'] = 'disabled'
 
+    ## Document display related functions
+
+    def DisplayUpdate(self, image=None, setplace=False):
+        """
+        Reload the displayer to display the image or not
+        """
+        if image:
+            self.imageViewer.image = image
+            self.imageViewer.ZONE.itemconfigure(self.STATUSimg, image=(self.imageViewer.image))
+            self.imageViewer.ZONE.configure(scrollregion=self.imageViewer.ZONE.bbox("all"))
+
     def goPageChoice(self, event):
+        """
+        Change the current viewed page of the multipage tiff if needed
+        """
         self.imageViewer.pagenumber = int(self.toolbar.pageChooser.get()) - 1
         self.resizeScan()
         
     def openingScan(self):
+        """
+        Open the scan, ask its path and displays it
+        """
         path = ''
         path = filedialog.askopenfilename(parent=self, title=lang.all[globs.CNIRlang]["Open a scan of document..."], filetypes=(('TIF files', '*.tif'),
                                                                                                     ('TIF files', '*.tiff'),
@@ -662,7 +792,9 @@ class mainWindow(Tk):
         self.openScanFile(path)
         
     def openScanFile(self, path):
-        
+        """
+        Open an image file at path to display it on the displayer
+        """
         # Check if the file is valid
         if (    path[-3:] != 'jpg' 
             and path[-3:] != 'tif' 
@@ -702,7 +834,7 @@ class mainWindow(Tk):
             
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-        self.statusUpdate(photo)    
+        self.DisplayUpdate(photo)    
 
     def zoomInScan50(self, quantity = 50):
         if self.imageViewer.image:
@@ -763,6 +895,9 @@ class mainWindow(Tk):
             self.resizeScan()
 
     def negativeScan(self):
+        """
+        Invert the bits to make a negative of the scan (and highlight the contrasts)
+        """
         if self.imageViewer.image:
             # Load an image using OpenCV
             cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
@@ -777,6 +912,9 @@ class mainWindow(Tk):
             self.resizeScan(cv_img)
 
     def resizeScan(self, cv_img = None):
+        """
+        Reloads the image according to settings 
+        """
         if self.imageViewer.image:
             try:
                 if not hasattr(cv_img, 'shape'):
@@ -806,7 +944,7 @@ class mainWindow(Tk):
                 cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
                 # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
                 photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-                self.statusUpdate( photo)
+                self.DisplayUpdate( photo)
             except Exception as e:
                 logfile.printerr("Error with opencv : {}".format(e))
                 ihm.crashCNIR()
@@ -824,19 +962,26 @@ class mainWindow(Tk):
                     height, width, channels_no = cv_img.shape
                     # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
                     photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-                    self.statusUpdate(photo)
+                    self.DisplayUpdate(photo)
                 except Exception as e:
                     logfile.printerr("Critical error with opencv : ".format(e))
                     ihm.crashCNIR()
                     showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself"])
                     self.initialize()
 
+    ## IHM and user interface related functions
+    
     def newEntry(self):
+        """
+        Reinits the IHM and invite
+        """
         self.initialize()
         self.logOnTerm('\n\n{}\n'.format(lang.all[globs.CNIRlang]["Please type a MRZ or open a scan"]))
 
     def infobox(self):
-        
+        """
+        Shows the About dialog
+        """
         Tk().withdraw()
 
         showinfo( lang.all[globs.CNIRlang]["About CNIRevelator"],
@@ -846,6 +991,9 @@ class mainWindow(Tk):
         parent=self)
 
     def helpbox(self):
+        """
+        Shows the keyboard help summary
+        """
         Tk().withdraw()
 
         showinfo( lang.all[globs.CNIRlang]["Keyboard commands"], 
@@ -856,79 +1004,55 @@ class mainWindow(Tk):
         parent=self)
         
     def openIssuePage(self):
+        """
+        Opens the Github Issue Repository page
+        """
         webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
         
-    def computeSigma(self):
+    def showChangeLog(self):
+        changelogWin = ihm.ChangelogDialog(self, ('{} : CNIRevelator {}\n\n{}'.format(lang.all[globs.CNIRlang]["Program version"], globs.verstring_full, lang.all[globs.CNIRlang]["CHANGELOG"])))
+        changelogWin.transient(self)
+        changelogWin.grab_set()
+        changelogWin.focus_force()
+        self.wait_window(changelogWin)
+
+    def updateSet(self):
         """
-        Launch the checksum computation, infos validation and display the results
+        Update Settings
         """
-        # the regex
-        regex = re.compile("[^A-Z0-9<]")
-        code = re.sub(regex, '', self.mrzChar)
-        self.compliance = True
-
-        allSums = mrz.computeAllControlSum(self.mrzDecided, code)["ctrlSumList"]
-        #print("Code : _{}_ | Sums : {}".format(code, allSums))
-
-        self.termtext.tag_remove("conforme",  "1.0", "end")
-        self.termtext.tag_remove("nonconforme",  "1.0", "end")
-
-        self.clearTerm()
-        self.logOnTerm(lang.all[globs.CNIRlang]["Document Review: {}\n\n"].format(self.mrzDecided[2]))
-
-        for sum in allSums:
-            x = sum[1] // len(self.mrzDecided[0][0]) +1
-            y = sum[1] %  len(self.mrzDecided[0][0])
-            #print("index : {}.{}".format(x,y))
-            #print("{} == {}".format(code[sum[1]], sum[2]))
-
-            self.logOnTerm(lang.all[globs.CNIRlang]["Check sum position {}: Lu {} VS Calculated {} and {}\n"].format(sum[1], code[sum[1]], sum[2], sum[3]))
-
-            # if sum is facultative or if sum is ok
-            try:
-                if sum[3] or int(code[sum[1]]) == int(sum[2]):
-                    self.termtext.tag_add("conforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
-                    self.termtext.tag_configure("conforme", background="green", foreground="white")
-                else:
-                    self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
-                    self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
-                    self.compliance = False
-            except ValueError:
-                self.termtext.tag_add("nonconforme", "{}.{}".format(x,y), "{}.{}".format(x,y+1))
-                self.termtext.tag_configure("nonconforme", background="red", relief='raised', foreground="white")
-                self.compliance = False
-
-        # get the infos
-        docInfos = mrz.getDocInfos(self.mrzDecided, code)
-        #print(docInfos)
-        # display the infos
-        for key in [ e for e in docInfos ]:
-            #print(docInfos[key])
-            if key in ["CODE", "CTRL", "CTRLF"]:
-                continue
-            if not docInfos[key] == False:
-                self.infoList[key]['text'] = docInfos[key]
-                self.infoList[key]['background'] = self['background']
-                self.infoList[key]['foreground'] = "black"
-            else:
-                self.infoList[key]['background'] = "red"
-                self.infoList[key]['foreground'] = "white"
-                self.infoList[key]['text'] = "NC"
-                self.compliance = False
-
-        if self.compliance == True:
-            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["COMPLIANT"]
-            self.STATUStxt["foreground"] = "green"
+        changeupdateWin = ihm.updateSetDialog(self)
+        changeupdateWin.transient(self)
+        changeupdateWin.grab_set()
+        changeupdateWin.focus_force()
+        self.wait_window(changeupdateWin)
+        
+    def languageSet(self):
+        """
+        Lang Settings
+        """
+        changelangWin = ihm.langDialog(self)
+        changelangWin.transient(self)
+        changelangWin.grab_set()
+        changelangWin.focus_force()
+        self.wait_window(changelangWin)
+        
+        global mrz
+        mrz = reload(mrz)
+        
+        self.initialize()
+        
+    def panelResize(self):
+        """
+        Shows or hides the panel
+        """
+        if self.currentw > int(2.15 * (self.ws / 2 * 0.3333333333333333)):
+            self.currentw = int(2.15 * (self.ws / 2 * 0.3333333333333333))
+            self.geometry('%dx%d+%d+%d' % (self.currentw, self.h, self.x, self.y))
+            self.update()
         else:
-            self.STATUStxt["text"] = lang.all[globs.CNIRlang]["IMPROPER"]
-            self.STATUStxt["foreground"] = "red"
-
-        return
-
-
-
-
-
+            self.currentw = self.w
+            self.geometry('%dx%d+%d+%d' % (self.currentw, self.h, self.x, self.y))
+            self.update()
 
 
 
