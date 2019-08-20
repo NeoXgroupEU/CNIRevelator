@@ -26,12 +26,9 @@ import os
 
 # CNIRevelator version
 verType             = "final release"
-version             = [3, 1, 0]
+version             = [3, 1, 1]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
-debug = True
-
-changelog           =   "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging"
 
 CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
 CNIRFolder          = os.getcwd()
@@ -47,3 +44,28 @@ CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
 CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
 CNIREnv             = CNIRFolder + '\\Data\\'
+
+
+CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
+CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
+CNIRLColor          = "#006699"
+CNIRName            = "CNIRevelator {}".format(verstring)
+CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
+
+CNIRLangFile        = CNIRFolder + '\\config\\lang.ig'
+CNIRlang            = "fr"
+
+CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
+CNIRTesser          = CNIRFolder + '\\Tesseract-OCR4\\'
+CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
+CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
+CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
+CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
+CNIREnv             = CNIRFolder + '\\Data\\'
+
+CNIRBetaURL         = "https://raw.githubusercontent.com/neox95/CNIRevelator/v3.1/VERSIONS.LST"
+CNIRDefaultURL      = "https://raw.githubusercontent.com/neox95/CNIRevelator/master/VERSIONS.LST"
+
+CNIRNewVersion      = False
+CNIROpenFile        = False
+debug               = True

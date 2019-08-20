@@ -23,22 +23,26 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
-
-import sys
+# Import critical files
 import os
-import subprocess
 import threading
-import traceback
-import psutil
 
-import launcher     # launcher.py"
-import updater      # updater.py
-import globs        # globs.py
-import pytesseract  # pytesseract.py
+import lang         # lang.py
 import logger       # logger.py
+import globs        # globs.py
+import critical     # critical.py
 
+# Import all other files and crash if necessary
+try:
 
-from main import *  # main.py
+    import launcher     # launcher.py"
+    import updater      # updater.py
+    import pytesseract  # pytesseract.py
+    import ihm          # ihm.py
+    from tkinter.messagebox import *
+    from tkinter import *
+except:
+    critical.crashCNIR()
 
 # Global handler
 logfile = logger.logCur
@@ -59,15 +63,17 @@ def main():
         text = 'Tesseract version ' + str(tesser_version) + ' Licensed Apache 2004 successfully initiated\n'
         mainw.logOnTerm(text)
 
-    mainw.logOnTerm('\n\nEntrez la première ligne de MRZ svp \n')
+    mainw.logOnTerm('\n\n{} \n'.format(lang.all[globs.CNIRlang]["Please type a MRZ or open a scan"]))
 
+    # changelog
     if globs.CNIRNewVersion:
-        showinfo('Changelog : résumé de mise à jour', ('Version du logiciel : CNIRevelator ' + globs.verstring_full + '\n\n' + globs.changelog), parent=mainw)
+        mainw.after_idle(mainw.showChangeLog)
+
     logfile.printdbg('main() : **** Launching App_main() ****')
     try:
         mainw.mainloop()
     except Exception as e:
-        showerror("CNIRevelator Fatal Error", "An error has occured : {}".format(e), parent=mainw)
+        showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Error"], "{} : {}".format(lang.all[globs.CNIRlang]["An error has occured"],e), parent=mainw)
     logfile.printdbg('main() : **** Ending App_main() ****')
 
     logfile.printdbg('*** CNIRevelator LOGFILE. Goodbye World ! ***')
@@ -75,30 +81,45 @@ def main():
 
 
 ## BOOTSTRAP OF CNIREVELATOR
-
 try:
-    launcherThread = threading.Thread(target=updater.umain, daemon=False)
-    launcher.lmain(launcherThread)
-except Exception:
-    updater.exitProcess(1)
 
-if updater.UPDATE_IS_MADE:
-    # Launch app !
-    args = updater.UPATH + '\\CNIRevelator.exe ' + globs.CNIRFolder
-    cd = updater.UPATH
-    for i in range(0,3):
-        try:
-            updater.spawnProcess(args, cd)
-        except:
-            time.sleep(3)
-            continue
-        break
-    updater.exitProcess(0)
+    try:
+        # LANGUAGE
+        lang.readLang()
+    except:
+        critical.crashCNIR()
+        updater.exitProcess(1)
 
-# Here we go !
-try:
-    main()
-except Exception as e:
-    traceback.print_exc(file=sys.stdout)
+    from main import *  # main.py
+    # GO
+    try:
+        launcherThread = threading.Thread(target=updater.umain, daemon=False)
+        launcher.lmain(launcherThread)
+    except Exception:
+        critical.crashCNIR()
+        updater.exitProcess(1)
+
+    if updater.UPDATE_IS_MADE:
+        # Launch app !
+        args = updater.UPATH + '\\CNIRevelator.exe' + " DELETE " + globs.CNIRFolder
+        cd = updater.UPATH
+        for i in range(0,3):
+            try:
+                updater.spawnProcess(args, cd)
+            except:
+                time.sleep(3)
+                continue
+            break
+        updater.exitProcess(0)
+
+    # Here we go !
+    try:
+        main()
+    except Exception as e:
+        critical.crashCNIR()
+        updater.exitProcess(1)
+
+except:
+    critical.crashCNIR()
 
 updater.exitProcess(0)

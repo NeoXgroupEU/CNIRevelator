@@ -1,4 +1,4 @@
-﻿"""
+"""
 ********************************************************************************
 *                             CNIRevelator                                     *
 *                                                                              *
@@ -23,19 +23,22 @@
 ********************************************************************************
 """
 
-from tkinter import *
-import webbrowser
 from tkinter.messagebox import *
+from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-import cv2
 import PIL.Image, PIL.ImageTk
 import traceback
+import webbrowser
+import cv2
 
+import critical             # critical.py
 import logger               # logger.py
 import globs                # globs.py
 import lang                 # lang.py
 
+import updater              # updater.py
+import critical             # critical.py
 
 controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
 
@@ -117,21 +120,22 @@ class LoginDialog(Toplevel):
         self.login = ''
         super().__init__(parent)
         self.title(lang.all[globs.CNIRlang]["Connection"])
-        Label(self, text='IPN : ').pack()
-        self.entry_login = Entry(self)
+        self["background"] = "white"
+        Label(self, text='IPN : ', bg="white").pack(fill=Y)
+        self.entry_login = ttk.Entry(self)
         self.entry_login.insert(0, '')
         self.entry_login.pack()
-        Label(self, text='{} : '.format(lang.all[globs.CNIRlang]["Password"])).pack()
-        self.entry_pass = Entry(self, show='*')
+        Label(self, text='{} : '.format(lang.all[globs.CNIRlang]["Password"]), bg="white").pack(fill=Y)
+        self.entry_pass = ttk.Entry(self, show='*')
         self.entry_pass.insert(0, '')
-        self.entry_pass.pack()
-        Button(self, text=lang.all[globs.CNIRlang]["Connection"], command=(self.connecti)).pack()
+        self.entry_pass.pack(fill=Y)
+        ttk.Button(self, text=lang.all[globs.CNIRlang]["Connection"], command=(self.connecti)).pack(fill=Y, pady=10)
+        self.update()
         self.resizable(width=False, height=False)
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        w = hs / 10
-        h = ws / 18
-        self.update()
+        w = self.winfo_reqwidth() + 5
+        h = self.winfo_reqheight()
         if getattr(sys, 'frozen', False):
             self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
         else:
@@ -146,12 +150,136 @@ class LoginDialog(Toplevel):
         self.key = self.entry_pass.get().strip()
         self.destroy()
 
+class ChangelogDialog(Toplevel):
+
+    def __init__(self, parent, text):
+        super().__init__(parent)
+
+        self.title(lang.all[globs.CNIRlang]["Show Changelog"])
+        self["background"] = "white"
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.text = Text(self, wrap='word', width=55, height=15, borderwidth=0, font="TkDefaultFont", bg="white")
+        self.text.grid(column=0, row=0, sticky='EWNS', padx=5, pady=5)
+
+        ttk.Button(self, text="OK", command=(self.oki)).grid(column=0, row=1, pady=5)
+
+        self.scrollb = ttk.Scrollbar(self, command=(self.text.yview))
+        self.scrollb.grid(column=1, row=0, sticky='EWNS', padx=5, pady=5)
+        self.text['yscrollcommand'] = self.scrollb.set
+
+        self.text.insert('end', text)
+        self.text['state'] = 'disabled'
+
+        self.update()
+        self.resizable(width=False, height=False)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        w = self.winfo_reqwidth() + 5
+        h = self.winfo_reqheight()
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.bind("<Return>", self.oki)
+
+    def oki(self, event=None):
+        self.destroy()
+
+class langDialog(Toplevel):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.title(lang.all[globs.CNIRlang]["Language"])
+
+        Label(self, text=lang.all[globs.CNIRlang]["Please choose your language : "]).pack(fill=Y)
+
+        vals = [i for i in lang.all]
+        for i in range(len(lang.all)):
+            ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i]).pack(fill=Y)
+
+        ttk.Button(self, text="OK", command=(self.oki)).pack(fill=Y, pady=5)
+
+        self.update()
+        self.resizable(width=False, height=False)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        w = self.winfo_reqwidth() + 5
+        h = self.winfo_reqheight()
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.bind("<Return>", self.oki)
+
+    def oki(self, event=None):
+        self.destroy()
+
+    def createRegister(self, i):
+        def register():
+            lang.updateLang([j for j in lang.all][i])
+        return register
+
+class updateSetDialog(Toplevel):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.title(lang.all[globs.CNIRlang]["Update options"])
+
+        Label(self, text=lang.all[globs.CNIRlang]["Please choose your update channel : "]).pack(fill=Y)
+
+        self.vals = ["Stable", "Beta"]
+        vals = self.vals
+        for i in range(len(vals)):
+            ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i]).pack(fill=Y)
+
+        ttk.Button(self, text="OK", command=(self.oki)).pack(fill=Y, pady=5)
+
+        self.update()
+        self.resizable(width=False, height=False)
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        w = self.winfo_reqwidth() + 5
+        h = self.winfo_reqheight()
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+        x = ws / 2 - w / 2
+        y = hs / 2 - h / 2
+        self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        self.bind("<Return>", self.oki)
+
+    def oki(self, event=None):
+        self.destroy()
+
+    def createRegister(self, i):
+        def register():
+            updater.updateChannel(self.vals[i])
+        return register
+
 class LauncherWindow(Tk):
 
     def __init__(self):
         # Initialize the tkinter main class
         Tk.__init__(self)
         self.resizable(width=False, height=False)
+
+        # icon
+        if getattr(sys, 'frozen', False):
+           self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
 
         # Setting up the geometry
         ws = self.winfo_screenwidth()
@@ -201,11 +329,6 @@ class LauncherWindow(Tk):
         self.update()
         self.progressBar.grid(row=1, sticky='S')
 
-
-        if getattr(sys, 'frozen', False):
-           self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.iconbitmap('id-card.ico')
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : 0)
@@ -233,22 +356,20 @@ class ResizeableCanvas(Canvas):
         # rescale all the objects tagged with the "all" tag
         self.scale("all",0,0,wscale,hscale)
 
-def crashCNIR():
-    """
-    last solution
-    """
-    # Global handler
-    logfile = logger.logCur
-    # hide main window
-    root = Tk()
-    root.withdraw()
-    logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
-    showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
-    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
-    if res == "yes":
-        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
-    root.destroy()
+class StatusBar(Frame):
 
+    def __init__(self, master):
+        Frame.__init__(self, master)
+        self.label = Label(self, bd=1, relief=SUNKEN, anchor=W)
+        self.label.pack(fill=X)
+
+    def set(self, text):
+        self.label.config(text="Document : " + text.lower())
+        self.label.update_idletasks()
+
+    def clear(self):
+        self.label.config(text="")
+        self.label.update_idletasks()
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()

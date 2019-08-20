@@ -26,12 +26,13 @@
 import sys
 import os
 import threading
-import traceback
 
+import critical # critical.py
 import updater  # updater.py
 import ihm      # ihm.py
 import globs    # globs.py
 import logger   # logger.py
+import lang     # lang.py
 
 ## Main function
 def lmain(mainThread):
@@ -44,7 +45,7 @@ def lmain(mainThread):
 
     # Hello user
     launcherWindow.progressBar.configure(mode='indeterminate', value=0, maximum=20)
-    launcherWindow.printmsg('Starting...')
+    launcherWindow.printmsg(lang.all[globs.CNIRlang]["Starting..."])
     launcherWindow.progressBar.start()
 
     # Starting the main update thread
