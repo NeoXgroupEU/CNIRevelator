@@ -46,7 +46,7 @@ CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
 CNIREnv             = CNIRFolder + '\\Data\\'
 
 
-CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
+CNIRTesserHash      = '947224361ffab8c01f05c9394b44b1bd7c8c3d4d'
 CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
