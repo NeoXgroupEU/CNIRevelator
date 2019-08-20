@@ -171,18 +171,18 @@ def tessInstall(PATH, credentials):
      
     
     # Verifying that Tesseract is installed
-    if not os.path.exists(PATH + '\\Tesseract-OCR4\\'):
+    if not os.path.exists(PATH + '\\Tesseract-OCR5\\'):
         finalver, finalurl, finalchecksum = getLatestVersion(credentials)
         
         if finalurl == None:
             logfile.printerr('Unable to get the Tesseract url')
             return False
         
-        tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_4.zip")
+        tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_5.zip")
         
-        # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
+        # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_5.zip
         logfile.printdbg('Preparing download of Tesseract OCR 4...')
-        getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\downloads\\TsrtPackage.zip', "Tesseract 4 OCR Module").download()
+        getTesseract = downloader.newdownload(credentials, tesseracturl, PATH + '\\downloads\\TsrtPackage.zip', "Tesseract 5 OCR Module").download()
         
         try:
             # CHECKSUM

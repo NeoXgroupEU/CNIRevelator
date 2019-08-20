@@ -451,7 +451,7 @@ class mainWindow(Tk):
                 os.environ['PATH'] = globs.CNIRTesser
                 os.environ['TESSDATA_PREFIX'] =  globs.CNIRTesser + '\\tessdata'
                 
-                text = pytesseract.image_to_string(crop_img, lang='ocrb', boxes=False, config='--psm 6 --oem 0 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
+                text = pytesseract.image_to_string(crop_img, lang='ocrb', config='--psm 6 --oem 1 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890<')
                 
                 # manual validation
                 # the regex

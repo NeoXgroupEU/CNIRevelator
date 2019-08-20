@@ -138,7 +138,8 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n\n" + \
+"Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
 "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues\n- Ajout des canaux de mise-à-jour\n\n" + \
 "Version 3.0.8 finale\nCorrectif : bug du système de mise-à-jour'\n\n" + \
 "Version 3.0.6 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'apparence du launcher de l'application\n- Améliorations de l'interface, notamment de la stabilité\n- Ajout de la signature numérique de l'exécutable\n\n" + \
@@ -189,6 +190,8 @@ french = \
 "Pièce d'identité/de voyage"        :   "Pièce d'identité/de voyage",
 "Pièce d'identité FR"               :   "Pièce d'identité FR",
 "Permis de conduire"                :   "Permis de conduire",
+"The file you provided is not "
+"valid : {}"                        :   "Le fichier transmis n'est pas valide : {}",
 
 "LANDCODE2"                         :   {
                                             'AW': 'Aruba',
@@ -827,7 +830,8 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system" + \
+"CHANGELOG"                         :   "Version 3.1.2 \nMinor update with the following progressions:\n- Upgrade Tesseract OCR to 5.0\n\n" + \
+"Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system\n\n" + \
 "Version 3.1.0 \nMajor update with the following progressions: \n- Cosmetic modifications of the user interface \n- Stabilization of the changes made on the minor version 3.0 : user interface, OCR, VISA A and B, logging\n- Rationalization of the language system\n- Added update channels\n\n" + \
 "Version 3.0.8 final\nCorrection: bug in the update system'\n\n" + \
 "Version 3.0.6 \nMinor update with the following fixes:\n- Change in the appearance of the application launcher\n- Improvements to the interface, including stability\n- Added digital signature of the executable\n" + \
@@ -879,6 +883,8 @@ english = \
 "Pièce d'identité/de voyage"        :   "Identity/travel document",
 "Pièce d'identité FR"               :   "French Identity card",
 "Permis de conduire"                :   "Driver License",
+"The file you provided is not "
+"valid : {}"                        :   "The file you provided is not valid : {}",
 
 "LANDCODE2"                         :   {
                                             "AW": "Aruba",

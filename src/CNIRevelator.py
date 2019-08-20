@@ -54,8 +54,8 @@ def main():
     mainw = mainWindow()
 
     try:
-        os.environ['PATH'] = globs.CNIRFolder + '\\Tesseract-OCR4\\'
-        os.environ['TESSDATA_PREFIX'] = globs.CNIRFolder + '\\Tesseract-OCR4\\tessdata'
+        os.environ['PATH'] = globs.CNIRFolder + '\\Tesseract-OCR5\\'
+        os.environ['TESSDATA_PREFIX'] = globs.CNIRFolder + '\\Tesseract-OCR5\\tessdata'
         tesser_version = pytesseract.get_tesseract_version()
     except Exception as e:
         logfile.printerr('ERROR WITH TESSERACT MODULE ' + str(e))

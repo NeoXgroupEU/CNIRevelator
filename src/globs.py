@@ -26,7 +26,7 @@ import os
 
 # CNIRevelator version
 verType             = "final release"
-version             = [3, 1, 1]
+version             = [3, 1, 2]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 
@@ -38,7 +38,7 @@ CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
 CNIRNewVersion      = False
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
-CNIRTesser          = CNIRFolder + '\\Tesseract-OCR4\\'
+CNIRTesser          = CNIRFolder + '\\Tesseract-OCR5\\'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
 CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
@@ -56,7 +56,7 @@ CNIRLangFile        = CNIRFolder + '\\config\\lang.ig'
 CNIRlang            = "fr"
 
 CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
-CNIRTesser          = CNIRFolder + '\\Tesseract-OCR4\\'
+CNIRTesser          = CNIRFolder + '\\Tesseract-OCR5\\'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
 CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
