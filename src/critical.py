@@ -44,11 +44,11 @@ def crashCNIR(shutdown=True):
         root.withdraw()
         logfile = logger.logCur
         logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
-        showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"], parent=root)
-        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"], parent=root)
+        showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
+        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
         if res == "yes":
             webbrowser.open_new(globs.CNIRErrLog)
-        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"], parent=root)
+        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
         if res == "yes":
             webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
         root.destroy()
