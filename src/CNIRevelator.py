@@ -42,7 +42,7 @@ try:
     from tkinter.messagebox import *
     from tkinter import *
 except:
-    critical.LASTCHANCECRASH()
+    critical.crashCNIR()
 
 # Global handler
 logfile = logger.logCur
@@ -87,7 +87,7 @@ try:
         # LANGUAGE
         lang.readLang()
     except:
-        ihm.crashCNIR()
+        critical.crashCNIR()
         updater.exitProcess(1)
 
     from main import *  # main.py
@@ -96,7 +96,7 @@ try:
         launcherThread = threading.Thread(target=updater.umain, daemon=False)
         launcher.lmain(launcherThread)
     except Exception:
-        ihm.crashCNIR()
+        critical.crashCNIR()
         updater.exitProcess(1)
 
     if updater.UPDATE_IS_MADE:
@@ -116,10 +116,10 @@ try:
     try:
         main()
     except Exception as e:
-        ihm.crashCNIR()
+        critical.crashCNIR()
         updater.exitProcess(1)
 
 except:
-    critical.LASTCHANCECRASH()
+    critical.crashCNIR()
 
 updater.exitProcess(0)

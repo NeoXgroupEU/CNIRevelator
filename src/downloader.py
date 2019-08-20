@@ -32,10 +32,11 @@ from Crypto.Cipher import AES
 from requests import Session
 from time import time
 
+import critical     # critical.py
 import logger   # logger.py
 import globs    # globs.py
 import ihm      # ihm.py
-import lang         # lang.py
+import lang     # lang.py
 
 class AESCipher(object):
 

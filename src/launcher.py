@@ -27,6 +27,7 @@ import sys
 import os
 import threading
 
+import critical # critical.py
 import updater  # updater.py
 import ihm      # ihm.py
 import globs    # globs.py

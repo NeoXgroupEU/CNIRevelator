@@ -26,6 +26,7 @@
 import logging
 import os
 
+import critical # critical.py
 import globs    # globs.py
 
 ## The logging class

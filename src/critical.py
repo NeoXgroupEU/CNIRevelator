@@ -23,6 +23,7 @@
 ********************************************************************************
 """
 from tkinter.messagebox import *
+from importlib import reload
 from tkinter import *
 import webbrowser
 import traceback
@@ -33,24 +34,33 @@ import lang         # lang.py
 import logger       # logger.py
 import globs        # globs.py
 
-def LASTCHANCECRASH():
+def crashCNIR(shutdown=True):
     """
     very last solution
     """
-    root = Tk()
-    root.withdraw()
-    logfile = logger.logCur
-    logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
-    showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
-    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
-    if res == "yes":
-        webbrowser.open_new(globs.CNIRErrLog)
-    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
-    if res == "yes":
-        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
-    root.destroy()
-    # Quit totally without remain in memory
-    for process in psutil.process_iter():
-        if process.pid == os.getpid():
-            process.terminate()
-    sys.exit(arg)
+
+    try:
+        root = Tk()
+        root.withdraw()
+        logfile = logger.logCur
+        logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
+        showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"], parent=root)
+        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"], parent=root)
+        if res == "yes":
+            webbrowser.open_new(globs.CNIRErrLog)
+        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"], parent=root)
+        if res == "yes":
+            webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
+        root.destroy()
+
+        # Quit ?
+        if not shutdown:
+            return
+
+        # Quit totally without remain in memory
+        for process in psutil.process_iter():
+            if process.pid == os.getpid():
+                process.terminate()
+        sys.exit(arg)
+    except:
+        traceback.print_exc()

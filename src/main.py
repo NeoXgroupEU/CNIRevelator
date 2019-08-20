@@ -39,6 +39,7 @@ import os, shutil
 import webbrowser
 import sys, os
 
+import critical                 # critical.py
 import ihm                      # ihm.py
 import logger                   # logger.py
 import mrz                      # mrz.py
@@ -68,6 +69,12 @@ class mainWindow(Tk):
         self.corners = []
         self.validatedtext = ""
 
+        # The icon
+        if getattr(sys, 'frozen', False):
+            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+            
         # Hide during construction
         self.withdraw()
 
@@ -348,12 +355,6 @@ class mainWindow(Tk):
         
         # The title
         self.wm_title(globs.CNIRName)
-
-        # The icon
-        if getattr(sys, 'frozen', False):
-            self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.iconbitmap('id-card.ico')
 
         # Make this window resizable and set her size
         self.resizable(0, 0)
@@ -947,7 +948,7 @@ class mainWindow(Tk):
                 self.DisplayUpdate( photo)
             except Exception as e:
                 logfile.printerr("Error with opencv : {}".format(e))
-                ihm.crashCNIR()
+                critical.crashCNIR()
                 try:
                     # Reload an image using OpenCV
                     path = self.imageViewer.imagePath
@@ -965,7 +966,7 @@ class mainWindow(Tk):
                     self.DisplayUpdate(photo)
                 except Exception as e:
                     logfile.printerr("Critical error with opencv : ".format(e))
-                    ihm.crashCNIR()
+                    critical.crashCNIR()
                     showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself"])
                     self.initialize()
 

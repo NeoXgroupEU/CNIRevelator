@@ -24,6 +24,9 @@
 """
 
 from win32com.client import Dispatch
+from tkinter.messagebox import *
+from tkinter import *
+import pythoncom
 import sys
 import time
 import os
@@ -33,6 +36,7 @@ import hashlib
 import subprocess
 import psutil
 
+import critical     # critical.py
 import ihm          # ihm.py
 import logger       # logger.py
 import globs        # globs.py
@@ -93,6 +97,8 @@ def getLatestVersion(credentials):
     """
     Returns the latest version of the software
     """
+    
+    finalver, finalurl, finalchecksum = [None]*3
 
     # Global Handlers
     logfile = logger.logCur
@@ -155,7 +161,7 @@ def getLatestVersion(credentials):
         else:
             finalurl = url
             finalchecksum = None
-            
+    
     return (finalver, finalurl, finalchecksum)
 
 
@@ -167,6 +173,11 @@ def tessInstall(PATH, credentials):
     # Verifying that Tesseract is installed
     if not os.path.exists(PATH + '\\Tesseract-OCR4\\'):
         finalver, finalurl, finalchecksum = getLatestVersion(credentials)
+        
+        if finalurl == None:
+            logfile.printerr('Unable to get the Tesseract url')
+            return False
+        
         tesseracturl = finalurl.replace("CNIRevelator.zip", "tesseract_4.zip")
         
         # WE ASSUME THAT THE MAIN FILE IS CNIRevelator.zip AND THAT THE TESSERACT PACKAGE IS tesseract_4.zip
@@ -277,6 +288,7 @@ def batch(credentials):
 
     # Make a shortcut
     # hide main window
+    pythoncom.CoInitialize()
     root = Tk()
     root.withdraw()
     res = askquestion(lang.all[globs.CNIRlang]["Shortcut creation"], lang.all[globs.CNIRlang]["Would you like to create/update the shortcut for CNIRevelator on your desktop ?"])
@@ -351,7 +363,7 @@ def umain():
             # EXECUTING THE UPDATE BATCH
             success = batch(credentials)
         except Exception as e:
-            ihm.crashCNIR()
+            critical.crashCNIR()
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
             launcherWindow.exit()
@@ -371,7 +383,7 @@ def umain():
             launcherWindow.exit()
             return 0
     except:
-        ihm.crashCNIR()
+        critical.crashCNIR()
         launcherWindow.exit()
         sys.exit(2)
         return 2
@@ -381,7 +393,7 @@ def umain():
             # INSTALLING TESSERACT OCR
             success = tessInstall(globs.CNIRFolder, credentials)
         except Exception as e:
-            ihm.crashCNIR()
+            critical.crashCNIR()
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
             launcherWindow.exit()
@@ -398,7 +410,7 @@ def umain():
             return 0
 
     except:
-        ihm.crashCNIR()
+        critical.crashCNIR()
         launcherWindow.exit()
         sys.exit(2)
         return 2

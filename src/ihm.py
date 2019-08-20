@@ -23,19 +23,21 @@
 ********************************************************************************
 """
 
-from tkinter import *
-import webbrowser
 from tkinter.messagebox import *
+from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-import cv2
 import PIL.Image, PIL.ImageTk
 import traceback
+import webbrowser
+import cv2
 
+import critical             # critical.py
 import logger               # logger.py
 import globs                # globs.py
 import lang                 # lang.py
 import updater              # updater.py
+import critical             # critical.py
 
 controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpace", "Delete", "Inser", "Shift_L", "Shift_R", "Control_R", "Control_L"]
 
@@ -272,6 +274,12 @@ class LauncherWindow(Tk):
         Tk.__init__(self)
         self.resizable(width=False, height=False)
 
+        # icon
+        if getattr(sys, 'frozen', False):
+           self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
+        else:
+            self.iconbitmap('id-card.ico')
+
         # Setting up the geometry
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
@@ -320,11 +328,6 @@ class LauncherWindow(Tk):
         self.update()
         self.progressBar.grid(row=1, sticky='S')
 
-
-        if getattr(sys, 'frozen', False):
-           self.iconbitmap(sys._MEIPASS + '\\id-card.ico\\id-card.ico')
-        else:
-            self.iconbitmap('id-card.ico')
         logfile = logger.logCur
         logfile.printdbg('Launcher IHM successful')
         self.protocol('WM_DELETE_WINDOW', lambda : 0)
@@ -366,28 +369,6 @@ class StatusBar(Frame):
     def clear(self):
         self.label.config(text="")
         self.label.update_idletasks()
-
-## Crash
-
-def crashCNIR():
-    """
-    last solution
-    """
-    # Global handler
-    logfile = logger.logCur
-    # hide main window
-    root = Tk()
-    root.withdraw()
-    logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
-    showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
-    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
-    if res == "yes":
-        webbrowser.open_new(globs.CNIRErrLog)
-    res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
-    if res == "yes":
-        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
-    root.destroy()
-
 
 ## Global Handler
 launcherWindowCur = LauncherWindow()

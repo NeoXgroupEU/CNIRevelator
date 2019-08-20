@@ -25,6 +25,7 @@
 import os
 
 import globs                        # globs.py
+import critical                     # critical.py
 
 ## FRENCH LANGUAGE
 french = \
@@ -137,7 +138,8 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues\n- Ajout des canaux de mise-à-jour\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
+"Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues\n- Ajout des canaux de mise-à-jour\n\n" + \
 "Version 3.0.8 finale\nCorrectif : bug du système de mise-à-jour'\n\n" + \
 "Version 3.0.6 \nMise-à-jour mineure avec les corrections suivantes :\n- Changement de l'apparence du launcher de l'application\n- Améliorations de l'interface, notamment de la stabilité\n- Ajout de la signature numérique de l'exécutable\n\n" + \
 "Version 3.0.7 finale\nMise-à-jour majeure avec les corrections suivantes :\n- Refonte de l'interface utilisateur\n- Fonction OCR intégrée à l'application avec support des TIFF et JPEG\n- Corrections d'erreurs sur le traitement des VISA de type A et B, ainsi que les titres de séjour\n\n" + \
@@ -825,7 +827,8 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.0 \nMajor update with the following progressions: \n- Cosmetic modifications of the user interface \n- Stabilization of the changes made on the minor version 3.0 : user interface, OCR, VISA A and B, logging\n- Rationalization of the language system\n- Added update channels\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system" + \
+"Version 3.1.0 \nMajor update with the following progressions: \n- Cosmetic modifications of the user interface \n- Stabilization of the changes made on the minor version 3.0 : user interface, OCR, VISA A and B, logging\n- Rationalization of the language system\n- Added update channels\n\n" + \
 "Version 3.0.8 final\nCorrection: bug in the update system'\n\n" + \
 "Version 3.0.6 \nMinor update with the following fixes:\n- Change in the appearance of the application launcher\n- Improvements to the interface, including stability\n- Added digital signature of the executable\n" + \
 "Version 3.0.7 final\nMajor update with the following corrections: \n- Redesign of the user interface\n- OCR function integrated into the application with TIFF and JPEG support\n- Corrections of errors on the processing of VISA type A and B, as well as residence permits\n\n" + \
@@ -1418,7 +1421,7 @@ def readLang():
                 # Reading it
                 globs.CNIRlang = configFile.read()
             except Exception as e:
-                ihm.crashCNIR()
+                critical.crashCNIR()
                 raise IOError(str(e))
     else:
         # Recreating the url file
@@ -1432,7 +1435,7 @@ def readLang():
                 # Writing it
                 configFile.write(globs.CNIRlang)
             except Exception as e:
-                ihm.crashCNIR()
+                critical.crashCNIR()
                 raise IOError(str(e))
 
 def updateLang(choice):
@@ -1444,7 +1447,7 @@ def updateLang(choice):
                 globs.CNIRlang = choice
                 configFile.write(choice)
             except Exception as e:
-                ihm.crashCNIR()
+                critical.crashCNIR()
                 raise IOError(str(e))
     else:
         # Recreating the url file
@@ -1458,5 +1461,5 @@ def updateLang(choice):
                 # Writing it
                 configFile.write(globs.CNIRlang)
             except Exception as e:
-                ihm.crashCNIR()
+                critical.crashCNIR()
                 raise IOError(str(e))

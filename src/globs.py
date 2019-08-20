@@ -26,7 +26,7 @@ import os
 
 # CNIRevelator version
 verType             = "final release"
-version             = [3, 1, 0]
+version             = [3, 1, 1]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 

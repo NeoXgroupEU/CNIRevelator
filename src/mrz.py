@@ -30,6 +30,7 @@ import datetime
 import logger       # logger.py
 import globs        # globs.py
 import lang         # lang.py
+import critical     # critical.py
 
 ## SEX CODES
 sexcode = {'M':'Homme', 'F':'Femme',  'X':'Non spécifié'}
