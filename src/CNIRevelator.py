@@ -96,8 +96,7 @@ try:
         launcherThread = threading.Thread(target=updater.umain, daemon=False)
         launcher.lmain(launcherThread)
     except Exception:
-        critical.crashCNIR()
-        updater.exitProcess(1)
+        critical.crashCNIR(False)
 
     if updater.UPDATE_IS_MADE:
         # Launch app !
