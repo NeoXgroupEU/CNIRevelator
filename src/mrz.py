@@ -61,7 +61,7 @@ P = [
     "D":  ["1", "CTRLF", "[0-9]", "C"],
     "E":  ["1", "CTRL", "[0-9]", "4578ABCD"]
   },
-  lang.all[globs.CNIRlang]["Passeport"]
+  lang.all[globs.CNIRlang]["Passeport lisible à la machine"]
 ]
 
 IP = [
@@ -84,7 +84,7 @@ IP = [
   lang.all[globs.CNIRlang]["Carte-passeport"]
 ]
 
-I_ = [
+IDEUR = [
   ["112223333333334555555555555555", "66666678999999ABBBCCCCCCCCCCCD"],
   {
     "1": ["2", "CODE", "I."],
@@ -101,7 +101,27 @@ I_ = [
     "C": ["11", "FACULT", ".+"],
     "D": ["1", "CTRL", "[0-9]", "345679AC"]
   },
-  lang.all[globs.CNIRlang]["Titre d'identité/de voyage"]
+  lang.all[globs.CNIRlang]["Carte d’identité européenne"]
+]
+
+TSEUR = [
+  ["112223333333334555555555555555", "66666678999999ABBBCCCCCCCCCCCD"],
+  {
+    "1": ["2", "CODE", "IR"],
+    "2": ["3", "PAYS", "[A-Z]+"],
+    "3": ["9", "NO", ".+"],
+    "4": ["1", "CTRL", "[0-9]", "3"],
+    "5": ["15", "FACULT", ".+"],
+    "6": ["6", "BDATE", "[0-9]+"],
+    "7": ["1", "CTRL", "[0-9]", "6"],
+    "8": ["1", "SEX", "[A-Z]"],
+    "9": ["6", "EDATE", "[0-9]+"],
+    "A": ["1", "CTRL", "[0-9]", "9"],
+    "B": ["3", "NAT", "[A-Z]+"],
+    "C": ["11", "FACULT", ".+"],
+    "D": ["1", "CTRL", "[0-9]", "345679AC"]
+  },
+  lang.all[globs.CNIRlang]["Carte d’identité européenne"]
 ]
 
 AC = [
@@ -179,10 +199,10 @@ TSF = [
     "B": ["1", "CTRL", "[0-9]", "A"],
     "C": ["8", "FACULT", ".+"]
   },
-  lang.all[globs.CNIRlang]["Carte de séjour"]
+  lang.all[globs.CNIRlang]["Carte de séjour FR"]
 ]
 
-I__ = [
+TDV = [
   ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCD"],
   {
     "1": ["2", "CODE", "I."],
@@ -199,7 +219,7 @@ I__ = [
     "C": ["7", "FACULT", ".+"],
     "D": ["1", "CTRL", "[0-9]", "4578ABC"]
   },
-  lang.all[globs.CNIRlang]["Pièce d'identité/de voyage"]
+  lang.all[globs.CNIRlang]["Titre d'identité/de voyage"]
 ]
 
 IDFR = [
@@ -236,7 +256,7 @@ DL = [
   lang.all[globs.CNIRlang]["Permis de conduire"]
 ]
 
-TYPES = [IDFR, I__, VB, VA, AC, I_, IP, P, DL, TSF]
+TYPES = [IDFR, TDV, VB, VA, AC, IDEUR, IP, P, DL, TSF, TSEUR]
 
 # longest document MRZ line
 longest = max([len(x[0][0]) for x in TYPES])
