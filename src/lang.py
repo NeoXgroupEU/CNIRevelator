@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 """
 ********************************************************************************
 *                             CNIRevelator                                     *
@@ -138,7 +139,7 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n- Correction de noms des documents\n- Résolution d'un problème avec le système de mise-à-jour\n- Amélioration des effets sur images\n\n" + \
 "Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
 "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues\n- Ajout des canaux de mise-à-jour\n\n" + \
 "Version 3.0.8 finale\nCorrectif : bug du système de mise-à-jour'\n\n" + \
@@ -152,7 +153,8 @@ french = \
 "Version 3.0.1 \nMise-à-jour majeure avec les corrections suivantes :\n- Renouvellement de la signature numérique de l'exécutable\n- Amélioration de présentation du log en cas d'erreur\n- Refonte totale du code source et désobfuscation\n- Téléchargements en HTTPS fiables avec somme de contrôle\n- Nouveaux terminaux d'entrées : un rapide (731) et un complet\n- Détection des documents améliorée, possibilité de choix plus fin\nEt les regressions suivantes :\n- Suppression temporaire de la fonction de lecture OCR. Retour planifié pour une prochaine version",
 
 "Document Review: {}\n\n"           :   "Examen du document : {}\n\n",
-"Calculated {} [facultative]\n"     :   "Checksum position {}: Lu {} VS Calculé {} [facultatif]\n",
+"Checksum position {}: Lu {} "
+"VS Calculated {} [facultative]\n"  :   "Checksum position {}: Lu {} VS Calculé {} [facultatif]\n",
 "Checksum position {}: Lu {} VS "
 "Calculated {}\n"                   :   "Checksum position {}: Lu {} VS Calculé {}\n",
 "COMPLIANT"                         :   "CONFORME",
@@ -185,6 +187,7 @@ french = \
 "Titre d'identité/de voyage"        :   "Titre d'identité/de voyage",
 "Carte d’identité européenne"       :   "Carte d’identité européenne",
 "Certificat de membre d'équipage"   :   "Certificat de membre d'équipage",
+"Carte de séjour européenne"        :   "Carte de séjour européenne",
 "Visa de type A"                    :   "Visa de type A",
 "Visa de type B"                    :   "Visa de type B",
 "Carte de séjour FR"                :   "Carte de séjour français",
@@ -193,6 +196,13 @@ french = \
 "Permis de conduire"                :   "Permis de conduire",
 "The file you provided is not "
 "valid : {}"                        :   "Le fichier transmis n'est pas valide : {}",
+"A critical error has occurred in "
+"the OpenCV image processing "
+"manager used by CNIRevelator. "
+"Please be sure that the filename "
+"does not contain any non unicode "
+"character such as accent and "
+"foreign characters."               :   "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. Veuillez vous assurer que le nom de fichier ne contient pas de caractères non unicode tels que des accents et des caractères étrangers.",
 
 "LANDCODE2"                         :   {
                                             'AW': 'Aruba',
@@ -831,7 +841,7 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.2 \nMinor update with the following progressions:\n- Upgrade Tesseract OCR to 5.0\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.2 \nMinor update with the following progressions: \n- Tesseract OCR version upgrade : 5.0\n- Correction of document names\n- Fixed a problem with the update system\n- Some enhancements about effects on images\n\n" + \
 "Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system\n\n" + \
 "Version 3.1.0 \nMajor update with the following progressions: \n- Cosmetic modifications of the user interface \n- Stabilization of the changes made on the minor version 3.0 : user interface, OCR, VISA A and B, logging\n- Rationalization of the language system\n- Added update channels\n\n" + \
 "Version 3.0.8 final\nCorrection: bug in the update system'\n\n" + \
@@ -845,8 +855,8 @@ english = \
 "Version 3.0.1 \nMajor update with the following corrections: \n- Renewal of the executable's digital signature- Improvement of the log presentation in case of error\n- Total overhaul of the source code and disobfuscation\n- Reliable HTTPS downloads with checksum\n- New input terminals : a fast (731) and a complete one\n- Improved document detection, possibility of finer choice and the following regressions:\n- Temporary deletion of the OCR reading function. Planned return for a next version",
 
 "Document Review: {}\n\n"           :   "Document Review: {}\n\n",
-"Checksum position {}: Lu {} VS "
-"Calculated {} [facultative]\n"     :   "Checksum position {}: Read {} VS Calculated {} [facultative]\n",
+"Checksum position {}: Lu {} "
+"VS Calculated {} [facultative]\n"  :   "Checksum position {}: Lu {} VS Calculated {} [facultative]\n",
 "Checksum position {}: Lu {} VS "
 "Calculated {}\n"                   :   "Checksum position {}: Read {} VS Calculated {}\n",
 "COMPLIANT"                         :   "COMPLIANT",
@@ -877,6 +887,7 @@ english = \
 "Passeport lisible à la machine"    :   "Machine Readable Passport",
 "Carte-passeport"                   :   "Passport card",
 "Carte d’identité européenne"       :   "European identity document",
+"Carte de séjour européenne"        :   "European Residence permit",
 "Titre d'identité/de voyage"        :   "Identity/travel document",
 "Certificat de membre d'équipage"   :   "Crew member certificate",
 "Visa de type A"                    :   "Type A visa",
@@ -887,6 +898,13 @@ english = \
 "Permis de conduire"                :   "Driver License",
 "The file you provided is not "
 "valid : {}"                        :   "The file you provided is not valid : {}",
+"A critical error has occurred in "
+"the OpenCV image processing "
+"manager used by CNIRevelator. "
+"Please be sure that the filename "
+"does not contain any non unicode "
+"character such as accent and "
+"foreign characters."               :   "A critical error has occurred in the OpenCV image processing manager used by CNIRevelator. Please be sure that the filename does not contain any non unicode character such as accent and foreign characters.",
 
 "LANDCODE2"                         :   {
                                             "AW": "Aruba",
