@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 """
 ********************************************************************************
 *                             CNIRevelator                                     *
@@ -32,6 +33,7 @@ from tkinter import ttk
 import threading
 from datetime import datetime
 from importlib import reload
+import unicodedata
 import re
 import cv2
 import PIL.Image, PIL.ImageTk
@@ -229,7 +231,7 @@ class mainWindow(Tk):
         self.toolbar.zoomOut50.grid(column=5, row=0)
 
         self.toolbar.invertImg = ImageTk.PhotoImage(PIL.Image.open("invert.png"))
-        self.toolbar.invert = ttk.Button(self.toolbar, image=self.toolbar.invertImg, command=self.negativeScan)
+        self.toolbar.invert = ttk.Button(self.toolbar, image=self.toolbar.invertImg, command=self.threshScan)
         self.toolbar.invert.grid(column=7, row=0)
 
         self.toolbar.rotateLeftImg = ImageTk.PhotoImage(PIL.Image.open("rotateLeft.png"))
@@ -378,7 +380,7 @@ class mainWindow(Tk):
         self.imageViewer.imagePath = None
         self.imageViewer.imgZoom = 1
         self.imageViewer.rotateCount = 0
-        self.imageViewer.blackhat = False
+        self.imageViewer.blackhat = 0
         self.imageViewer.pagenumber = 0
 
         # Some bindings
@@ -418,10 +420,12 @@ class mainWindow(Tk):
         if self.imageViewer.image:
             cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
             cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-            if self.imageViewer.blackhat:
+            if self.imageViewer.blackhat == 1:
                 cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-                cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-                cv_img = cv2.bitwise_not(cv_img)
+                cv_img = cv2.threshold(cv_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            elif self.imageViewer.blackhat == 2:
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                cv_img = cv2.medianBlur(cv_img, 3)
             try:
                 # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
                 height, width, channels_no = cv_img.shape
@@ -438,12 +442,12 @@ class mainWindow(Tk):
             # Resize
             dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
             cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
-    
+
+            # Crop
             x0 = int(self.corners[0][0])
             y0 = int(self.corners[0][1])
             x1 = int(self.corners[1][0])
             y1 = int(self.corners[1][1])
-            
             crop_img = cv_img[y0:y1, x0:x1]
     
             # Get the text by OCR
@@ -807,10 +811,10 @@ class mainWindow(Tk):
         # Load an image using OpenCV
         self.imageViewer.imagePath = path
         self.imageViewer.imgZoom = 1
-        self.imageViewer.blackhat = False
+        self.imageViewer.blackhat = 0
         self.imageViewer.rotateCount = 0
         self.imageViewer.pagenumber = 0
-        
+
         # Determine how many pages
         self.toolbar.pageChooser['values'] = ('1')
         total = len(cv2.imreadmulti(self.imageViewer.imagePath)[1])
@@ -819,8 +823,12 @@ class mainWindow(Tk):
              self.toolbar.pageChooser['values'] += tuple(str(i))
         
         # Open the first page
-        cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
-        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        try:
+            cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        except:
+            logfile.printerr("Error with : {} in {} with total of {} pages".format(cv2.imreadmulti(self.imageViewer.imagePath), self.imageViewer.imagePath, total))
+            showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator. Please be sure that the filename does not contain any non unicode character such as accent and foreign characters."] + "\n\n" + self.imageViewer.imagePath)
         
         try:
             # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
@@ -895,7 +903,7 @@ class mainWindow(Tk):
                 self.imageViewer.rotateCount = 4
             self.resizeScan()
 
-    def negativeScan(self):
+    def threshScan(self):
         """
         Invert the bits to make a negative of the scan (and highlight the contrasts)
         """
@@ -903,13 +911,16 @@ class mainWindow(Tk):
             # Load an image using OpenCV
             cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
             cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-            if not self.imageViewer.blackhat:
-                self.imageViewer.blackhat = True
+            if self.imageViewer.blackhat == 0:
+                self.imageViewer.blackhat = 1
                 cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-                cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-                cv_img = cv2.bitwise_not(cv_img)
+                cv_img = cv2.threshold(cv_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            elif self.imageViewer.blackhat == 1:
+                self.imageViewer.blackhat = 2
+                cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                cv_img = cv2.medianBlur(cv_img, 3)
             else:
-                self.imageViewer.blackhat = False
+                self.imageViewer.blackhat = 0
             self.resizeScan(cv_img)
 
     def resizeScan(self, cv_img = None):
@@ -922,10 +933,12 @@ class mainWindow(Tk):
                     # Load an image using OpenCV
                     cv_img = cv2.imreadmulti(self.imageViewer.imagePath)[1][self.imageViewer.pagenumber]
                     cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-                    if self.imageViewer.blackhat:
+                    if self.imageViewer.blackhat == 1:
                         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-                        cv_img = cv2.GaussianBlur(cv_img, (3, 3), 0)
-                        cv_img = cv2.bitwise_not(cv_img)
+                        cv_img = cv2.threshold(cv_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+                    elif self.imageViewer.blackhat == 2:
+                        cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+                        cv_img = cv2.medianBlur(cv_img, 3)
     
                 try:
                     # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
@@ -948,12 +961,11 @@ class mainWindow(Tk):
                 self.DisplayUpdate( photo)
             except Exception as e:
                 logfile.printerr("Error with opencv : {}".format(e))
-                critical.crashCNIR()
                 try:
                     # Reload an image using OpenCV
                     path = self.imageViewer.imagePath
                     self.imageViewer.imgZoom = 1
-                    self.imageViewer.blackhat = False
+                    self.imageViewer.blackhat = 0
                     self.imageViewer.rotateCount = 0
                     cv_img = cv2.imreadmulti(path)
                     cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -966,7 +978,6 @@ class mainWindow(Tk):
                     self.DisplayUpdate(photo)
                 except Exception as e:
                     logfile.printerr("Critical error with opencv : ".format(e))
-                    critical.crashCNIR()
                     showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself"])
                     self.initialize()
 

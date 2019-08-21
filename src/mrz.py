@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 """
 ********************************************************************************
 *                             CNIRevelator                                     *
@@ -121,7 +122,7 @@ TSEUR = [
     "C": ["11", "FACULT", ".+"],
     "D": ["1", "CTRL", "[0-9]", "345679AC"]
   },
-  lang.all[globs.CNIRlang]["Carte d’identité européenne"]
+  lang.all[globs.CNIRlang]["Carte de séjour européenne"]
 ]
 
 AC = [
