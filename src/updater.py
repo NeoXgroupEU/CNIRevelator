@@ -38,6 +38,7 @@ import subprocess
 import psutil
 
 import critical     # critical.py
+import github       # github.py
 import ihm          # ihm.py
 import logger       # logger.py
 import globs        # globs.py
@@ -316,7 +317,6 @@ def umain():
     # Global Handlers
     logfile = logger.logCur
      
-    
     credentials = downloader.newcredentials()
     
     if not credentials.valid:
@@ -325,6 +325,8 @@ def umain():
         time.sleep(2)
         launcherWindow.exit()
         return 0
+        
+    github.credentials = credentials
     
     # Cleaner for the old version if detected
     if len(sys.argv) > 2 and str(sys.argv[1]) == "DELETE":
