@@ -31,22 +31,6 @@ version             = [3, 1, 4]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 
-CNIRTesserHash      = '5b58db27f7bc08c58a2cb33d01533b034b067cf8'
-CNIRFolder          = os.getcwd()
-CNIRLColor          = "#006699"
-CNIRName            = "CNIRevelator {}".format(verstring)
-CNIRCryptoKey       = '82Xh!efX3#@P~2eG'
-CNIRNewVersion      = False
-
-CNIRConfig          = CNIRFolder + '\\config\\conf.ig'
-CNIRTesser          = CNIRFolder + '\\Tesseract-OCR5\\'
-CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
-CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
-CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
-CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
-CNIREnv             = CNIRFolder + '\\Data\\'
-
-
 CNIRTesserHash      = '947224361ffab8c01f05c9394b44b1bd7c8c3d4d'
 CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
 CNIRLColor          = "#006699"
@@ -61,6 +45,7 @@ CNIRTesser          = CNIRFolder + '\\Tesseract-OCR5\\'
 CNIRErrLog          = CNIRFolder + '\\logs\\error.log'
 CNIRMainLog         = CNIRFolder + '\\logs\\main.log'
 CNIRUrlConfig       = CNIRFolder + '\\config\\urlconf.ig'
+CNIRLastUpdate      = CNIRFolder + '\\config\\lastupdate.ig'
 CNIRVerStock        = CNIRFolder + '\\downloads\\versions.lst'
 CNIREnv             = CNIRFolder + '\\Data\\'
 
