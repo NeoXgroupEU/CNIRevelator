@@ -141,7 +141,8 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.3 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug de la détection automatique de documents\n- Ajout d'une fonctionnalité de rapport d'erreur\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.4 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant la rotation de documents dans l'afficheur d'images\n\n" + \
+"Version 3.1.3 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug de la détection automatique de documents\n- Ajout d'une fonctionnalité de rapport d'erreur\n\n" + \
 "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n- Correction de noms des documents\n- Résolution d'un problème avec le système de mise-à-jour\n- Amélioration des effets sur images\n\n" + \
 "Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
 "Version 3.1.0 \nMise-à-jour majeure avec les progressions suivantes :\n- Modifications cosmétiques de l'interface utilisateur\n- Stabilisation des changements effectués sur la version mineure 3.0 : interface utilisateur, OCR, VISA A et B, logging\n- Rationalisation du système de langues\n- Ajout des canaux de mise-à-jour\n\n" + \
@@ -846,7 +847,8 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.3 \nMinor update with the following progressions:\n- Correction of a bug affecting automated document detection\n- Added bug reporting functionnality\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.4 \nMinor update with the following progressions:\n- Correction of a bug affecting rotation of document in image viewer\n\n" + \
+"Version 3.1.3 \nMinor update with the following progressions:\n- Correction of a bug affecting automated document detection\n- Added bug reporting functionnality\n\n" + \
 "Version 3.1.2 \nMinor update with the following progressions: \n- Tesseract OCR version upgrade : 5.0\n- Correction of document names\n- Fixed a problem with the update system\n- Some enhancements about effects on images\n\n" + \
 "Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system\n\n" + \
 "Version 3.1.0 \nMajor update with the following progressions: \n- Cosmetic modifications of the user interface \n- Stabilization of the changes made on the minor version 3.0 : user interface, OCR, VISA A and B, logging\n- Rationalization of the language system\n- Added update channels\n\n" + \

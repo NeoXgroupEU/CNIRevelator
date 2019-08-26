@@ -332,7 +332,7 @@ def umain():
     if len(sys.argv) > 2 and str(sys.argv[1]) == "DELETE":
         globs.CNIRNewVersion = True
         launcherWindow.printmsg(lang.all[globs.CNIRlang]["Deleting old version"])
-        logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
+        logfile.printdbg("Old install detected : {}".format(sys.argv[2]))
         while os.path.exists(str(sys.argv[2])):
             try:
                 shutil.rmtree(str(sys.argv[2]))
@@ -359,7 +359,7 @@ def umain():
     # check we want open a file
     elif len(sys.argv) > 1 and str(sys.argv[1]) != "DELETE":
         globs.CNIROpenFile = True
-        print(sys.argv)
+        logfile.printdbg("Command line received : {}".format(sys.argv))
     
     try:
         try:
@@ -415,7 +415,7 @@ def umain():
     except:
         critical.crashCNIR()
         launcherWindow.exit()
-        sys.exit(2)
+        exitProcess(2)
         return 2
 
     time.sleep(2)
