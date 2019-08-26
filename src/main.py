@@ -311,9 +311,9 @@ class mainWindow(Tk):
         self.speed731.grid_columnconfigure(9, weight=1)
         self.speed731.grid_rowconfigure(0, weight=1)
         self.speed731text = Entry(self.speed731, font='Terminal 14')
-        self.speed731text.grid(column=0, row=0, sticky='NEW', padx=5, pady=5)
+        self.speed731text.grid(column=0, row=0, columnspan=7, sticky='NEW', padx=5, pady=5)
         self.speedResult = Text((self.speed731), state='disabled', width=1, height=1, wrap='none', font='Terminal 14')
-        self.speedResult.grid(column=2, row=0, sticky='NEW', padx=5, pady=5)
+        self.speedResult.grid(column=7, row=0, sticky='NEW', padx=5, pady=5)
 
         # The monitor that indicates some useful infos
         self.monitor = ttk.Labelframe(self, text=lang.all[globs.CNIRlang]["Monitor"])
@@ -384,7 +384,7 @@ class mainWindow(Tk):
         self.imageViewer.pagenumber = 0
 
         # Some bindings
-        self.termtext.bind('<Key>', self.entryValidation)
+        self.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
         self.imageViewer.ZONE.bind("<Button-1>", self.rectangleSelectScan)
@@ -478,7 +478,7 @@ class mainWindow(Tk):
                     self.termtext.insert("1.0", self.mrzChar)
                     self.mrzChar = self.mrzChar + char
                 
-                self.stringValidation("")
+                self.stringValidation(isFull=True)
                 #print(self.mrzChar)
             
             # Reinstall tesseract 
@@ -497,7 +497,7 @@ class mainWindow(Tk):
 
     ## Regex and document detection + control related functions
     
-    def stringValidation(self, keysym):
+    def stringValidation(self, keysym="", isFull=False):
         """
         Analysis of the already typed document
         """
@@ -505,7 +505,7 @@ class mainWindow(Tk):
         # If we must decide the type of the document
         if not self.mrzDecided:
             # Get the candidates
-            candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
+            candidates = mrz.allDocMatch(self.mrzChar.split("\n"), final=isFull)
 
             if len(candidates) == 2 and len(self.mrzChar) >= 8:
                 # Parameters for the choice invite
@@ -545,10 +545,13 @@ class mainWindow(Tk):
                     self.termtext.insert("1.0", self.mrzChar)
             # stop when limit reached
             elif (len(self.mrzChar) - 3 >= 2 * len(self.mrzDecided[0][0])):
-                self.mrzChar = self.termtext.get("1.0", "end")[:-1]
-                self.termtext.delete("1.0","end")
-                self.termtext.insert("1.0", self.mrzChar[:-1])
-                self.termtext.mark_set(INSERT, curPos)
+                i = len(self.mrzChar) - 3
+                while i >= 2 * len(self.mrzDecided[0][0]):
+                    i-=1
+                    self.mrzChar = self.termtext.get("1.0", "end")[:-1]
+                    self.termtext.delete("1.0","end")
+                    self.termtext.insert("1.0", self.mrzChar[:-1])
+                    self.termtext.mark_set(INSERT, curPos)
             # compute the control sum if needed
             self.computeSigma()
 
@@ -720,9 +723,14 @@ class mainWindow(Tk):
             if key in ["CODE", "CTRL", "CTRLF"]:
                 continue
             if not docInfos[key] == False:
-                self.infoList[key]['text'] = docInfos[key]
-                self.infoList[key]['background'] = self['background']
-                self.infoList[key]['foreground'] = "black"
+                if not docInfos[key] == "":
+                    self.infoList[key]['text'] = docInfos[key]
+                    self.infoList[key]['background'] = self['background']
+                    self.infoList[key]['foreground'] = "black"
+                else:
+                    self.infoList[key]['text'] = lang.all[globs.CNIRlang]["Unknown"]
+                    self.infoList[key]['background'] = self['background']
+                    self.infoList[key]['foreground'] = "black"
             else:
                 self.infoList[key]['background'] = "red"
                 self.infoList[key]['foreground'] = "white"
@@ -789,6 +797,7 @@ class mainWindow(Tk):
         """
         Open the scan, ask its path and displays it
         """
+        self.initialize()
         path = ''
         path = filedialog.askopenfilename(parent=self, title=lang.all[globs.CNIRlang]["Open a scan of document..."], filetypes=(('TIF files', '*.tif'),
                                                                                                     ('TIF files', '*.tiff'),
@@ -806,7 +815,7 @@ class mainWindow(Tk):
             and path[-4:] != 'jpeg'
             and path[-4:] != 'tiff' ) or not os.path.isfile(path):
                 showerror(lang.all[globs.CNIRlang]["Open a scan of document..."], lang.all[globs.CNIRlang]["The file you provided is not valid : {}"].format(path))
-                return 
+                return
                        
         # Load an image using OpenCV
         self.imageViewer.imagePath = path

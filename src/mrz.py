@@ -151,7 +151,7 @@ VA = [
   {
     "1": ["2", "CODE", "V."],
     "2": ["3", "PAYS", "[A-Z]+"],
-    "3": ["39", "NOM", "[A-Z]+"],
+    "3": ["39", "NOM", "([A-Z]|<)+"],
     "4": ["9", "NO", ".+"],
     "5": ["1", "CTRL", "[0-9]","4"],
     "6": ["3", "NAT", "[A-Z]+"],
@@ -342,7 +342,7 @@ def docMatch(doc, strs):
             # logfile.printdbg("        REGEX : {}, match : {}".format(regex, matching))
             # exit the loop
 
-    #logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
+    logfile.printdbg("{} level : {}/{}  (+{})".format(doc[2], level, nchar, bonus))
     return (level, nchar, bonus)
 
 def allDocMatch(strs, final=False):
@@ -368,14 +368,25 @@ def allDocMatch(strs, final=False):
     candidate = SCORES.index(max(SCORES))
     candidates = []
     canditxt = []
+
     # Search the candidates
     for i in range(len(SCORES)):
         if SCORES[i] == SCORES[candidate]:
             candidates += [TYPES[i]]
             canditxt += [TYPES[i][2]]
+    # Continue searching
+    if len(candidates) < 2:
+        tempRemovedCandidate = SCORES.pop(candidate)
+        if (SCORES.index(max(SCORES)) != candidate) and (max(SCORES) >= tempRemovedCandidate - 20):
+            if SCORES.index(max(SCORES)) < candidate:
+                candidates += [ TYPES[SCORES.index(max(SCORES))] ]
+            else:
+                candidates += [ TYPES[SCORES.index(max(SCORES)) + 1] ]
+        SCORES.insert(candidate, tempRemovedCandidate)
+
     # Return the candidates
-    #logfile.printdbg("Scores     : {}".format(SCORES))
-    #logfile.printdbg("Candidates : {}".format(canditxt))
+    logfile.printdbg("Scores     : {}".format(SCORES))
+    logfile.printdbg("Candidates : {}".format(canditxt))
     return candidates
 
 def computeControlSum(code):
@@ -413,6 +424,11 @@ def computeAllControlSum(doc, code):
 
     # iteration on each char of the given MRZ
     for charPos in range(len(code)):
+
+        # Sanity check
+        if len(getDocString(doc)) <= charPos:
+            break
+
         field =  getDocString(doc)[charPos]
 
         if doc[1][field][1] == "CTRL":
@@ -421,6 +437,12 @@ def computeAllControlSum(doc, code):
             codeChain = ""
             # iteration on the fields to control
             for pos in range(len(code)):
+
+                #print("Len : {}, pos : {}".format(len(getDocString(doc)), pos))
+                # Sanity check
+                if len(getDocString(doc)) <= pos:
+                    break
+
                 target =  getDocString(doc)[pos]
                 if target in doc[1][field][3]:
                     #print("__field : {} {} {} {}".format(target, pos, field, doc[1][field][3]))

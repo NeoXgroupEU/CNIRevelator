@@ -31,9 +31,10 @@ import traceback
 import psutil
 import os
 
-import lang         # lang.py
-import logger       # logger.py
-import globs        # globs.py
+import lang                     # lang.py
+import logger                   # logger.py
+import globs                    # globs.py
+import github                   # github.py
 
 def crashCNIR(shutdown=True):
     """
@@ -45,13 +46,29 @@ def crashCNIR(shutdown=True):
         root.withdraw()
         logfile = logger.logCur
         logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
+
         showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
-        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
+
+        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to report this bug ?"])
         if res == "yes":
-            webbrowser.open_new(globs.CNIRErrLog)
-        res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open an issue on Github to report this bug ?"])
-        if res == "yes":
-            webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
+            # read the log
+            data = "No log."
+            try:
+                with open(globs.CNIRMainLog, 'r') as file:
+                    data = file.read()
+            except:
+                pass
+
+            # send it
+            success = github.reportBug(traceback.format_exc(), data)
+
+            if not success:
+                res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
+                if res == "yes":
+                    webbrowser.open_new(globs.CNIRErrLog)
+            else:
+                showinfo(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Bug reported successfully. Thanks."])
+
         root.destroy()
 
         # Quit ?
