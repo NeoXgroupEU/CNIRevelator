@@ -28,18 +28,26 @@ from pypac import PACSession
 from requests import Session
 import json
 
+import logger  # logger.py
+import globs   # globs.py
+
 credentials = False
 
 def reportBug(reason="",log=""):
 
+    logfile = logger.logCur
+
     if not credentials:
+        logfile.printerr("No credentials")
         return False
 
     session = credentials.sessionHandler
 
     payload = {'title':"CNIRevelator Bug Report", 'body':"**An error has been reported by a CNIRevelator instance.**\n\n**Here is the full reason of this issue:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
 
-    handler = session.post('https://api.github.com/repos/neox95/cnirevelator/issues', headers={'Authorization': 'token %s' % "1a3c589eafc2b6557a1da852a3b2cc279bd5bf33"}, data=json.dumps(payload))
+    handler = session.post('https://api.github.com/repos/neox95/cnirevelator/issues', headers={'Authorization': 'token %s' % globs.CNIRGitToken}, data=json.dumps(payload))
+
+    logfile.printdbg(handler.reason)
 
     if handler.reason == "Created":
         return True

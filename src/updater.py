@@ -36,6 +36,7 @@ import zipfile
 import hashlib
 import subprocess
 import psutil
+import datetime
 
 import critical     # critical.py
 import github       # github.py
@@ -316,23 +317,12 @@ def umain():
     
     # Global Handlers
     logfile = logger.logCur
-     
-    credentials = downloader.newcredentials()
-    
-    if not credentials.valid:
-        logfile.printerr("Credentials Error. No effective update !")
-        launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
-        time.sleep(2)
-        launcherWindow.exit()
-        return 0
-        
-    github.credentials = credentials
     
     # Cleaner for the old version if detected
     if len(sys.argv) > 2 and str(sys.argv[1]) == "DELETE":
         globs.CNIRNewVersion = True
         launcherWindow.printmsg(lang.all[globs.CNIRlang]["Deleting old version"])
-        logfile.printdbg("Old install detected : {}".format(sys.argv[1]))
+        logfile.printdbg("Old install detected : {}".format(sys.argv[2]))
         while os.path.exists(str(sys.argv[2])):
             try:
                 shutil.rmtree(str(sys.argv[2]))
@@ -359,8 +349,51 @@ def umain():
     # check we want open a file
     elif len(sys.argv) > 1 and str(sys.argv[1]) != "DELETE":
         globs.CNIROpenFile = True
-        print(sys.argv)
+        logfile.printdbg("Command line received : {}".format(sys.argv))
     
+    credentials = downloader.newcredentials()
+    
+    if not credentials.valid:
+        logfile.printerr("Credentials Error. No effective update !")
+        launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
+        time.sleep(2)
+        launcherWindow.exit()
+        return 0
+        
+    github.credentials = credentials
+    
+    # Check if update is needed
+    currentDate = datetime.datetime.now()
+    
+    if os.path.isfile(globs.CNIRLastUpdate):
+        with open(globs.CNIRLastUpdate, 'r') as (configFile):
+            try:
+                # Reading it
+                lastUpdate = datetime.datetime.strptime(configFile.read(),"%d/%m/%Y")
+            except Exception as e:
+                critical.crashCNIR()
+                raise IOError(str(e))
+    else:
+        # Recreating the url file
+        lastUpdate = currentDate
+        try:
+            os.mkdir(globs.CNIRFolder + '\\config')
+        except:
+            pass
+
+        with open(globs.CNIRLastUpdate, 'w') as (configFile):
+            try:
+                # Writing it
+                configFile.write("{}/{}/{}".format(currentDate.day, currentDate.month, currentDate.year))
+            except Exception as e:
+                critical.crashCNIR()
+                raise IOError(str(e))
+
+    if not globs.CNIRNewVersion and os.path.exists(globs.CNIRFolder + '\\Tesseract-OCR5\\') and (currentDate - lastUpdate).days < 7:
+        launcherWindow.exit()
+        return 0
+    
+    # Update batch
     try:
         try:
             # EXECUTING THE UPDATE BATCH
@@ -415,7 +448,7 @@ def umain():
     except:
         critical.crashCNIR()
         launcherWindow.exit()
-        sys.exit(2)
+        exitProcess(2)
         return 2
 
     time.sleep(2)

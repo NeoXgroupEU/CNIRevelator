@@ -40,6 +40,7 @@ import PIL.Image, PIL.ImageTk
 import os, shutil
 import webbrowser
 import sys, os
+import numpy
 
 import critical                 # critical.py
 import ihm                      # ihm.py
@@ -370,7 +371,7 @@ class mainWindow(Tk):
         self.geometry('%dx%d+%d+%d' % (self.w, self.h, self.x, self.y))
         self.update()
         self.deiconify()
-        self.attributes("-topmost", 1)
+        #self.attributes("-topmost", 1)
         self.maxsize(self.w, self.h)
         self.minsize(int(2.15 * (self.ws / 2 * 0.3333333333333333)), self.h)
         self.currentw = self.w
@@ -384,7 +385,8 @@ class mainWindow(Tk):
         self.imageViewer.pagenumber = 0
 
         # Some bindings
-        self.bind('<Key>', self.entryValidation)
+        self.bind('<Control_R>', self.entryValidation)
+        self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
         self.imageViewer.ZONE.bind("<Button-1>", self.rectangleSelectScan)
@@ -426,6 +428,7 @@ class mainWindow(Tk):
             elif self.imageViewer.blackhat == 2:
                 cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
                 cv_img = cv2.medianBlur(cv_img, 3)
+                
             try:
                 # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
                 height, width, channels_no = cv_img.shape
@@ -436,9 +439,9 @@ class mainWindow(Tk):
                 height, width  = cv_img.shape
                 # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
                 height, width  = cv_img.shape
+                
             # Rotate
-            rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
-            cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+            cv_img, width, height = self.rotateBound(cv_img, int(self.imageViewer.rotateCount*90))   
             # Resize
             dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
             cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
@@ -630,6 +633,7 @@ class mainWindow(Tk):
             if not regex.fullmatch(event.char):
                 self.logOnTerm(lang.all[globs.CNIRlang]["Character not accepted !\n"])
                 return "break"
+                
         # Adds the entry
         tempChar = self.termtext.get("1.0", "end")[:-1]
         self.mrzChar =  tempChar[:pos+1] + event.char + tempChar[pos+1:] + '\n'
@@ -932,6 +936,32 @@ class mainWindow(Tk):
                 self.imageViewer.blackhat = 0
             self.resizeScan(cv_img)
 
+    def rotateBound(self, image, angle):
+        """
+        Computes the rotation matrix and the new shapes in order to rotate an image
+        """
+        # grab the dimensions of the image and then determine the
+        # center
+        (h, w) = image.shape[:2]
+        (cX, cY) = (w // 2, h // 2)
+    
+        # grab the rotation matrix , then grab the sine and cosine
+        # (i.e., the rotation components of the matrix)
+        M = cv2.getRotationMatrix2D((cX, cY), angle, 1.0)
+        cos = numpy.abs(M[0, 0])
+        sin = numpy.abs(M[0, 1])
+    
+        # compute the new bounding dimensions of the image
+        nW = int((h * sin) + (w * cos))
+        nH = int((h * cos) + (w * sin))
+    
+        # adjust the rotation matrix to take into account translation
+        M[0, 2] += (nW / 2) - cX
+        M[1, 2] += (nH / 2) - cY
+    
+        # perform the actual rotation and return the image
+        return cv2.warpAffine(image, M, (nW, nH)), nW, nH
+
     def resizeScan(self, cv_img = None):
         """
         Reloads the image according to settings 
@@ -948,7 +978,7 @@ class mainWindow(Tk):
                     elif self.imageViewer.blackhat == 2:
                         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
                         cv_img = cv2.medianBlur(cv_img, 3)
-    
+                        
                 try:
                     # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
                     height, width, channels_no = cv_img.shape
@@ -959,12 +989,13 @@ class mainWindow(Tk):
                     height, width  = cv_img.shape
                     # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
                     height, width  = cv_img.shape
+                
                 # Rotate
-                rotationMatrix=cv2.getRotationMatrix2D((width/2, height/2),int(self.imageViewer.rotateCount*90),1)
-                cv_img=cv2.warpAffine(cv_img,rotationMatrix,(width,height))
+                cv_img, width, height = self.rotateBound(cv_img, int(self.imageViewer.rotateCount*90))    
                 # Resize
                 dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
                 cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
+                
                 # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
                 photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
                 self.DisplayUpdate( photo)
