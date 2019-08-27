@@ -385,7 +385,8 @@ class mainWindow(Tk):
         self.imageViewer.pagenumber = 0
 
         # Some bindings
-        self.bind('<Key>', self.entryValidation)
+        self.bind('<Control_R>', self.entryValidation)
+        self.termtext.bind('<Key>', self.entryValidation)
         self.termtext.bind('<<Paste>>', self.pasteValidation)
         self.speed731text.bind('<Control_R>', self.speedValidation)
         self.imageViewer.ZONE.bind("<Button-1>", self.rectangleSelectScan)
@@ -632,6 +633,7 @@ class mainWindow(Tk):
             if not regex.fullmatch(event.char):
                 self.logOnTerm(lang.all[globs.CNIRlang]["Character not accepted !\n"])
                 return "break"
+                
         # Adds the entry
         tempChar = self.termtext.get("1.0", "end")[:-1]
         self.mrzChar =  tempChar[:pos+1] + event.char + tempChar[pos+1:] + '\n'

@@ -57,12 +57,13 @@ def crashCNIR(shutdown=True):
                 with open(globs.CNIRMainLog, 'r') as file:
                     data = file.read()
             except:
-                pass
+                logfile.printerr("Can't read the log file.")
 
             # send it
             success = github.reportBug(traceback.format_exc(), data)
 
             if not success:
+                logfile.printerr("Can't send to Github.")
                 res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to open the log file ?"])
                 if res == "yes":
                     webbrowser.open_new(globs.CNIRErrLog)
