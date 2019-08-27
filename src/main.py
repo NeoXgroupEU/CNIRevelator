@@ -172,7 +172,7 @@ class mainWindow(Tk):
             "SEX"    : self.sex,
             "NAT"    : self.nat,
             "PAYS"   : self.pays,
-            "INDIC"  : self.indic,
+            "INDIC"  : self.indic
         }
 
         # The the image viewer
@@ -723,12 +723,12 @@ class mainWindow(Tk):
         #print(docInfos)
         # display the infos
         for key in [ e for e in docInfos ]:
-            #print(docInfos[key])
-            if key in ["CODE", "CTRL", "CTRLF"]:
+            print(key)
+            if key in ["CODE", "CTRL", "CTRLF", "FACULT"]:
                 continue
-            if not docInfos[key] == False:
-                if not docInfos[key] == "":
-                    self.infoList[key]['text'] = docInfos[key]
+            if not docInfos[key][1] == False:
+                if not docInfos[key][0] == "":
+                    self.infoList[key]['text'] = docInfos[key][0]
                     self.infoList[key]['background'] = self['background']
                     self.infoList[key]['foreground'] = "black"
                 else:
@@ -738,7 +738,7 @@ class mainWindow(Tk):
             else:
                 self.infoList[key]['background'] = "red"
                 self.infoList[key]['foreground'] = "white"
-                self.infoList[key]['text'] = "NC"
+                self.infoList[key]['text'] = docInfos[key][0]
                 self.compliance = False
 
         if self.compliance == True:
