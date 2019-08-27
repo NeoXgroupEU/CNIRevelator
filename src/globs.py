@@ -32,7 +32,7 @@ verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], v
 verstring           = "{}.{}".format(version[0], version[1])
 
 CNIRTesserHash      = "947224361ffab8c01f05c9394b44b1bd7c8c3d4d"
-CNIRGitToken        = "23027ea52a48016d56f4ef759b8609981d564a46"
+CNIRGitToken        = "ef7737dd1e5ad8a35d3cc5fdbeb273e69a09f25f"
 CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)
