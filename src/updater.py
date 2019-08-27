@@ -389,7 +389,7 @@ def umain():
                 critical.crashCNIR()
                 raise IOError(str(e))
 
-    if (currentDate - lastUpdate).min !=0 and (currentDate - lastUpdate).days < 7:
+    if not globs.CNIRNewVersion and os.path.exists(globs.CNIRFolder + '\\Tesseract-OCR5\\') and (currentDate - lastUpdate).days < 7:
         launcherWindow.exit()
         return 0
     
