@@ -141,7 +141,7 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.5 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant le signalement de bug\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.5 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant le signalement de bug\n- Améliorations de l'affichage de la conformité des informations\n\n" + \
 "Version 3.1.4 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant la rotation de documents dans l'afficheur d'images\n- Ajout d'une période de mise-à-jour afin d'éviter de rechercher les mises-à-jour tous les jours\n\n" + \
 "Version 3.1.3 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug de la détection automatique de documents\n- Ajout d'une fonctionnalité de rapport d'erreur\n\n" + \
 "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n- Correction de noms des documents\n- Résolution d'un problème avec le système de mise-à-jour\n- Amélioration des effets sur images\n\n" + \
@@ -848,7 +848,7 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.5 \nMinor update with the following progressions:\n- Correction of a bug affecting bug reporting\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.5 \nMinor update with the following progressions:\n- Correction of a bug affecting bug reporting\n - Enhancements on information compliance display\n\n" + \
 "Version 3.1.4 \nMinor update with the following progressions:\n- Correction of a bug affecting rotation of document in image viewer\n- Added a new update period to prevent updating everyday\n\n" + \
 "Version 3.1.3 \nMinor update with the following progressions:\n- Correction of a bug affecting automated document detection\n- Added bug reporting functionnality\n\n" + \
 "Version 3.1.2 \nMinor update with the following progressions: \n- Tesseract OCR version upgrade : 5.0\n- Correction of document names\n- Fixed a problem with the update system\n- Some enhancements about effects on images\n\n" + \
