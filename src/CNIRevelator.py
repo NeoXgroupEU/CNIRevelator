@@ -84,6 +84,8 @@ def main():
 ## BOOTSTRAP OF CNIREVELATOR
 try:
 
+    logfile.printdbg('CNIRevelator log file version {}'.format(globs.verstring_full))
+
     try:
         # LANGUAGE
         lang.readLang()
