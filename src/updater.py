@@ -88,14 +88,38 @@ def exitProcess(arg):
             process.terminate()
     sys.exit(arg)
     
-def updateChannel(choice):
+def setUpdateChannel(choice):
+    """
+    Sets the new update channel and forces new update at next launch
+    """
     if choice == "Beta":
         with open(globs.CNIRUrlConfig, 'w') as (configFile):
             configFile.write("{}\n0\n0".format(globs.CNIRBetaURL))
-    else:
+            # Force new update
+            try:
+                os.remove(globs.CNIRLastUpdate)
+            except:
+                pass
+    elif choice == "Stable":
         with open(globs.CNIRUrlConfig, 'w') as (configFile):
             configFile.write("{}\n0\n0".format(globs.CNIRDefaultURL))
-
+            # Force new update
+            try:
+                os.remove(globs.CNIRLastUpdate)
+            except:
+                pass
+                
+def getUpdateChannel():
+    """
+    Returns the current update channel
+    """
+    with open(globs.CNIRUrlConfig, 'r') as (configFile):
+        url = configFile.read()
+    if not "master" in url:
+        return "Beta"
+    else:
+        return "Stable"
+        
 def getLatestVersion(credentials):
     """
     Returns the latest version of the software

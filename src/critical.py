@@ -49,6 +49,12 @@ def crashCNIR(shutdown=True):
 
         showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
 
+        # Force new update
+        try:
+            os.remove(globs.CNIRLastUpdate)
+        except:
+            pass
+
         res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to report this bug ?"])
         if res == "yes":
             # read the log

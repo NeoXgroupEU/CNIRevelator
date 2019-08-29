@@ -49,6 +49,7 @@ import mrz                      # mrz.py
 import globs                    # globs.py
 import pytesseract              # pytesseract.py
 import lang                     # lang.py
+import updater                  # updater.py 
 
 # Global handler
 logfile = logger.logCur
@@ -510,9 +511,9 @@ class mainWindow(Tk):
             # Get the candidates
             candidates = mrz.allDocMatch(self.mrzChar.split("\n"), final=isFull)
 
-            if len(candidates) == 2 and len(self.mrzChar) >= 8:
+            if len(candidates) >= 2 and len(candidates) < 4 and len(self.mrzChar) >= 8:
                 # Parameters for the choice invite
-                invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                invite = ihm.DocumentAsk(self, candidates)
                 invite.transient(self)
                 invite.grab_set()
                 invite.focus_force()
@@ -606,9 +607,9 @@ class mainWindow(Tk):
                 # Get the candidates
                 candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
 
-                if len(candidates) == 2 and len(self.mrzChar) >= 8:
+                if len(candidates) >= 2 and len(candidates) < 4 and len(self.mrzChar) >= 8:
                     # Parameters for the choice invite
-                    invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                    invite = ihm.DocumentAsk(self, candidates)
                     invite.transient(self)
                     invite.grab_set()
                     invite.focus_force()
@@ -724,7 +725,7 @@ class mainWindow(Tk):
         # display the infos
         for key in [ e for e in docInfos ]:
             print(key)
-            if key in ["CODE", "CTRL", "CTRLF", "FACULT"]:
+            if key in ["CODE", "CTRL", "CTRLF", "FACULT", "NOINT"]:
                 continue
             if not docInfos[key][1] == False:
                 if not docInfos[key][0] == "":
@@ -1072,7 +1073,7 @@ class mainWindow(Tk):
         """
         Update Settings
         """
-        changeupdateWin = ihm.updateSetDialog(self)
+        changeupdateWin = ihm.updateSetDialog(self, updater.getUpdateChannel())
         changeupdateWin.transient(self)
         changeupdateWin.grab_set()
         changeupdateWin.focus_force()
@@ -1082,7 +1083,7 @@ class mainWindow(Tk):
         """
         Lang Settings
         """
-        changelangWin = ihm.langDialog(self)
+        changelangWin = ihm.langDialog(self, globs.CNIRlang)
         changelangWin.transient(self)
         changelangWin.grab_set()
         changelangWin.focus_force()
