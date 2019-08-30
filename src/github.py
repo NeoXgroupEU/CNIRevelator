@@ -60,7 +60,7 @@ class AESCipher(object):
     def _unpad(s):
         return s[:-ord(s[len(s) - 1:])]
 
-def reportBug(reason="",log=""):
+def reportBug(reason="",log="", isVoluntary=False):
 
     logfile = logger.logCur
 
@@ -70,11 +70,14 @@ def reportBug(reason="",log=""):
 
     session = credentials.sessionHandler
 
-    payload = {'title':"CNIRevelator Bug Report", 'body':"**An error has been reported by a CNIRevelator instance.**\n\n**Here is the full reason of this issue:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
+    if not isVoluntary:
+        payload = {'title':"CNIRevelator Bug Report", 'body':"**An error has been reported by a CNIRevelator instance.**\n\n**Here is the full reason of this issue:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
+    else:
+        payload = {'title':"CNIRevelator Bug Report", 'body':"**A voluntary bug report has been reported by a CNIRevelator user.**\n\n**Possible reason:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
 
     handler = session.post('https://api.github.com/repos/neox95/cnirevelator/issues', headers={'Authorization': 'token %s' % decryptToken(globs.CNIRGitToken)}, data=json.dumps(payload))
 
-    logfile.printdbg(handler.reason)
+    logfile.printdbg("Issue is " + handler.reason)
 
     if handler.reason == "Created":
         return True

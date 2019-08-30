@@ -378,8 +378,12 @@ def umain():
     credentials = downloader.newcredentials()
     
     if not credentials.valid:
-        logfile.printerr("Credentials Error. No effective update !")
-        launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
+        if credentials.login == "nointernet":
+            logfile.printerr("No Internet Error. No effective update !")
+            launcherWindow.printmsg(lang.all[globs.CNIRlang]["No Internet Error. No effective update !"])
+        else:
+            logfile.printerr("Credentials Error. No effective update !")
+            launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
         time.sleep(2)
         launcherWindow.exit()
         return 0

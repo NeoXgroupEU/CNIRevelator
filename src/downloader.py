@@ -81,10 +81,11 @@ class newcredentials:
             self.trying += 1
             
             try:
-                sessionAnswer = session.get('https://www.google.com')
+                sessionAnswer = session.get('http://www.google.com')
             except Exception as e:
                 logfile.printdbg('Network Error : ' + str(e))
-                sessionAnswer = ''
+                self.login = "nointernet"
+                return
                 
             logfile.printdbg("Session Answer : " + str(sessionAnswer))
             
@@ -92,11 +93,6 @@ class newcredentials:
                 logfile.printdbg('Successfully connected to the Internet !')
                 self.sessionHandler = session
                 self.valid = True
-                return
-            
-            if str(sessionAnswer) != '<Response [407]>' and self.trying > 2: 
-            # because sometimes the proxy does not return an error (especially if we do not provide either credentials)
-                logfile.printerr('Network Error, or need a proxy !')
                 return
             
             if self.trying > 4:

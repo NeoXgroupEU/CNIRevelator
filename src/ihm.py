@@ -30,7 +30,6 @@ from tkinter import filedialog
 from tkinter import ttk
 import PIL.Image, PIL.ImageTk
 import traceback
-import webbrowser
 import cv2
 
 import critical             # critical.py

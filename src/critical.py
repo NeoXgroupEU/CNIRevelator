@@ -36,7 +36,7 @@ import logger                   # logger.py
 import globs                    # globs.py
 import github                   # github.py
 
-def crashCNIR(shutdown=True):
+def crashCNIR(shutdown=True, option="", isVoluntary=False):
     """
     very last solution
     """
@@ -47,13 +47,14 @@ def crashCNIR(shutdown=True):
         logfile = logger.logCur
         logfile.printerr("FATAL ERROR : see traceback below.\n{}".format(traceback.format_exc()))
 
-        showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"])
+        if not isVoluntary:
+            showerror(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["CNIRevelator crashed because a fatal error occured. View log for more infos and please open an issue on Github"] + "\n\n{}\n{}".format(option, traceback.format_exc()))
 
-        # Force new update
-        try:
-            os.remove(globs.CNIRLastUpdate)
-        except:
-            pass
+            # Force new update
+            try:
+                os.remove(globs.CNIRLastUpdate)
+            except:
+                pass
 
         res = askquestion(lang.all[globs.CNIRlang]["CNIRevelator Fatal Eror"], lang.all[globs.CNIRlang]["Would you like to report this bug ?"])
         if res == "yes":
@@ -66,7 +67,7 @@ def crashCNIR(shutdown=True):
                 logfile.printerr("Can't read the log file.")
 
             # send it
-            success = github.reportBug(traceback.format_exc(), data)
+            success = github.reportBug(traceback.format_exc(), data, isVoluntary)
 
             if not success:
                 logfile.printerr("Can't send to Github.")
