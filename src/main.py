@@ -110,6 +110,7 @@ class mainWindow(Tk):
         self.lecteur_ci.grid_rowconfigure(3, weight=1)
         self.lecteur_ci.grid_rowconfigure(4, weight=1)
         self.lecteur_ci.grid_rowconfigure(5, weight=1)
+        self.lecteur_ci.grid_rowconfigure(6, weight=1)
         
         # And what about the status bar ? 
         self.statusbar = ihm.StatusBar(self)
@@ -150,6 +151,9 @@ class mainWindow(Tk):
         ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Document number"])).grid(column=4, row=5, padx=5, pady=5)
         self.no = ttk.Label((self.lecteur_ci), text=' ')
         self.no.grid(column=5, row=5, padx=5, pady=5)
+        ttk.Label((self.lecteur_ci), text='{} : '.format(lang.all[globs.CNIRlang]["Length"])).grid(column=0, row=6, padx=5, pady=5)
+        self.len = ttk.Label((self.lecteur_ci), text=' ')
+        self.len.grid(column=1, row=6, padx=5, pady=5)
 
         self.nom['text'] = lang.all[globs.CNIRlang]["Unknown"]
         self.prenom['text'] = lang.all[globs.CNIRlang]["Unknown"]
@@ -161,6 +165,7 @@ class mainWindow(Tk):
         self.nat['text'] = lang.all[globs.CNIRlang]["Unknown"]
         self.pays['text'] = lang.all[globs.CNIRlang]["Unknown"]
         self.indic['text'] = lang.all[globs.CNIRlang]["Unknown"]
+        self.len['text'] = lang.all[globs.CNIRlang]["Unknown"]
 
 
         self.infoList = \
@@ -174,7 +179,8 @@ class mainWindow(Tk):
             "SEX"    : self.sex,
             "NAT"    : self.nat,
             "PAYS"   : self.pays,
-            "INDIC"  : self.indic
+            "INDIC"  : self.indic,
+            "LEN"    : self.len,
         }
 
         # The the image viewer
@@ -817,10 +823,13 @@ class mainWindow(Tk):
         """
         self.initialize()
         path = ''
-        path = filedialog.askopenfilename(parent=self, title=lang.all[globs.CNIRlang]["Open a scan of document..."], filetypes=(('TIF files', '*.tif'),
+        path = filedialog.askopenfilename(parent=self, title=lang.all[globs.CNIRlang]["Open a scan of document..."], filetypes=(
+                                                                                                    ('TIF files', '*.tif'),
                                                                                                     ('TIF files', '*.tiff'),
                                                                                                     ('JPEG files', '*.jpg'),
-                                                                                                    ('JPEG files', '*.jpeg')))
+                                                                                                    ('JPEG files', '*.jpeg'),
+                                                                                                    ('PNG files', '*.png')
+                                                                                                    ))
         self.openScanFile(path)
         
     def openScanFile(self, path):
@@ -831,7 +840,8 @@ class mainWindow(Tk):
         if (    path[-3:] != 'jpg' 
             and path[-3:] != 'tif' 
             and path[-4:] != 'jpeg'
-            and path[-4:] != 'tiff' ) or not os.path.isfile(path):
+            and path[-4:] != 'tiff'
+            and path[-3:] != 'png' ) or not os.path.isfile(path):
                 showerror(lang.all[globs.CNIRlang]["Open a scan of document..."], lang.all[globs.CNIRlang]["The file you provided is not valid : {}"].format(path))
                 return
                        
