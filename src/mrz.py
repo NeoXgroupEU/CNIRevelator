@@ -147,7 +147,7 @@ AC = [
 ]
 
 VA = [
-  ["11222333333333333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCCCCCCCCCCC"],
+  ["11222333333333333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCCCCCCCCCC"],
   {
     "1": ["2", "CODE", "V."],
     "2": ["3", "PAYS", "[A-Z]+"],
@@ -166,7 +166,7 @@ VA = [
 ]
 
 VB = [
-  ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCC"],
+  ["112223333333333333333333333333333333", "444444444566677777789AAAAAABCCCCCCCC"],
   {
     "1": ["2", "CODE", "V."],
     "2": ["3", "PAYS", "[A-Z]+"],
@@ -486,6 +486,14 @@ def getDocInfos(doc, code):
     infoTypes = [ (doc[1][field][1], limits(doc[0][0] + doc[0][1], field)) for field in doc[1] ]
 
     res = {}
+
+    # Length of MRZ
+    length = len(code)
+    if length == len(doc[0][0]+doc[0][1]):
+        res["LEN"] = [length, True]
+    else:
+        res["LEN"] = [length, False]
+
 
     for field in infoTypes:
 

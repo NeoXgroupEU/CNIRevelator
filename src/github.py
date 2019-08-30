@@ -71,9 +71,103 @@ def reportBug(reason="",log="", isVoluntary=False):
     session = credentials.sessionHandler
 
     if not isVoluntary:
-        payload = {'title':"CNIRevelator Bug Report", 'body':"**An error has been reported by a CNIRevelator instance.**\n\n**Here is the full reason of this issue:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
+        payload = {
+                    'title':"CNIRevelator App Bug Report",
+                    'body': (
+                        "**An error has been reported by a CNIRevelator instance.**\n\n"
+
+                        "**Global informations:**\n"
+                        "verType = {}\n"
+                        "version= {}\n"
+                        "verstring_full = {}\n"
+                        "CNIRTesserHash = {}\n"
+                        "CNIRGitToken = {}\n"
+                        "CNIRName = {}\n"
+                        "CNIRCryptoKey = {}\n"
+                        "CNIRlang = {}\n"
+                        "CNIRVerStock = {}\n"
+                        "CNIREnv = {}\n"
+                        "CNIRBetaURL = {}\n"
+                        "CNIRDefaultURL = {}\n"
+                        "CNIRNewVersion = {}\n"
+                        "CNIROpenFile = {}\n"
+                        "debug = {}\n"
+                        "\n\n"
+
+                        "**Full reason of the crash:**\n{}\n\n"
+
+                        "**Full log:** {}"
+
+                        ).format(
+                                globs.verType,
+                                globs.version,
+                                globs.verstring_full,
+                                globs.CNIRTesserHash,
+                                globs.CNIRGitToken,
+                                globs.CNIRName,
+                                globs.CNIRCryptoKey,
+                                globs.CNIRlang,
+                                globs.CNIRVerStock,
+                                globs.CNIREnv,
+                                globs.CNIRBetaURL,
+                                globs.CNIRDefaultURL,
+                                globs.CNIRNewVersion,
+                                globs.CNIROpenFile,
+                                globs.debug,
+                                reason,
+                                log
+                                ),
+                    "assignees":["neox95"], "labels":["bug", "AUTO"]
+                  }
     else:
-        payload = {'title':"CNIRevelator Bug Report", 'body':"**A voluntary bug report has been reported by a CNIRevelator user.**\n\n**Possible reason:**\n{}\n\n**The full log is here:** {}".format(reason, log), "assignees":["neox95"], "labels":["bug", "AUTO"]}
+        payload = {
+                    'title':"CNIRevelator User Bug Report",
+                    'body': (
+                        "**An error has been reported by a CNIRevelator user.**\n\n"
+
+                        "**Global informations:**\n"
+                        "verType = {}\n"
+                        "version= {}\n"
+                        "verstring_full = {}\n"
+                        "CNIRTesserHash = {}\n"
+                        "CNIRGitToken = {}\n"
+                        "CNIRName = {}\n"
+                        "CNIRCryptoKey = {}\n"
+                        "CNIRlang = {}\n"
+                        "CNIRVerStock = {}\n"
+                        "CNIREnv = {}\n"
+                        "CNIRBetaURL = {}\n"
+                        "CNIRDefaultURL = {}\n"
+                        "CNIRNewVersion = {}\n"
+                        "CNIROpenFile = {}\n"
+                        "debug = {}\n"
+                        "\n\n"
+
+                        "**Possible reason:**\n{}\n\n"
+
+                        "**Full log:** {}"
+
+                        ).format(
+                                globs.verType,
+                                globs.version,
+                                globs.verstring_full,
+                                globs.CNIRTesserHash,
+                                globs.CNIRGitToken,
+                                globs.CNIRName,
+                                globs.CNIRCryptoKey,
+                                globs.CNIRlang,
+                                globs.CNIRVerStock,
+                                globs.CNIREnv,
+                                globs.CNIRBetaURL,
+                                globs.CNIRDefaultURL,
+                                globs.CNIRNewVersion,
+                                globs.CNIROpenFile,
+                                globs.debug,
+                                reason,
+                                log
+                                ),
+                    "assignees":["neox95"], "labels":["bug", "AUTO"]
+                  }
 
     handler = session.post('https://api.github.com/repos/neox95/cnirevelator/issues', headers={'Authorization': 'token %s' % decryptToken(globs.CNIRGitToken)}, data=json.dumps(payload))
 
