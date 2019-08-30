@@ -38,9 +38,9 @@ import re
 import cv2
 import PIL.Image, PIL.ImageTk
 import os, shutil
-import webbrowser
 import sys, os
 import numpy
+import webbrowser
 
 import critical                 # critical.py
 import ihm                      # ihm.py
@@ -49,6 +49,7 @@ import mrz                      # mrz.py
 import globs                    # globs.py
 import pytesseract              # pytesseract.py
 import lang                     # lang.py
+import updater                  # updater.py 
 
 # Global handler
 logfile = logger.logCur
@@ -70,6 +71,7 @@ class mainWindow(Tk):
         self.Tags = []
         self.compliance = True
         self.corners = []
+        self.indicators = []
         self.validatedtext = ""
 
         # The icon
@@ -172,7 +174,7 @@ class mainWindow(Tk):
             "SEX"    : self.sex,
             "NAT"    : self.nat,
             "PAYS"   : self.pays,
-            "INDIC"  : self.indic,
+            "INDIC"  : self.indic
         }
 
         # The the image viewer
@@ -351,6 +353,7 @@ class mainWindow(Tk):
         menu3.add_command(label=lang.all[globs.CNIRlang]["Keyboard commands"], command=(self.helpbox))
         menu3.add_command(label=lang.all[globs.CNIRlang]["Report a bug"], command=(self.openIssuePage))
         menu3.add_separator()
+        menu3.add_command(label=lang.all[globs.CNIRlang]["Project Webpage"], command=(self.openProjectPage))
         menu3.add_command(label=lang.all[globs.CNIRlang]["About CNIRevelator"], command=(self.infobox))
         menubar.add_cascade(label=lang.all[globs.CNIRlang]["Help"], menu=menu3)
         menubar.add_command(label="<|>", command=(self.panelResize))
@@ -409,11 +412,19 @@ class mainWindow(Tk):
             
             self.corners.append([canvas.canvasx(event.x), canvas.canvasy(event.y)])
             if len(self.corners) == 2:
-                self.select = self.imageViewer.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='cyan', width = 2)
+                self.select = self.imageViewer.ZONE.create_rectangle(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1], outline ='red', width = 2)
                 #print("Get rectangle : [{}, {}], for [{}, {}]".format(self.corners[0][0], self.corners[0][1], self.corners[1][0], self.corners[1][1]))
+            
+            # Reinit
             if len(self.corners) > 2:
                 self.corners = []
-                self.imageViewer.ZONE.delete(self.select)
+                self.imageViewer.ZONE.delete(self.select)                
+                for k in self.indicators:
+                    self.imageViewer.ZONE.delete(k)
+            
+            # Draw indicator
+            else:
+                 self.indicators.append(self.imageViewer.ZONE.create_oval(canvas.canvasx(event.x)-4, canvas.canvasy(event.y)-4,canvas.canvasx(event.x)+4, canvas.canvasy(event.y)+4, fill='red', outline='red', width = 2))
 
     def goOCRDetection(self):
         """
@@ -447,10 +458,13 @@ class mainWindow(Tk):
             cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
 
             # Crop
-            x0 = int(self.corners[0][0])
-            y0 = int(self.corners[0][1])
-            x1 = int(self.corners[1][0])
-            y1 = int(self.corners[1][1])
+            
+            coords = self.imageViewer.ZONE.coords(self.select)
+            
+            x0 = int(coords[0])
+            y0 = int(coords[1])
+            x1 = int(coords[2])
+            y1 = int(coords[3])
             crop_img = cv_img[y0:y1, x0:x1]
     
             # Get the text by OCR
@@ -510,9 +524,9 @@ class mainWindow(Tk):
             # Get the candidates
             candidates = mrz.allDocMatch(self.mrzChar.split("\n"), final=isFull)
 
-            if len(candidates) == 2 and len(self.mrzChar) >= 8:
+            if len(candidates) >= 2 and len(candidates) < 4 and len(self.mrzChar) >= 8:
                 # Parameters for the choice invite
-                invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                invite = ihm.DocumentAsk(self, candidates)
                 invite.transient(self)
                 invite.grab_set()
                 invite.focus_force()
@@ -606,9 +620,9 @@ class mainWindow(Tk):
                 # Get the candidates
                 candidates = mrz.allDocMatch(self.mrzChar.split("\n"))
 
-                if len(candidates) == 2 and len(self.mrzChar) >= 8:
+                if len(candidates) >= 2 and len(candidates) < 4 and len(self.mrzChar) >= 8:
                     # Parameters for the choice invite
-                    invite = ihm.DocumentAsk(self, [candidates[0][2], candidates[1][2]])
+                    invite = ihm.DocumentAsk(self, candidates)
                     invite.transient(self)
                     invite.grab_set()
                     invite.focus_force()
@@ -723,12 +737,12 @@ class mainWindow(Tk):
         #print(docInfos)
         # display the infos
         for key in [ e for e in docInfos ]:
-            #print(docInfos[key])
-            if key in ["CODE", "CTRL", "CTRLF"]:
+            #printkey)
+            if key in ["CODE", "CTRL", "CTRLF", "FACULT", "NOINT"]:
                 continue
-            if not docInfos[key] == False:
-                if not docInfos[key] == "":
-                    self.infoList[key]['text'] = docInfos[key]
+            if not docInfos[key][1] == False:
+                if not docInfos[key][0] == "":
+                    self.infoList[key]['text'] = docInfos[key][0]
                     self.infoList[key]['background'] = self['background']
                     self.infoList[key]['foreground'] = "black"
                 else:
@@ -738,7 +752,7 @@ class mainWindow(Tk):
             else:
                 self.infoList[key]['background'] = "red"
                 self.infoList[key]['foreground'] = "white"
-                self.infoList[key]['text'] = "NC"
+                self.infoList[key]['text'] = docInfos[key][0]
                 self.compliance = False
 
         if self.compliance == True:
@@ -841,7 +855,7 @@ class mainWindow(Tk):
             cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         except:
             logfile.printerr("Error with : {} in {} with total of {} pages".format(cv2.imreadmulti(self.imageViewer.imagePath), self.imageViewer.imagePath, total))
-            showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator. Please be sure that the filename does not contain any non unicode character such as accent and foreign characters."] + "\n\n" + self.imageViewer.imagePath)
+            critical.crashCNIR(False, "OpenCV openScanFile() error")
         
         try:
             # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
@@ -854,6 +868,10 @@ class mainWindow(Tk):
             # Get the image dimensions (OpenCV stores image data as NumPy ndarray)
             height, width  = cv_img.shape
             
+            
+        # Update shape
+        self.imageViewer.height, self.imageViewer.width  = cv_img.shape[:2]
+                
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
         self.DisplayUpdate(photo)    
@@ -864,7 +882,7 @@ class mainWindow(Tk):
             self.resizeScan()
 
     def zoomOutScan50(self, quantity = 50):
-        if self.imageViewer.image:
+        if self.imageViewer.image and int(self.imageViewer.width * (self.imageViewer.imgZoom - quantity + 100) / 100) > 100:
             self.imageViewer.imgZoom -= quantity
             self.resizeScan()
 
@@ -874,7 +892,7 @@ class mainWindow(Tk):
             self.resizeScan()
 
     def zoomOutScan20(self, quantity = 20):
-        if self.imageViewer.image:
+        if self.imageViewer.image and int(self.imageViewer.width * (self.imageViewer.imgZoom - quantity + 100) / 100) > 100:
             self.imageViewer.imgZoom -= quantity
             self.resizeScan()
 
@@ -884,7 +902,7 @@ class mainWindow(Tk):
             self.resizeScan()
 
     def zoomOutScan(self, quantity = 1):
-        if self.imageViewer.image:
+        if self.imageViewer.image and int(self.imageViewer.width * (self.imageViewer.imgZoom - quantity + 100) / 100) > 100:
             self.imageViewer.imgZoom -= quantity
             self.resizeScan()
 
@@ -996,6 +1014,9 @@ class mainWindow(Tk):
                 dim = (int(width * (self.imageViewer.imgZoom + 100) / 100), int(height * (self.imageViewer.imgZoom + 100) / 100))
                 cv_img = cv2.resize(cv_img, dim, interpolation = cv2.INTER_AREA)
                 
+                # Update shape
+                self.imageViewer.height, self.imageViewer.width  = cv_img.shape[:2]
+                
                 # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
                 photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
                 self.DisplayUpdate( photo)
@@ -1018,7 +1039,7 @@ class mainWindow(Tk):
                     self.DisplayUpdate(photo)
                 except Exception as e:
                     logfile.printerr("Critical error with opencv : ".format(e))
-                    showerror(lang.all[globs.CNIRlang]["OpenCV error (image processing)"], lang.all[globs.CNIRlang]["A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself"])
+                    critical.crashCNIR(False, "OpenCV resizeScan() error")
                     self.initialize()
 
     ## IHM and user interface related functions
@@ -1057,9 +1078,15 @@ class mainWindow(Tk):
         
     def openIssuePage(self):
         """
-        Opens the Github Issue Repository page
+        Sends a bug report
         """
-        webbrowser.open_new("https://github.com/neox95/CNIRevelator/issues")
+        critical.crashCNIR(shutdown=False, option="Voluntary Bug Report", isVoluntary=True)
+        
+    def openProjectPage(self):
+        """
+        Opens the Project Repository webpage
+        """
+        webbrowser.open_new("https://github.com/neox95/CNIRevelator")
         
     def showChangeLog(self):
         changelogWin = ihm.ChangelogDialog(self, ('{} : CNIRevelator {}\n\n{}'.format(lang.all[globs.CNIRlang]["Program version"], globs.verstring_full, lang.all[globs.CNIRlang]["CHANGELOG"])))
@@ -1072,7 +1099,7 @@ class mainWindow(Tk):
         """
         Update Settings
         """
-        changeupdateWin = ihm.updateSetDialog(self)
+        changeupdateWin = ihm.updateSetDialog(self, updater.getUpdateChannel())
         changeupdateWin.transient(self)
         changeupdateWin.grab_set()
         changeupdateWin.focus_force()
@@ -1082,7 +1109,7 @@ class mainWindow(Tk):
         """
         Lang Settings
         """
-        changelangWin = ihm.langDialog(self)
+        changelangWin = ihm.langDialog(self, globs.CNIRlang)
         changelangWin.transient(self)
         changelangWin.grab_set()
         changelangWin.focus_force()

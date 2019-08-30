@@ -88,14 +88,38 @@ def exitProcess(arg):
             process.terminate()
     sys.exit(arg)
     
-def updateChannel(choice):
+def setUpdateChannel(choice):
+    """
+    Sets the new update channel and forces new update at next launch
+    """
     if choice == "Beta":
         with open(globs.CNIRUrlConfig, 'w') as (configFile):
             configFile.write("{}\n0\n0".format(globs.CNIRBetaURL))
-    else:
+            # Force new update
+            try:
+                os.remove(globs.CNIRLastUpdate)
+            except:
+                pass
+    elif choice == "Stable":
         with open(globs.CNIRUrlConfig, 'w') as (configFile):
             configFile.write("{}\n0\n0".format(globs.CNIRDefaultURL))
-
+            # Force new update
+            try:
+                os.remove(globs.CNIRLastUpdate)
+            except:
+                pass
+                
+def getUpdateChannel():
+    """
+    Returns the current update channel
+    """
+    with open(globs.CNIRUrlConfig, 'r') as (configFile):
+        url = configFile.read()
+    if not "master" in url:
+        return "Beta"
+    else:
+        return "Stable"
+        
 def getLatestVersion(credentials):
     """
     Returns the latest version of the software
@@ -354,8 +378,12 @@ def umain():
     credentials = downloader.newcredentials()
     
     if not credentials.valid:
-        logfile.printerr("Credentials Error. No effective update !")
-        launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
+        if credentials.login == "nointernet":
+            logfile.printerr("No Internet Error. No effective update !")
+            launcherWindow.printmsg(lang.all[globs.CNIRlang]["No Internet Error. No effective update !"])
+        else:
+            logfile.printerr("Credentials Error. No effective update !")
+            launcherWindow.printmsg(lang.all[globs.CNIRlang]["Credentials Error. No effective update !"])
         time.sleep(2)
         launcherWindow.exit()
         return 0
@@ -371,25 +399,15 @@ def umain():
                 # Reading it
                 lastUpdate = datetime.datetime.strptime(configFile.read(),"%d/%m/%Y")
             except Exception as e:
-                critical.crashCNIR()
-                raise IOError(str(e))
+                critical.crashCNIR(False)
+                time.sleep(3)
+                launcherWindow.exit()
+                return 1
     else:
-        # Recreating the url file
-        lastUpdate = currentDate
-        try:
-            os.mkdir(globs.CNIRFolder + '\\config')
-        except:
-            pass
-
-        with open(globs.CNIRLastUpdate, 'w') as (configFile):
-            try:
-                # Writing it
-                configFile.write("{}/{}/{}".format(currentDate.day, currentDate.month, currentDate.year))
-            except Exception as e:
-                critical.crashCNIR()
-                raise IOError(str(e))
+        lastUpdate = datetime.datetime(1970,1,1)
 
     if not globs.CNIRNewVersion and os.path.exists(globs.CNIRFolder + '\\Tesseract-OCR5\\') and (currentDate - lastUpdate).days < 7:
+        logfile.printdbg("No need to update, {} days remaining".format(7 - (currentDate - lastUpdate).days))
         launcherWindow.exit()
         return 0
     
@@ -399,7 +417,7 @@ def umain():
             # EXECUTING THE UPDATE BATCH
             success = batch(credentials)
         except Exception as e:
-            critical.crashCNIR()
+            critical.crashCNIR(False)
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
             launcherWindow.exit()
@@ -408,20 +426,36 @@ def umain():
         if success:
             logfile.printdbg("Software is up-to-date !")
             launcherWindow.printmsg('Software is up-to-date !')
+            # Recreating the url file
+            lastUpdate = currentDate
+            try:
+                os.mkdir(globs.CNIRFolder + '\\config')
+            except:
+                pass
+    
+            with open(globs.CNIRLastUpdate, 'w') as (configFile):
+                try:
+                    # Writing it
+                    configFile.write("{}/{}/{}".format(currentDate.day, currentDate.month, currentDate.year))
+                except Exception as e:
+                    critical.crashCNIR(False)
+                    time.sleep(3)
+                    launcherWindow.exit()
+                    return                    
+            if UPDATE_IS_MADE:
+                launcherWindow.exit()
+                return 0
+            
         else:
             logfile.printerr("An error occured. No effective update !")
             launcherWindow.printmsg(lang.all[globs.CNIRlang]['An error occured. No effective update !'])
             time.sleep(2)
             launcherWindow.exit()
             return 0         
-               
-        if UPDATE_IS_MADE:
-            launcherWindow.exit()
-            return 0
+            
     except:
-        critical.crashCNIR()
+        critical.crashCNIR(False)
         launcherWindow.exit()
-        sys.exit(2)
         return 2
         
     try:
@@ -429,7 +463,7 @@ def umain():
             # INSTALLING TESSERACT OCR
             success = tessInstall(globs.CNIRFolder, credentials)
         except Exception as e:
-            critical.crashCNIR()
+            critical.crashCNIR(False)
             launcherWindow.printmsg('ERROR : ' + str(e))
             time.sleep(3)
             launcherWindow.exit()
@@ -446,9 +480,8 @@ def umain():
             return 0
 
     except:
-        critical.crashCNIR()
+        critical.crashCNIR(False)
         launcherWindow.exit()
-        exitProcess(2)
         return 2
 
     time.sleep(2)

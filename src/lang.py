@@ -141,7 +141,8 @@ french = \
                                         "Coller :\t\t\t\tCtrl-V \n"
                                         "Forcer une nouvelle détection du document :\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.4 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant la rotation de documents dans l'afficheur d'images\n- Ajout d'une période de mise-à-jour afin d'éviter de rechercher les mises-à-jour tous les jours\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.5 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant le signalement de bug\n- Améliorations de l'affichage de la conformité des informations\n- Ajout d'un nouveau système de selection plus simple et fiable'\n\n" + \
+"Version 3.1.4 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug affectant la rotation de documents dans l'afficheur d'images\n- Ajout d'une période de mise-à-jour afin d'éviter de rechercher les mises-à-jour tous les jours\n\n" + \
 "Version 3.1.3 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug de la détection automatique de documents\n- Ajout d'une fonctionnalité de rapport d'erreur\n\n" + \
 "Version 3.1.2 \nMise-à-jour mineure avec les progressions suivantes :\n- Montée de version de Tesseract OCR : 5.0\n- Correction de noms des documents\n- Résolution d'un problème avec le système de mise-à-jour\n- Amélioration des effets sur images\n\n" + \
 "Version 3.1.1 \nMise-à-jour mineure avec les progressions suivantes :\n- Correction d'un bug sévère du système de mise à jour\n\n" + \
@@ -207,6 +208,9 @@ french = \
 "does not contain any non unicode "
 "character such as accent and "
 "foreign characters."               :   "Une erreur critique s'est produite dans le gestionnaire de traitement d'images OpenCV utilisé par CNIRevelator. Veuillez vous assurer que le nom de fichier ne contient pas de caractères non unicode tels que des accents et des caractères étrangers.",
+"No Internet Error. No effective "
+"update !"                          :   "Aucune connectivité. Pas de mise-à-jour !",
+"Project Webpage"                   :   "Site internet du projet",
 
 "LANDCODE2"                         :   {
                                             'AW': 'Aruba',
@@ -809,6 +813,8 @@ english = \
 "the OpenCV image processing "
 "manager used by CNIRevelator, the "
 "application will reset itself"     :   "A critical error has occurred in the OpenCV image processing manager used by CNIRevelator, the application will reset itself",
+"No Internet Error. No effective "
+"update !"                          :   "No Internet Error. No effective update !",
 
 "ABOUT"                             :   'Software Version: CNIRevelator' + globs.verstring_full + '\n\n'
                                         "Copyright © 2018-2019 Adrien Bourmault (neox95)" + "\n\n"
@@ -847,7 +853,8 @@ english = \
                                         "Paste:\t\t\t\tCtrl-V\n"
                                         "Force a new document detection:\tEchap\n",
 
-"CHANGELOG"                         :   "Version 3.1.4 \nMinor update with the following progressions:\n- Correction of a bug affecting rotation of document in image viewer\n- Added a new update period to prevent updating everyday\n\n" + \
+"CHANGELOG"                         :   "Version 3.1.5 \nMinor update with the following progressions:\n- Correction of a bug affecting bug reporting\n - Enhancements on information compliance display\n- Added new selection system to be more userfriendly\n\n" + \
+"Version 3.1.4 \nMinor update with the following progressions:\n- Correction of a bug affecting rotation of document in image viewer\n- Added a new update period to prevent updating everyday\n\n" + \
 "Version 3.1.3 \nMinor update with the following progressions:\n- Correction of a bug affecting automated document detection\n- Added bug reporting functionnality\n\n" + \
 "Version 3.1.2 \nMinor update with the following progressions: \n- Tesseract OCR version upgrade : 5.0\n- Correction of document names\n- Fixed a problem with the update system\n- Some enhancements about effects on images\n\n" + \
 "Version 3.1.1 \nMinor update with the following progressions: \n- Fixed a severe bug in the update system\n\n" + \
@@ -913,6 +920,7 @@ english = \
 "does not contain any non unicode "
 "character such as accent and "
 "foreign characters."               :   "A critical error has occurred in the OpenCV image processing manager used by CNIRevelator. Please be sure that the filename does not contain any non unicode character such as accent and foreign characters.",
+"Project Webpage"                   :   "Project website",
 
 "LANDCODE2"                         :   {
                                             "AW": "Aruba",

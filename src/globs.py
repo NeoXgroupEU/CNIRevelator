@@ -27,12 +27,12 @@ import os
 
 # CNIRevelator version
 verType             = "stable release"
-version             = [3, 1, 4]
+version             = [3, 1, 5]
 verstring_full      = "{}.{}.{} {}".format(version[0], version[1], version[2], verType)
 verstring           = "{}.{}".format(version[0], version[1])
 
 CNIRTesserHash      = "947224361ffab8c01f05c9394b44b1bd7c8c3d4d"
-CNIRGitToken        = "ef7737dd1e5ad8a35d3cc5fdbeb273e69a09f25f"
+CNIRGitToken        = "mJHKXqnazO/xZ9Fs18SDMqcGJ15A27OlZyd27cDe5dhHKklO2YShdWwUgEDUZQI02kpgYaLceMidTK37ZqakW+VYgPPuh0e9Ry2IH0KHc3o="
 CNIRFolder          = os.path.dirname(os.path.realpath(__file__))
 CNIRLColor          = "#006699"
 CNIRName            = "CNIRevelator {}".format(verstring)

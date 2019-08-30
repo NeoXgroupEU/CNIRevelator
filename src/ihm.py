@@ -30,7 +30,6 @@ from tkinter import filedialog
 from tkinter import ttk
 import PIL.Image, PIL.ImageTk
 import traceback
-import webbrowser
 import cv2
 
 import critical             # critical.py
@@ -45,13 +44,16 @@ controlKeys = ["Escape", "Right", "Left", "Up", "Down", "Home", "End", "BackSpac
 class DocumentAsk(Toplevel):
 
     def __init__(self, parent, choices):
-        self.choice = 0
-        vals = [0, 1]
         super().__init__(parent)
         self.title("{} :".format(lang.all[globs.CNIRlang]["Choose the identity document"]))
 
-        ttk.Radiobutton(self, text=choices[0], command=self.register0, value=vals[0]).pack()
-        ttk.Radiobutton(self, text=choices[1], command=self.register1, value=vals[1]).pack()
+        self.choice = 0
+        vals = [i[2] for i in choices]
+        for i in range(len(vals)):
+            a = ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i])
+            a.pack(fill=Y)
+            if i == 0:
+                a.invoke()
 
         self.button = Button(self, text='OK', command=(self.ok)).pack()
         self.resizable(width=False, height=False)
@@ -68,10 +70,11 @@ class DocumentAsk(Toplevel):
         y = hs / 2 - h / 2
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
-    def register0(self):
-        self.choice = 0
-    def register1(self):
-        self.choice = 1
+    def createRegister(self, i):
+        def register():
+            self.choice = i
+        return register
+
     def ok(self):
         self.destroy()
 
@@ -193,7 +196,7 @@ class ChangelogDialog(Toplevel):
 
 class langDialog(Toplevel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, currentLang):
         super().__init__(parent)
 
         self.title(lang.all[globs.CNIRlang]["Language"])
@@ -202,7 +205,10 @@ class langDialog(Toplevel):
 
         vals = [i for i in lang.all]
         for i in range(len(lang.all)):
-            ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i]).pack(fill=Y)
+            a = ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i])
+            a.pack(fill=Y)
+            if i == vals.index(currentLang):
+                a.invoke()
 
         ttk.Button(self, text="OK", command=(self.oki)).pack(fill=Y, pady=5)
 
@@ -231,7 +237,7 @@ class langDialog(Toplevel):
 
 class updateSetDialog(Toplevel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, currentChannel):
         super().__init__(parent)
 
         self.title(lang.all[globs.CNIRlang]["Update options"])
@@ -241,7 +247,11 @@ class updateSetDialog(Toplevel):
         self.vals = ["Stable", "Beta"]
         vals = self.vals
         for i in range(len(vals)):
-            ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i]).pack(fill=Y)
+            a = ttk.Radiobutton(self, text=vals[i], command=self.createRegister(i), value=vals[i])
+            a.pack(fill=Y)
+            if i == self.vals.index(currentChannel):
+                a.invoke()
+
 
         ttk.Button(self, text="OK", command=(self.oki)).pack(fill=Y, pady=5)
 
@@ -265,7 +275,7 @@ class updateSetDialog(Toplevel):
 
     def createRegister(self, i):
         def register():
-            updater.updateChannel(self.vals[i])
+            updater.setUpdateChannel(self.vals[i])
         return register
 
 class LauncherWindow(Tk):

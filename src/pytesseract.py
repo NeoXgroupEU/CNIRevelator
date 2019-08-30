@@ -24,7 +24,7 @@
 * along with CNIRevelator. If not, see <https:*www.gnu.org/licenses/>.         *
 ********************************************************************************
 """
-                            
+import logger           # logger.pu
         
 try:
     import Image
@@ -248,7 +248,7 @@ def image_to_string(image, lang=None, config='', nice=0, boxes=False, output_typ
     Returns the result of a Tesseract OCR run on the provided image to string
     """
     if boxes:
-        print("\nWarning: Argument 'boxes' is deprecated and will be removed in future versions. Use function image_to_boxes instead.\n")
+        logfile.printdbg("\nWarning: Argument 'boxes' is deprecated and will be removed in future versions. Use function image_to_boxes instead.\n")
         return image_to_boxes(image, lang, config, nice, output_type)
     else:
         args = [
@@ -317,7 +317,7 @@ def main():
             sys.stderr.write('Usage: python pytesseract.py [-l lang] input_file\n')
             exit(2)
     try:
-        print(image_to_string((Image.open(filename)), lang=lang))
+        logfile.printdbg(image_to_string((Image.open(filename)), lang=lang))
     except IOError:
         sys.stderr.write('ERROR: Could not open file "%s"\n' % filename)
         exit(1)

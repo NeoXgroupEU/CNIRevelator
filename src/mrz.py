@@ -490,18 +490,19 @@ def getDocInfos(doc, code):
     for field in infoTypes:
 
         value = code[ field[1][0] : field[1][1] ].replace("<", " ").strip()
+        res[field[0]] = [0,0]
 
         # State code
         if field[0] == 'PAYS' or field[0] == 'NAT':
             try:
                 if len(value) == 3 and value[-1] != "<":
-                    res[field[0]] = landcode3[value]
+                    res[field[0]] = (landcode3[value], True)
                 elif len(value) == 3 and value[-1] == "<":
-                    res[field[0]] = landcode2[value[:-1]]
+                    res[field[0]] = (landcode2[value[:-1]], True)
                 else:
-                    res[field[0]] = landcode2[value]
+                    res[field[0]] = (landcode2[value], True)
             except KeyError:
-                res[field[0]] = False
+                res[field[0]] = [value, False]
 
         # Dates
         elif field[0][1:] == 'DATE':
@@ -517,39 +518,43 @@ def getDocInfos(doc, code):
             except ValueError:
                 #print(value)
                 if value != "":
-                    res[field[0]] = False
+                    res[field[0]] = [value, False]
             else:
-                res[field[0]] = value
+                res[field[0]] = [value, True]
 
         # Numbers
         elif field[0][:-1] == 'NOINT':
             try:
-                res["NO"] += value
+                res["NO"][0] += value
+                res["NO"][1] = True
             except KeyError:
-                res["NO"] = value
+                res["NO"] = [value, True]
+
         elif field[0] == 'NOINT':
             try:
-                res["NO"] += value
+                res["NO"][0] += value
+                res["NO"][1] = True
             except KeyError:
-                res["NO"] = value
+                res["NO"] = [value, True]
 
         elif field[0] == 'FACULT':
             try:
-                res["INDIC"] += value
+                res["INDIC"][0] += value
+                res["INDIC"][1] = True
             except KeyError:
-                res["INDIC"] = value
+                res["INDIC"] = [value, True]
 
         # Sex
         elif field[0] == 'SEX':
             if not value in "MF":
-                res[field[0]] = False
+                res[field[0]] = [value, False]
             else:
-                res[field[0]] = value
+                res[field[0]] = [value, True]
 
         # All other cases
         else:
             if value != "":
-                res[field[0]] = value
+                res[field[0]] = [value, True]
 
     return res
 
