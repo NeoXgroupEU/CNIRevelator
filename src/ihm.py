@@ -382,3 +382,4 @@ class StatusBar(Frame):
 ## Global Handler
 launcherWindowCur = LauncherWindow()
 
+# test ?
