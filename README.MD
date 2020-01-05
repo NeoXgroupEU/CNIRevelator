@@ -1,5 +1,5 @@
 # CNIRevelator
-| ![FSF Logo](https://www.os-k.eu/GPLLOGO.PNG) | This program is free software, released under the terms of the [GNU GPL](COPYING) version 3 or later as published by the Free Software Foundation |
+| ![FSF Logo](https://www.os-k.eu/GPLLOGO.png) | This program is free software, released under the terms of the [GNU GPL](COPYING) version 3 or later as published by the Free Software Foundation |
 |----------------------------------------------|----------------------------------------------------------------------|
 
 ### Analyzer for MRZ Codes on identity cards, passports and others for Windows.
